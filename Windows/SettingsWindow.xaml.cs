@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -9,6 +12,16 @@ namespace OpenWidget.Windows;
 
 public partial class SettingsWindow : Window
 {
+    private static readonly string[] PredefinedCities =
+    [
+        "İstanbul", "Ankara", "İzmir", "Bursa", "Antalya", "Adana", "Konya", "Gaziantep",
+        "Şanlıurfa", "Kocaeli", "Mersin", "Diyarbakır", "Hatay", "Manisa", "Kayseri",
+        "Samsun", "Balıkesir", "Kahramanmaraş", "Van", "Aydın", "Tekirdağ", "Denizli",
+        "Sakarya", "Muğla", "Eskişehir", "Trabzon", "Malatya", "Ordu", "Erzurum",
+        "Afyonkarahisar", "Sivas", "Çanakkale", "Edirne", "Rize", "Kütahya",
+        "London", "New York", "Berlin", "Paris", "Tokyo", "Rome", "Amsterdam", "Dubai"
+    ];
+
     private readonly HardwareConfig _config;
     private readonly Action<HardwareConfig> _onSave;
 
@@ -57,6 +70,10 @@ public partial class SettingsWindow : Window
             }
         }
 
+        // HUD Layout Radio
+        RadioModeFull.IsChecked = !_config.Widget.IsCompact;
+        RadioModeCompact.IsChecked = _config.Widget.IsCompact;
+
         // Widgets
         ChkHeader.IsChecked = _config.Widgets.ShowHeader;
         ChkTelemetry.IsChecked = _config.Widgets.ShowTelemetry;
@@ -66,7 +83,6 @@ public partial class SettingsWindow : Window
         ChkQuickActions.IsChecked = _config.Widgets.ShowQuickActions;
 
         // Performance & Options
-        ChkCompactMode.IsChecked = _config.Widget.IsCompact;
         ChkLockPosition.IsChecked = _config.Widget.IsLocked;
         ChkPinToDesktop.IsChecked = _config.Widget.PinToDesktop;
         ChkAutoStart.IsChecked = AutoStartService.IsAutoStartEnabled();
@@ -118,19 +134,100 @@ public partial class SettingsWindow : Window
         }
     }
 
+    private void TxtCity_GotFocus(object sender, RoutedEventArgs e)
+    {
+        UpdateCitySuggestions();
+    }
+
+    private void TxtCity_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        UpdateCitySuggestions();
+    }
+
+    private void TxtCity_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            PopupCitySuggestions.IsOpen = false;
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Enter)
+        {
+            PopupCitySuggestions.IsOpen = false;
+        }
+    }
+
+    private void UpdateCitySuggestions()
+    {
+        if (TxtCity == null || PopupCitySuggestions == null || ListCitySuggestions == null) return;
+
+        var query = TxtCity.Text?.Trim() ?? "";
+        var results = new List<string>();
+
+        var autoLabel = LocalizationService.CurrentLanguage == "en" ? "📍 Auto Detect (IP Location)" : "📍 Otomatik Algıla (IP)";
+
+        if (string.IsNullOrEmpty(query))
+        {
+            results.Add(autoLabel);
+            results.AddRange(PredefinedCities.Take(7));
+        }
+        else
+        {
+            if (autoLabel.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                "auto".IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                "otomatik".IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                results.Add(autoLabel);
+            }
+
+            var culture = new CultureInfo("tr-TR");
+            var matched = PredefinedCities.Where(c => culture.CompareInfo.IndexOf(c, query, CompareOptions.IgnoreCase) >= 0);
+            results.AddRange(matched.Take(8));
+        }
+
+        if (results.Count > 0 && TxtCity.IsFocused)
+        {
+            ListCitySuggestions.ItemsSource = results;
+            PopupCitySuggestions.IsOpen = true;
+        }
+        else
+        {
+            PopupCitySuggestions.IsOpen = false;
+        }
+    }
+
+    private void CityItem_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is FrameworkElement fe && fe.DataContext is string selectedCity)
+        {
+            if (selectedCity.StartsWith("📍"))
+            {
+                TxtCity.Text = "";
+            }
+            else
+            {
+                TxtCity.Text = selectedCity;
+            }
+            PopupCitySuggestions.IsOpen = false;
+            TxtCity.Focus();
+            TxtCity.CaretIndex = TxtCity.Text.Length;
+        }
+    }
+
     private void BtnReset_Click(object sender, RoutedEventArgs e)
     {
         CmbLanguage.SelectedIndex = 0; // TR
         TxtCity.Text = "";
         SliderOpacity.Value = 100;
         CmbAccent.SelectedIndex = 0; // Sky
+        RadioModeFull.IsChecked = true;
+        RadioModeCompact.IsChecked = false;
         ChkHeader.IsChecked = true;
         ChkTelemetry.IsChecked = true;
         ChkFinance.IsChecked = true;
         ChkMedia.IsChecked = true;
         ChkHardware.IsChecked = true;
         ChkQuickActions.IsChecked = true;
-        ChkCompactMode.IsChecked = false;
         ChkLockPosition.IsChecked = false;
         ChkPinToDesktop.IsChecked = false;
         ChkAutoStart.IsChecked = true;
@@ -165,7 +262,10 @@ public partial class SettingsWindow : Window
             _config.Widget.AccentTheme = accentItem.Tag.ToString() ?? "Sky";
         }
 
-        // 5. Widgets
+        // 5. Layout Mode (Custom Radio Button)
+        _config.Widget.IsCompact = RadioModeCompact.IsChecked == true;
+
+        // 6. Widgets
         _config.Widgets.ShowHeader = ChkHeader.IsChecked == true;
         _config.Widgets.ShowTelemetry = ChkTelemetry.IsChecked == true;
         _config.Widgets.ShowFinance = ChkFinance.IsChecked == true;
@@ -173,8 +273,7 @@ public partial class SettingsWindow : Window
         _config.Widgets.ShowHardware = ChkHardware.IsChecked == true;
         _config.Widgets.ShowQuickActions = ChkQuickActions.IsChecked == true;
 
-        // 6. Options
-        _config.Widget.IsCompact = ChkCompactMode.IsChecked == true;
+        // 7. Options
         _config.Widget.IsLocked = ChkLockPosition.IsChecked == true;
         _config.Widget.PinToDesktop = ChkPinToDesktop.IsChecked == true;
         _config.Widget.AlwaysOnTop = ChkPinToDesktop.IsChecked == true ? false : (ChkAlwaysOnTop.IsChecked == true);

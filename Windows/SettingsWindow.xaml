@@ -74,7 +74,7 @@
                                 <Border x:Name="Track"
                                         Background="#26FFFFFF"
                                         CornerRadius="11"
-                                        BorderBrush="#1AFFFFFF"
+                                        BorderBrush="{StaticResource MasterHudBorderBrush}"
                                         BorderThickness="1" />
                                 <Ellipse x:Name="Thumb"
                                          Width="16" Height="16"
@@ -108,7 +108,7 @@
         <Style x:Key="ModernTextBox" TargetType="TextBox">
             <Setter Property="Background" Value="#18FFFFFF" />
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
-            <Setter Property="BorderBrush" Value="#25FFFFFF" />
+            <Setter Property="BorderBrush" Value="{StaticResource MasterHudBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="12,6" />
             <Setter Property="FontSize" Value="12" />
@@ -170,7 +170,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="bd" Background="{TemplateBinding Background}" BorderBrush="#1CFFFFFF" BorderThickness="1" CornerRadius="7">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}" BorderBrush="{StaticResource MasterHudBorderBrush}" BorderThickness="1" CornerRadius="7">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -257,7 +257,7 @@
             <!-- ================= TAB 1: GENEL YAPILANDIRMA ================= -->
             <StackPanel x:Name="PanelGeneral">
                 <!-- Arayüz Dili -->
-                <Border Background="#0EFFFFFF" BorderBrush="#12FFFFFF" BorderThickness="1" CornerRadius="9" Padding="18,14" Margin="0,0,0,10">
+                <Border Background="#0EFFFFFF" BorderBrush="{StaticResource MasterHudBorderBrush}" BorderThickness="1" CornerRadius="9" Padding="18,14" Margin="0,0,0,10">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -274,8 +274,8 @@
                     </Grid>
                 </Border>
 
-                <!-- Hava Durumu Şehri -->
-                <Border Background="#0EFFFFFF" BorderBrush="#12FFFFFF" BorderThickness="1" CornerRadius="9" Padding="18,14" Margin="0,0,0,10">
+                <!-- Hava Durumu Şehri (Otomatik Tamamlama ve Öneri Menüsü) -->
+                <Border Background="#0EFFFFFF" BorderBrush="{StaticResource MasterHudBorderBrush}" BorderThickness="1" CornerRadius="9" Padding="18,14" Margin="0,0,0,10">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -283,14 +283,82 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center" Margin="0,0,28,0">
                             <TextBlock x:Name="LblCity" Text="Hava Durumu Konumu" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
-                            <TextBlock x:Name="LblCityHelp" Text="Boş bırakırsanız IP üzerinden algılar" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,3,0,0" />
+                            <TextBlock x:Name="LblCityHelp" Text="Yazmaya başlayarak şehri seçin veya boş bırakın" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,3,0,0" />
                         </StackPanel>
-                        <TextBox x:Name="TxtCity" Grid.Column="1" Style="{StaticResource ModernTextBox}" VerticalAlignment="Center" />
+                        <Grid Grid.Column="1" VerticalAlignment="Center">
+                            <TextBox x:Name="TxtCity"
+                                     Style="{StaticResource ModernTextBox}"
+                                     GotFocus="TxtCity_GotFocus"
+                                     TextChanged="TxtCity_TextChanged"
+                                     PreviewKeyDown="TxtCity_PreviewKeyDown" />
+
+                            <!-- City Auto-Complete Suggestion Popup -->
+                            <Popup x:Name="PopupCitySuggestions"
+                                   PlacementTarget="{Binding ElementName=TxtCity}"
+                                   Placement="Bottom"
+                                   AllowsTransparency="True"
+                                   StaysOpen="False"
+                                   PopupAnimation="Fade"
+                                   VerticalOffset="4">
+                                <Border MinWidth="190"
+                                        MaxHeight="200"
+                                        Background="#F0090D16"
+                                        BorderBrush="{StaticResource MasterHudBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="4">
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="16" Direction="270" ShadowDepth="4" Color="#000000" Opacity="0.6" />
+                                    </Border.Effect>
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto" SnapsToDevicePixels="True">
+                                        <ItemsControl x:Name="ListCitySuggestions">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="Transparent"
+                                                            CornerRadius="6"
+                                                            Padding="10,6"
+                                                            Cursor="Hand"
+                                                            Margin="1"
+                                                            MouseLeftButtonDown="CityItem_MouseLeftButtonDown">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Style.Triggers>
+                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                        <Setter Property="Background" Value="#24FFFFFF" />
+                                                                    </Trigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto" />
+                                                                <ColumnDefinition Width="*" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <Path Data="{StaticResource GeoLocation}"
+                                                                  Fill="{StaticResource AccentBrush}"
+                                                                  Stretch="Uniform"
+                                                                  Width="11" Height="11"
+                                                                  VerticalAlignment="Center"
+                                                                  Margin="0,0,8,0" />
+                                                            <TextBlock Grid.Column="1"
+                                                                       Text="{Binding}"
+                                                                       FontSize="12"
+                                                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                                                       VerticalAlignment="Center" />
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
                     </Grid>
                 </Border>
 
                 <!-- Pencere Opaklığı -->
-                <Border Background="#0EFFFFFF" BorderBrush="#12FFFFFF" BorderThickness="1" CornerRadius="9" Padding="18,14" Margin="0,0,0,10">
+                <Border Background="#0EFFFFFF" BorderBrush="{StaticResource MasterHudBorderBrush}" BorderThickness="1" CornerRadius="9" Padding="18,14" Margin="0,0,0,10">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -309,7 +377,7 @@
                 </Border>
 
                 <!-- Vurgu Teması -->
-                <Border Background="#0EFFFFFF" BorderBrush="#12FFFFFF" BorderThickness="1" CornerRadius="9" Padding="18,14" Margin="0,0,0,18">
+                <Border Background="#0EFFFFFF" BorderBrush="{StaticResource MasterHudBorderBrush}" BorderThickness="1" CornerRadius="9" Padding="18,14" Margin="0,0,0,10">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -328,11 +396,29 @@
                         </ComboBox>
                     </Grid>
                 </Border>
+
+                <!-- Görünüm Düzeni (Özel RadioButton Bileşeni) -->
+                <Border Background="#0EFFFFFF" BorderBrush="{StaticResource MasterHudBorderBrush}" BorderThickness="1" CornerRadius="9" Padding="18,14" Margin="0,0,0,18">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center" Margin="0,0,28,0">
+                            <TextBlock Text="Varsayılan Görünüm Düzeni" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
+                            <TextBlock Text="Tam genişlikli HUD paneli veya minimal tek satır" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,3,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <RadioButton x:Name="RadioModeFull" Content="Tam HUD" GroupName="LayoutRadioGroup" Style="{StaticResource ModernRadioButton}" Margin="0,0,16,0" IsChecked="True" />
+                            <RadioButton x:Name="RadioModeCompact" Content="Kompakt HUD" GroupName="LayoutRadioGroup" Style="{StaticResource ModernRadioButton}" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
             </StackPanel>
 
             <!-- ================= TAB 2: WİDGETLAR ================= -->
             <StackPanel x:Name="PanelWidgets" Visibility="Collapsed" Margin="0,0,0,18">
-                <Border Background="#0EFFFFFF" BorderBrush="#12FFFFFF" BorderThickness="1" CornerRadius="9" Padding="18,10">
+                <Border Background="#0EFFFFFF" BorderBrush="{StaticResource MasterHudBorderBrush}" BorderThickness="1" CornerRadius="9" Padding="18,10">
                     <StackPanel>
                         <CheckBox x:Name="ChkHeader" Style="{StaticResource ModernToggleSwitch}">
                             <StackPanel>
@@ -340,7 +426,7 @@
                                 <TextBlock Text="Konum bazlı anlık hava ve sistem açık kalma süresi" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
                             </StackPanel>
                         </CheckBox>
-                        <Separator Background="#0EFFFFFF" Margin="0,4" />
+                        <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
 
                         <CheckBox x:Name="ChkTelemetry" Style="{StaticResource ModernToggleSwitch}">
                             <StackPanel>
@@ -348,7 +434,7 @@
                                 <TextBlock Text="İşlemci, Ekran Kartı, RAM, Ağ trafiği ve Disk doluluğu" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
                             </StackPanel>
                         </CheckBox>
-                        <Separator Background="#0EFFFFFF" Margin="0,4" />
+                        <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
 
                         <CheckBox x:Name="ChkFinance" Style="{StaticResource ModernToggleSwitch}">
                             <StackPanel>
@@ -356,7 +442,7 @@
                                 <TextBlock Text="Dolar, Euro, Gram Altın, Bitcoin ve Ethereum kurları" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
                             </StackPanel>
                         </CheckBox>
-                        <Separator Background="#0EFFFFFF" Margin="0,4" />
+                        <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
 
                         <CheckBox x:Name="ChkMedia" Style="{StaticResource ModernToggleSwitch}">
                             <StackPanel>
@@ -364,7 +450,7 @@
                                 <TextBlock Text="Spotify, YouTube ve tarayıcı ses oturumu kontrolleri" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
                             </StackPanel>
                         </CheckBox>
-                        <Separator Background="#0EFFFFFF" Margin="0,4" />
+                        <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
 
                         <CheckBox x:Name="ChkHardware" Style="{StaticResource ModernToggleSwitch}">
                             <StackPanel>
@@ -372,7 +458,7 @@
                                 <TextBlock Text="Sistem bileşen listesi ve anlık donanım fiyat özeti" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
                             </StackPanel>
                         </CheckBox>
-                        <Separator Background="#0EFFFFFF" Margin="0,4" />
+                        <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
 
                         <CheckBox x:Name="ChkQuickActions" Style="{StaticResource ModernToggleSwitch}">
                             <StackPanel>
@@ -386,23 +472,15 @@
 
             <!-- ================= TAB 3: SİSTEM & PERFORMANS ================= -->
             <StackPanel x:Name="PanelSystem" Visibility="Collapsed" Margin="0,0,0,18">
-                <Border Background="#0EFFFFFF" BorderBrush="#12FFFFFF" BorderThickness="1" CornerRadius="9" Padding="18,10">
+                <Border Background="#0EFFFFFF" BorderBrush="{StaticResource MasterHudBorderBrush}" BorderThickness="1" CornerRadius="9" Padding="18,10">
                     <StackPanel>
-                        <CheckBox x:Name="ChkCompactMode" Style="{StaticResource ModernToggleSwitch}">
-                            <StackPanel>
-                                <TextBlock Text="Kompakt HUD Modu" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
-                                <TextBlock Text="Yalnızca 24px yüksekliğinde minimal özet şerit modu" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
-                            </StackPanel>
-                        </CheckBox>
-                        <Separator Background="#0EFFFFFF" Margin="0,4" />
-
                         <CheckBox x:Name="ChkLockPosition" Style="{StaticResource ModernToggleSwitch}">
                             <StackPanel>
                                 <TextBlock Text="Widget Konumunu Kilitle" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                                 <TextBlock Text="Masaüstünde kazara sürüklenmeyi tamamen engeller" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
                             </StackPanel>
                         </CheckBox>
-                        <Separator Background="#0EFFFFFF" Margin="0,4" />
+                        <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
 
                         <CheckBox x:Name="ChkPinToDesktop" Style="{StaticResource ModernToggleSwitch}">
                             <StackPanel>
@@ -410,7 +488,7 @@
                                 <TextBlock Text="Pencerelerin en arkasında kalır, işlerinizi engellemez" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
                             </StackPanel>
                         </CheckBox>
-                        <Separator Background="#0EFFFFFF" Margin="0,4" />
+                        <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
 
                         <CheckBox x:Name="ChkAlwaysOnTop" Style="{StaticResource ModernToggleSwitch}">
                             <StackPanel>
@@ -418,7 +496,7 @@
                                 <TextBlock Text="Diğer pencerelerin her zaman önünde görünür" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
                             </StackPanel>
                         </CheckBox>
-                        <Separator Background="#0EFFFFFF" Margin="0,4" />
+                        <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
 
                         <CheckBox x:Name="ChkAutoStart" Style="{StaticResource ModernToggleSwitch}">
                             <StackPanel>
@@ -426,7 +504,7 @@
                                 <TextBlock Text="Bilgisayar açılışında arka planda otomatik başlar" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
                             </StackPanel>
                         </CheckBox>
-                        <Separator Background="#0EFFFFFF" Margin="0,4" />
+                        <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
 
                         <CheckBox x:Name="ChkGameMode" Style="{StaticResource ModernToggleSwitch}">
                             <StackPanel>
@@ -439,7 +517,7 @@
             </StackPanel>
 
             <!-- Bottom Actions Bar -->
-            <Border BorderBrush="#14FFFFFF" BorderThickness="0,1,0,0" Padding="0,16,0,0">
+            <Border BorderBrush="{StaticResource MasterHudBorderBrush}" BorderThickness="0,1,0,0" Padding="0,16,0,0">
                 <DockPanel>
                     <Button x:Name="BtnReset"
                             Content="Varsayılana Sıfırla"

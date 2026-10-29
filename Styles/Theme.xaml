@@ -11,7 +11,7 @@
     <Color x:Key="SectionBgColor">#14FFFFFF</Color>
     <SolidColorBrush x:Key="SectionBgBrush" Color="{StaticResource SectionBgColor}" />
 
-    <Color x:Key="SectionBorderColor">#10FFFFFF</Color>
+    <Color x:Key="SectionBorderColor">#1CFFFFFF</Color>
     <SolidColorBrush x:Key="SectionBorderBrush" Color="{StaticResource SectionBorderColor}" />
 
     <!-- Palette -->
@@ -43,7 +43,7 @@
     <Color x:Key="TextMutedColor">#64748B</Color>
     <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}" />
 
-    <Color x:Key="DividerColor">#10FFFFFF</Color>
+    <Color x:Key="DividerColor">#1CFFFFFF</Color>
     <SolidColorBrush x:Key="DividerBrush" Color="{StaticResource DividerColor}" />
 
     <!-- Backward compatibility aliases -->
@@ -97,7 +97,7 @@
     <Style x:Key="ModernMenuItemStyle" TargetType="MenuItem">
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
         <Setter Property="FontSize" Value="12" />
-        <Setter Property="Height" Value="28" />
+        <Setter Property="Height" Value="30" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="Template">
@@ -105,8 +105,8 @@
                 <ControlTemplate TargetType="MenuItem">
                     <Border x:Name="bd"
                             Background="Transparent"
-                            CornerRadius="6"
-                            Padding="8,0"
+                            CornerRadius="7"
+                            Padding="10,0"
                             Margin="2,1">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -115,45 +115,41 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <!-- Checkmark / Indicator -->
-                            <Path x:Name="CheckMark"
-                                  Grid.Column="0"
-                                  Data="M3 7.5L6 10.5L12 3.5"
-                                  Stroke="{StaticResource AccentBrush}"
-                                  StrokeThickness="2"
-                                  StrokeStartLineCap="Round"
-                                  StrokeEndLineCap="Round"
-                                  VerticalAlignment="Center"
-                                  HorizontalAlignment="Left"
-                                  Visibility="Collapsed"
-                                  Width="12" Height="10" />
+                            <!-- Custom Vector Icon on Left -->
+                            <ContentPresenter x:Name="IconHost"
+                                              Grid.Column="0"
+                                              ContentSource="Icon"
+                                              Width="14" Height="14"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Left" />
 
                             <!-- Header Text -->
                             <ContentPresenter Grid.Column="1"
                                               ContentSource="Header"
                                               RecognizesAccessKey="True"
                                               VerticalAlignment="Center"
-                                              Margin="2,0,8,0" />
+                                              Margin="8,0,12,0" />
 
-                            <!-- Input Gesture Text -->
-                            <TextBlock Grid.Column="2"
-                                       Text="{TemplateBinding InputGestureText}"
-                                       Foreground="{StaticResource TextMutedBrush}"
-                                       FontSize="11"
-                                       VerticalAlignment="Center" />
+                            <!-- Active State Indicator on Right (Clean glowing accent pill dot when checked) -->
+                            <Ellipse x:Name="ActiveDot"
+                                     Grid.Column="2"
+                                     Width="7" Height="7"
+                                     Fill="{StaticResource AccentGreenBrush}"
+                                     VerticalAlignment="Center"
+                                     HorizontalAlignment="Right"
+                                     Visibility="Collapsed" />
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="CheckMark" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="ActiveDot" Property="Visibility" Value="Visible" />
                         </Trigger>
                         <Trigger Property="IsHighlighted" Value="True">
-                            <Setter TargetName="bd" Property="Background" Value="#25FFFFFF" />
+                            <Setter TargetName="bd" Property="Background" Value="#22FFFFFF" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}" />
+                            <Setter Property="Opacity" Value="0.45" />
                             <Setter Property="Cursor" Value="Arrow" />
-                            <Setter Property="Opacity" Value="0.6" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -163,12 +159,65 @@
 
     <Style TargetType="MenuItem" BasedOn="{StaticResource ModernMenuItemStyle}" />
 
+    <!-- Modern Minimalist RadioButton Style -->
+    <Style x:Key="ModernRadioButton" TargetType="RadioButton">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Grid Background="Transparent" Margin="0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Outer Radio Circle -->
+                        <Border x:Name="OuterCircle"
+                                Grid.Column="0"
+                                Width="16" Height="16"
+                                CornerRadius="8"
+                                Background="#14FFFFFF"
+                                BorderBrush="{StaticResource MasterHudBorderBrush}"
+                                BorderThickness="1.5"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center">
+                            <!-- Inner Accent Dot -->
+                            <Ellipse x:Name="InnerDot"
+                                     Width="8" Height="8"
+                                     Fill="{StaticResource AccentBrush}"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"
+                                     Visibility="Collapsed" />
+                        </Border>
+
+                        <!-- Label Content on Right -->
+                        <ContentPresenter Grid.Column="1"
+                                          VerticalAlignment="Center"
+                                          Margin="8,0,0,0" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="OuterCircle" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                            <Setter TargetName="InnerDot" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="OuterCircle" Property="Background" Value="#24FFFFFF" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Modern Custom Dropdown (ComboBox) Styles -->
     <Style x:Key="ModernComboBoxItemStyle" TargetType="ComboBoxItem">
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="Padding" Value="12,7" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBoxItem">
@@ -177,7 +226,8 @@
                             CornerRadius="6"
                             Padding="{TemplateBinding Padding}"
                             Margin="2,1">
-                        <ContentPresenter VerticalAlignment="Center" />
+                        <ContentPresenter TextElement.Foreground="{StaticResource TextPrimaryBrush}"
+                                          VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -185,7 +235,7 @@
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="ItemBd" Property="Background" Value="#2038BDF8" />
-                            <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+                            <Setter TargetName="ItemBd" Property="TextElement.Foreground" Value="{StaticResource AccentBrush}" />
                             <Setter Property="FontWeight" Value="SemiBold" />
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -213,10 +263,10 @@
                                 <ControlTemplate TargetType="ToggleButton">
                                     <Border x:Name="ToggleBd"
                                             Background="#18FFFFFF"
-                                            BorderBrush="#25FFFFFF"
+                                            BorderBrush="{StaticResource MasterHudBorderBrush}"
                                             BorderThickness="1"
                                             CornerRadius="7"
-                                            Padding="10,0">
+                                            Padding="12,0">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
@@ -227,6 +277,7 @@
                                             <ContentPresenter Grid.Column="0"
                                                               Content="{TemplateBinding Content}"
                                                               ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                              TextElement.Foreground="{StaticResource TextPrimaryBrush}"
                                                               VerticalAlignment="Center"
                                                               HorizontalAlignment="Left" />
 
@@ -253,6 +304,7 @@
                             </ToggleButton.Template>
                             <ContentPresenter Content="{TemplateBinding SelectionBoxItem}"
                                               ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                              TextElement.Foreground="{StaticResource TextPrimaryBrush}"
                                               VerticalAlignment="Center"
                                               HorizontalAlignment="Left" />
                         </ToggleButton>
@@ -286,6 +338,9 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <Style TargetType="ComboBox" BasedOn="{StaticResource ModernComboBoxStyle}" />
+    <Style TargetType="ComboBoxItem" BasedOn="{StaticResource ModernComboBoxItemStyle}" />
 
     <!-- Vector Icons (StreamGeometry Pack) -->
     <Geometry x:Key="GeoCpu">M4 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4zm4 4v8h8V8H8zm2 2h4v4h-4v-4zM2 7h2v2H2V7zm0 4h2v2H2v-2zm0 4h2v2H2v-2zm20-8h-2v2h2V7zm0 4h-2v2h2v-2zm0 4h-2v2h2v-2zM7 2v2h2V2H7zm4 0v2h2V2h-2zm4 0v2h2V2h-2zm-8 20v-2h2v2H7zm4 0v-2h2v2h-2zm4 0v-2h2v2h-2z</Geometry>
@@ -329,4 +384,14 @@
     <Geometry x:Key="GeoUnlock">M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6h1.9c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm0 12H6V10h12v10z</Geometry>
     <Geometry x:Key="GeoExpand">M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z</Geometry>
     <Geometry x:Key="GeoCollapse">M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z</Geometry>
+    <Geometry x:Key="GeoWeather">M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zm-3.21 13.7l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM20 10.5v2h3v-2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm-4.04 4.39l-1.8 1.79 1.41 1.41 1.8-1.79-1.41-1.41zM11 20.5h2v3h-2v-3z</Geometry>
+    <Geometry x:Key="GeoBolt">M11 21h-1l1-7H7.5c-.88 0-.33-.75-.31-.78C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.13L11 21z</Geometry>
+    <Geometry x:Key="GeoPin">M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z</Geometry>
+    <Geometry x:Key="GeoDesktop">M21 2H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h7v2H8v2h8v-2h-2v-2h7c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H3V4h18v12z</Geometry>
+    <Geometry x:Key="GeoRocket">M13.13 2.51l.03.03c2.93 2.93 3.65 7.19 1.79 10.82l2.36 2.36c.39.39.39 1.02 0 1.41l-1.41 1.41c-.39.39-1.02.39-1.41 0l-2.36-2.36c-3.63 1.86-7.89 1.14-10.82-1.79l-.03-.03c-.39-.39-.39-1.02 0-1.41l1.41-1.41c.39-.39 1.02-.39 1.41 0l.44.44c1.98-2.67 2.27-6.22.75-9.15l4.47-4.47c.39-.39 1.02-.39 1.41 0zM3.41 18.59l2-2 2 2-2 2c-.55.55-1.45.55-2 0s-.55-1.45 0-2z</Geometry>
+    <Geometry x:Key="GeoSettings">M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z</Geometry>
+    <Geometry x:Key="GeoRefresh">M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z</Geometry>
+    <Geometry x:Key="GeoReset">M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v4h4v2h-4v4h-2v-4H7v-2h4V7z</Geometry>
+    <Geometry x:Key="GeoClose">M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z</Geometry>
+    <Geometry x:Key="GeoLocation">M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z</Geometry>
 </ResourceDictionary>

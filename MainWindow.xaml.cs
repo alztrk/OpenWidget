@@ -325,7 +325,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void UpdateContextMenuTexts()
     {
-        if (MenuWidgetHeader != null) MenuWidgetHeader.Header = LocalizationService.Get("WidgetSelection");
         if (MenuHeader != null) MenuHeader.Header = LocalizationService.Get("MenuHeader");
         if (MenuTelemetry != null) MenuTelemetry.Header = LocalizationService.Get("MenuTelemetry");
         if (MenuFinance != null) MenuFinance.Header = LocalizationService.Get("MenuFinance");

@@ -60,14 +60,22 @@
     </UserControl.Resources>
 
     <StackPanel>
-        <Grid Margin="4,0,4,6">
-            <TextBlock x:Name="TxtHardwareTitle"
-                       Text="Donanım"
-                       HorizontalAlignment="Left"
-                       FontSize="11"
-                       FontWeight="SemiBold"
-                       Foreground="{StaticResource TextSecondaryBrush}"
-                       VerticalAlignment="Center" />
+        <Grid Cursor="Hand" Background="Transparent" MouseLeftButtonDown="Header_MouseLeftButtonDown" Margin="4,0,4,6">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <TextBlock x:Name="TxtHardwareTitle"
+                           Text="Donanım"
+                           FontSize="11"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           VerticalAlignment="Center" />
+                <Path x:Name="ArrowIcon"
+                      Data="{StaticResource GeoCollapse}"
+                      Fill="{StaticResource TextMutedBrush}"
+                      Stretch="Uniform"
+                      Width="8" Height="8"
+                      Margin="8,0,0,0"
+                      VerticalAlignment="Center" />
+            </StackPanel>
             <TextBlock Text="{Binding Specs.TotalPriceFormatted}"
                        HorizontalAlignment="Right"
                        FontSize="12"
@@ -76,15 +84,17 @@
                        VerticalAlignment="Center" />
         </Grid>
 
-        <ItemsControl ItemsSource="{Binding Specs.CoreSystem}"
-                      ItemTemplate="{StaticResource GadgetRowTemplate}" />
-        <ItemsControl ItemsSource="{Binding Specs.Storage}"
-                      ItemTemplate="{StaticResource GadgetRowTemplate}" />
-        <ItemsControl ItemsSource="{Binding Specs.Peripherals}"
-                      ItemTemplate="{StaticResource GadgetRowTemplate}" />
-        <ItemsControl ItemsSource="{Binding Specs.CoolingAndPower}"
-                      ItemTemplate="{StaticResource GadgetRowTemplate}" />
-        <ItemsControl ItemsSource="{Binding Specs.Accessories}"
-                      ItemTemplate="{StaticResource GadgetRowTemplate}" />
+        <StackPanel x:Name="ContentPanel">
+            <ItemsControl ItemsSource="{Binding Specs.CoreSystem}"
+                          ItemTemplate="{StaticResource GadgetRowTemplate}" />
+            <ItemsControl ItemsSource="{Binding Specs.Storage}"
+                          ItemTemplate="{StaticResource GadgetRowTemplate}" />
+            <ItemsControl ItemsSource="{Binding Specs.Peripherals}"
+                          ItemTemplate="{StaticResource GadgetRowTemplate}" />
+            <ItemsControl ItemsSource="{Binding Specs.CoolingAndPower}"
+                          ItemTemplate="{StaticResource GadgetRowTemplate}" />
+            <ItemsControl ItemsSource="{Binding Specs.Accessories}"
+                          ItemTemplate="{StaticResource GadgetRowTemplate}" />
+        </StackPanel>
     </StackPanel>
 </UserControl>

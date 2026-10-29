@@ -8,7 +8,7 @@
         <Style x:Key="ToolbarBtnStyle" TargetType="Button">
             <Setter Property="Background" Value="#12FFFFFF" />
             <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
-            <Setter Property="BorderBrush" Value="#18FFFFFF" />
+            <Setter Property="BorderBrush" Value="{StaticResource MasterHudBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Height" Value="32" />
             <Setter Property="Padding" Value="4,0" />

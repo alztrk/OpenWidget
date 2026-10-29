@@ -28,27 +28,94 @@
 
     <Window.ContextMenu>
         <ContextMenu Style="{StaticResource ModernContextMenuStyle}">
-            <MenuItem x:Name="MenuWidgetHeader" Header="⚙️ Widget Seçimi" IsEnabled="False" FontWeight="Bold" />
-            <MenuItem x:Name="MenuHeader" Header="🌤️ Hava Durumu &amp; Süre" IsCheckable="True" Click="MenuHeader_Click" />
-            <MenuItem x:Name="MenuTelemetry" Header="📊 Sistem Telemetrisi" IsCheckable="True" Click="MenuTelemetry_Click" />
-            <MenuItem x:Name="MenuFinance" Header="💰 Canlı Piyasa &amp; Kripto" IsCheckable="True" Click="MenuFinance_Click" />
-            <MenuItem x:Name="MenuMedia" Header="🎵 Medya Oynatıcı" IsCheckable="True" Click="MenuMedia_Click" />
-            <MenuItem x:Name="MenuHardware" Header="🖥️ Donanım Bileşenleri" IsCheckable="True" Click="MenuHardware_Click" />
-            <MenuItem x:Name="MenuQuickActions" Header="⚡ Hızlı Araçlar" IsCheckable="True" Click="MenuQuickActions_Click" />
+            <MenuItem x:Name="MenuHeader" Header="Hava Durumu &amp; Süre" IsCheckable="True" Click="MenuHeader_Click">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource GeoWeather}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem x:Name="MenuTelemetry" Header="Sistem Telemetrisi" IsCheckable="True" Click="MenuTelemetry_Click">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource GeoPerformance}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem x:Name="MenuFinance" Header="Canlı Piyasa &amp; Kripto" IsCheckable="True" Click="MenuFinance_Click">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource GeoDollar}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem x:Name="MenuMedia" Header="Medya Oynatıcı" IsCheckable="True" Click="MenuMedia_Click">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource GeoMusic}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem x:Name="MenuHardware" Header="Donanım Bileşenleri" IsCheckable="True" Click="MenuHardware_Click">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource GeoMonitor}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem x:Name="MenuQuickActions" Header="Hızlı Araçlar" IsCheckable="True" Click="MenuQuickActions_Click">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource GeoBolt}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
+                </MenuItem.Icon>
+            </MenuItem>
             <Separator />
-            <MenuItem x:Name="MenuCompactMode" Header="⚡ Kompakt HUD Modu" IsCheckable="True" Click="MenuCompactMode_Click" />
-            <MenuItem x:Name="MenuLockPosition" Header="🔒 Konumu Kilitle" IsCheckable="True" Click="MenuLockPosition_Click" />
-            <MenuItem x:Name="MenuPinToDesktop" Header="🖼️ Masaüstüne Sabitle (En Arkada)" IsCheckable="True" Click="MenuPinToDesktop_Click" />
-            <MenuItem x:Name="MenuAlwaysOnTop" Header="📌 Her Zaman Üstte" IsCheckable="True" Click="MenuAlwaysOnTop_Click" />
-            <MenuItem x:Name="MenuGameMode" Header="🎮 Oyun Modu (Otomatik Rölanti)" IsCheckable="True" Click="MenuGameMode_Click" />
-            <MenuItem x:Name="MenuAutoStart" Header="🚀 Windows ile Birlikte Başlat" IsCheckable="True" Click="MenuAutoStart_Click" />
+            <MenuItem x:Name="MenuCompactMode" Header="Kompakt HUD Modu" IsCheckable="True" Click="MenuCompactMode_Click">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource GeoExpand}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem x:Name="MenuLockPosition" Header="Konumu Kilitle" IsCheckable="True" Click="MenuLockPosition_Click">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource GeoLock}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem x:Name="MenuPinToDesktop" Header="Masaüstüne Sabitle (En Arkada)" IsCheckable="True" Click="MenuPinToDesktop_Click">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource GeoDesktop}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem x:Name="MenuAlwaysOnTop" Header="Her Zaman Üstte" IsCheckable="True" Click="MenuAlwaysOnTop_Click">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource GeoPin}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem x:Name="MenuGameMode" Header="Oyun Modu (Otomatik Rölanti)" IsCheckable="True" Click="MenuGameMode_Click">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource GeoGamepad}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem x:Name="MenuAutoStart" Header="Windows ile Birlikte Başlat" IsCheckable="True" Click="MenuAutoStart_Click">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource GeoRocket}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
+                </MenuItem.Icon>
+            </MenuItem>
             <Separator />
-            <MenuItem x:Name="MenuSettings" Header="⚙️ Ayarlar" Click="MenuSettings_Click" FontWeight="SemiBold" />
-            <MenuItem x:Name="MenuRefresh" Header="🔄 Yenile" Click="MenuRefresh_Click" />
-            <MenuItem x:Name="MenuResetPos" Header="🎯 Konumu Varsayılana Sıfırla" Click="MenuResetPosition_Click" />
-            <MenuItem x:Name="MenuPrices" Header="💰 Fiyatlar (hardware-prices.json)" Click="MenuEditPrices_Click" />
+            <MenuItem x:Name="MenuSettings" Header="Ayarlar" Click="MenuSettings_Click" FontWeight="SemiBold">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource GeoSettings}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem x:Name="MenuRefresh" Header="Yenile" Click="MenuRefresh_Click">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource GeoRefresh}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem x:Name="MenuResetPos" Header="Konumu Varsayılana Sıfırla" Click="MenuResetPosition_Click">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource GeoReset}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem x:Name="MenuPrices" Header="Fiyatlar (hardware-prices.json)" Click="MenuEditPrices_Click">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource GeoDollar}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
+                </MenuItem.Icon>
+            </MenuItem>
             <Separator />
-            <MenuItem x:Name="MenuExit" Header="❌ Kapat" Click="MenuExit_Click" />
+            <MenuItem x:Name="MenuExit" Header="Kapat" Click="MenuExit_Click">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource GeoClose}" Fill="{StaticResource AccentRedBrush}" Stretch="Uniform" Width="13" Height="13" />
+                </MenuItem.Icon>
+            </MenuItem>
         </ContextMenu>
     </Window.ContextMenu>
 

@@ -26,4 +26,18 @@ public partial class TelemetryWidget : UserControl
     {
         TxtTelemetryTitle.Text = LocalizationService.Get("Telemetry");
     }
+
+    private void Header_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (ContentPanel.Visibility == Visibility.Visible)
+        {
+            ContentPanel.Visibility = Visibility.Collapsed;
+            ArrowIcon.Data = (System.Windows.Media.Geometry)FindResource("GeoExpand");
+        }
+        else
+        {
+            ContentPanel.Visibility = Visibility.Visible;
+            ArrowIcon.Data = (System.Windows.Media.Geometry)FindResource("GeoCollapse");
+        }
+    }
 }
