@@ -1,64 +1,58 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Refined Master HUD Monolith Obsidian Glass -->
-    <Color x:Key="MasterHudBgColor">#9E070A0F</Color>
+    <!-- Modern 2026 Minimal Acrylic Dark Glass Theme -->
+    <Color x:Key="MasterHudBgColor">#78080C14</Color>
     <SolidColorBrush x:Key="MasterHudBgBrush" Color="{StaticResource MasterHudBgColor}" />
 
-    <Color x:Key="MasterHudBorderColor">#28FFFFFF</Color>
+    <Color x:Key="MasterHudBorderColor">#1CFFFFFF</Color>
     <SolidColorBrush x:Key="MasterHudBorderBrush" Color="{StaticResource MasterHudBorderColor}" />
 
-    <Color x:Key="SectionBgColor">#20000000</Color>
+    <Color x:Key="SectionBgColor">#14FFFFFF</Color>
     <SolidColorBrush x:Key="SectionBgBrush" Color="{StaticResource SectionBgColor}" />
 
-    <Color x:Key="SectionBorderColor">#1AFFFFFF</Color>
+    <Color x:Key="SectionBorderColor">#10FFFFFF</Color>
     <SolidColorBrush x:Key="SectionBorderBrush" Color="{StaticResource SectionBorderColor}" />
 
-    <!-- Refined Translucent Dark Glass -->
-    <Color x:Key="GlassBgColor">#8C080B10</Color>
-    <SolidColorBrush x:Key="GlassBgBrush" Color="{StaticResource GlassBgColor}" />
-
-    <Color x:Key="GlassBorderColor">#2EFFFFFF</Color>
-    <SolidColorBrush x:Key="GlassBorderBrush" Color="{StaticResource GlassBorderColor}" />
-
-    <Color x:Key="GlassCardBgColor">#4D020408</Color>
-    <SolidColorBrush x:Key="GlassCardBgBrush" Color="{StaticResource GlassCardBgColor}" />
-
-    <Color x:Key="GlassCardBorderColor">#26FFFFFF</Color>
-    <SolidColorBrush x:Key="GlassCardBorderBrush" Color="{StaticResource GlassCardBorderColor}" />
-
-    <Color x:Key="AccentColor">#58A6FF</Color>
+    <!-- Palette -->
+    <Color x:Key="AccentColor">#38BDF8</Color>
     <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
 
-    <Color x:Key="AccentGreenColor">#3FB950</Color>
+    <Color x:Key="AccentGreenColor">#34D399</Color>
     <SolidColorBrush x:Key="AccentGreenBrush" Color="{StaticResource AccentGreenColor}" />
 
-    <Color x:Key="PriceColor">#79C0FF</Color>
+    <Color x:Key="PriceColor">#93C5FD</Color>
     <SolidColorBrush x:Key="PriceBrush" Color="{StaticResource PriceColor}" />
 
-    <Color x:Key="AccentRedColor">#F85149</Color>
+    <Color x:Key="AccentRedColor">#F87171</Color>
     <SolidColorBrush x:Key="AccentRedBrush" Color="{StaticResource AccentRedColor}" />
 
-    <Color x:Key="AccentAmberColor">#D29922</Color>
+    <Color x:Key="AccentAmberColor">#FBBF24</Color>
     <SolidColorBrush x:Key="AccentAmberBrush" Color="{StaticResource AccentAmberColor}" />
 
-    <Color x:Key="TrackBgColor">#33FFFFFF</Color>
+    <Color x:Key="TrackBgColor">#1AFFFFFF</Color>
     <SolidColorBrush x:Key="TrackBgBrush" Color="{StaticResource TrackBgColor}" />
 
-    <!-- Tuned Typography Opacities for Translucent Background -->
-    <Color x:Key="TextPrimaryColor">#F0F6FC</Color>
+    <!-- Typography -->
+    <Color x:Key="TextPrimaryColor">#F8FAFC</Color>
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
 
-    <Color x:Key="TextSecondaryColor">#C9D1D9</Color>
+    <Color x:Key="TextSecondaryColor">#94A3B8</Color>
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" />
 
-    <Color x:Key="TextMutedColor">#8B949E</Color>
+    <Color x:Key="TextMutedColor">#64748B</Color>
     <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}" />
 
-    <Color x:Key="DividerColor">#26FFFFFF</Color>
+    <Color x:Key="DividerColor">#10FFFFFF</Color>
     <SolidColorBrush x:Key="DividerBrush" Color="{StaticResource DividerColor}" />
 
-    <!-- Vector Icons (Refined Modern StreamGeometry Pack) -->
+    <!-- Backward compatibility aliases -->
+    <SolidColorBrush x:Key="GlassBgBrush" Color="{StaticResource MasterHudBgColor}" />
+    <SolidColorBrush x:Key="GlassBorderBrush" Color="{StaticResource MasterHudBorderColor}" />
+    <SolidColorBrush x:Key="GlassCardBgBrush" Color="{StaticResource SectionBgColor}" />
+    <SolidColorBrush x:Key="GlassCardBorderBrush" Color="{StaticResource SectionBorderColor}" />
+
+    <!-- Vector Icons (StreamGeometry Pack) -->
     <Geometry x:Key="GeoCpu">M4 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4zm4 4v8h8V8H8zm2 2h4v4h-4v-4zM2 7h2v2H2V7zm0 4h2v2H2v-2zm0 4h2v2H2v-2zm20-8h-2v2h2V7zm0 4h-2v2h2v-2zm0 4h-2v2h2v-2zM7 2v2h2V2H7zm4 0v2h2V2h-2zm4 0v2h2V2h-2zm-8 20v-2h2v2H7zm4 0v-2h2v2h-2zm4 0v-2h2v2h-2z</Geometry>
     <Geometry x:Key="GeoGpu">M2 5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5zm3 1a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H5zm3.5 1.5a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7-2a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM5 19h14v2H5v-2z</Geometry>
     <Geometry x:Key="GeoMotherboard">M3 3a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3zm3 3h5v5H6V6zm7 0h5v2h-5V6zm0 3h5v2h-5V9zm-7 7h12v2H6v-2zm0 3h8v2H6v-2zm8-5h4v1h-4v-1z</Geometry>
@@ -79,7 +73,6 @@
     <Geometry x:Key="GeoCable">M7 2h10v6a4 4 0 0 1-3 3.87V17h2v2h-2v3h-4v-3H8v-2h2v-5.13A4 4 0 0 1 7 8V2zm2 2v4a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V4H9z</Geometry>
     <Geometry x:Key="GeoDollar">M12 2a1 1 0 0 1 1 1v1.07c2.39.49 4 2.22 4 4.43a1 1 0 1 1-2 0c0-1.25-.97-2.5-3-2.5-2.03 0-3 1.25-3 2.5 0 1.2.82 2.05 3.32 2.76 3.12.89 4.68 2.28 4.68 4.74 0 2.21-1.61 3.94-4 4.43V21a1 1 0 1 1-2 0v-1.07c-2.39-.49-4-2.22-4-4.43a1 1 0 1 1 2 0c0 1.25.97 2.5 3 2.5 2.03 0 3-1.25 3-2.5 0-1.2-.82-2.05-3.32-2.76C8.56 11.85 7 10.46 7 8c0-2.21 1.61-3.94 4-4.43V3a1 1 0 0 1 1-1z</Geometry>
     <Geometry x:Key="GeoEuro">M19 6.41a1 1 0 0 0-1.41-1.41C15.65 6.94 13.92 8 12 8c-3.1 0-5.65 2.37-5.96 5H10a1 1 0 1 1 0 2H6.04c.31 2.63 2.86 5 5.96 5 1.92 0 3.65-1.06 5.59-3a1 1 0 0 1 1.41 1.41C16.85 20.56 14.54 22 12 22c-4.41 0-8-3.59-8-8 0-.34.02-.67.07-1H3a1 1 0 1 1 0-2h1.07c-.05-.33-.07-.66-.07-1 0-4.41 3.59-8 8-8 2.54 0 4.85 1.44 7 4.41z</Geometry>
-    <!-- Gold Geometries -->
     <Geometry x:Key="GeoGoldBar">M3 9l3-4h12l3 4-3 7H6L3 9zm4.2-2.5L5.4 9h13.2l-1.8-2.5H7.2zm-2.4 4l1.5 3.5h11.4l1.5-3.5H4.8z</Geometry>
     <Geometry x:Key="GeoGoldQuarter">M12 2A10 10 0 1 0 22 12 10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm0-13a5 5 0 1 0 5 5 5 5 0 0 0-5-5zm0 2a3 3 0 0 1 3 3h-3z</Geometry>
     <Geometry x:Key="GeoGoldCoin">M12 2A10 10 0 1 0 22 12 10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm0-13a5 5 0 1 0 5 5 5 5 0 0 0-5-5zm0 2a3 3 0 1 1-3 3 3 3 0 0 1 3-3z</Geometry>
