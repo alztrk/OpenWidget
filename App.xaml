@@ -10,26 +10,12 @@
             </ResourceDictionary.MergedDictionaries>
 
             <Style TargetType="ToolTip">
-                <Setter Property="Background" Value="#161B22" />
-                <Setter Property="Foreground" Value="#F0F6FC" />
-                <Setter Property="BorderBrush" Value="#30363D" />
+                <Setter Property="Background" Value="#E60B0F19" />
+                <Setter Property="Foreground" Value="#F8FAFC" />
+                <Setter Property="BorderBrush" Value="#25FFFFFF" />
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="Padding" Value="8,4" />
-                <Setter Property="FontSize" Value="12" />
-            </Style>
-
-            <Style TargetType="ContextMenu">
-                <Setter Property="Background" Value="#161B22" />
-                <Setter Property="Foreground" Value="#F0F6FC" />
-                <Setter Property="BorderBrush" Value="#30363D" />
-                <Setter Property="BorderThickness" Value="1" />
-                <Setter Property="Padding" Value="4" />
-            </Style>
-
-            <Style TargetType="MenuItem">
-                <Setter Property="Foreground" Value="#F0F6FC" />
-                <Setter Property="Padding" Value="8,6" />
-                <Setter Property="FontSize" Value="12" />
+                <Setter Property="FontSize" Value="11.5" />
             </Style>
         </ResourceDictionary>
     </Application.Resources>

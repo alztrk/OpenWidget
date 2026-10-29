@@ -27,7 +27,7 @@
     </Window.Resources>
 
     <Window.ContextMenu>
-        <ContextMenu>
+        <ContextMenu Style="{StaticResource ModernContextMenuStyle}">
             <MenuItem x:Name="MenuWidgetHeader" Header="⚙️ Widget Seçimi" IsEnabled="False" FontWeight="Bold" />
             <MenuItem x:Name="MenuHeader" Header="🌤️ Hava Durumu &amp; Süre" IsCheckable="True" Click="MenuHeader_Click" />
             <MenuItem x:Name="MenuTelemetry" Header="📊 Sistem Telemetrisi" IsCheckable="True" Click="MenuTelemetry_Click" />
