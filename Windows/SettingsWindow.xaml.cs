@@ -76,32 +76,28 @@ public partial class SettingsWindow : Window
     private void ApplyLocalization()
     {
         TxtTitle.Text = LocalizationService.Get("SettingsTitle");
-        LblGeneralHeader.Text = LocalizationService.Get("GeneralTab");
+        TabBtnGeneral.Content = LocalizationService.Get("GeneralTab");
+        TabBtnWidgets.Content = LocalizationService.Get("WidgetsTab");
+        TabBtnSystem.Content = LocalizationService.Get("PerformanceTab");
+
         LblLanguage.Text = LocalizationService.Get("LanguageLabel");
         LblCity.Text = LocalizationService.Get("CityLabel");
         LblCityHelp.Text = LocalizationService.Get("CityHelp");
         LblOpacity.Text = LocalizationService.Get("OpacityLabel");
         LblAccent.Text = LocalizationService.Get("AccentThemeLabel");
 
-        LblWidgetsHeader.Text = LocalizationService.Get("WidgetsGroupLabel");
-        ChkHeader.Content = LocalizationService.Get("ShowHeaderLabel");
-        ChkTelemetry.Content = LocalizationService.Get("ShowTelemetryLabel");
-        ChkFinance.Content = LocalizationService.Get("ShowFinanceLabel");
-        ChkMedia.Content = LocalizationService.Get("ShowMediaLabel");
-        ChkHardware.Content = LocalizationService.Get("ShowHardwareLabel");
-        ChkQuickActions.Content = LocalizationService.Get("ShowQuickActionsLabel");
-
-        LblPerformanceHeader.Text = LocalizationService.Get("PerformanceGroupLabel");
-        ChkCompactMode.Content = LocalizationService.Get("CompactModeSettingLabel");
-        ChkLockPosition.Content = LocalizationService.Get("LockPositionSettingLabel");
-        ChkPinToDesktop.Content = LocalizationService.Get("PinToDesktopSettingLabel");
-        ChkAutoStart.Content = LocalizationService.Get("AutoStartSettingLabel");
-        ChkAlwaysOnTop.Content = LocalizationService.Get("AlwaysOnTopSettingLabel");
-        ChkGameMode.Content = LocalizationService.Get("GameModeSettingLabel");
-
         BtnReset.Content = LocalizationService.Get("ResetDefaultsBtn");
-        BtnCancel.Content = LocalizationService.Get("CloseBtn");
+        BtnCancel.Content = LocalizationService.CurrentLanguage == "en" ? "Cancel" : "Vazgeç";
         BtnSave.Content = LocalizationService.Get("SaveAndApplyBtn");
+    }
+
+    private void Tab_Checked(object sender, RoutedEventArgs e)
+    {
+        if (PanelGeneral == null || PanelWidgets == null || PanelSystem == null) return;
+
+        PanelGeneral.Visibility = TabBtnGeneral.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+        PanelWidgets.Visibility = TabBtnWidgets.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+        PanelSystem.Visibility = TabBtnSystem.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
