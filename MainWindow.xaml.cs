@@ -175,9 +175,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             MenuAutoStart.IsChecked = AutoStartService.IsAutoStartEnabled();
         }
 
-        // 1. Initial Telemetry & Timer (2s)
+        // 1. Initial Telemetry & Timer (3s)
         RefreshTelemetry();
-        _telemetryTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+        _telemetryTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
         _telemetryTimer.Tick += (s, args) => RefreshTelemetry();
         _telemetryTimer.Start();
 

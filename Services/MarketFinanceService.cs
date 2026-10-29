@@ -93,19 +93,19 @@ public class MarketFinanceService
             // 3. Gram Altın
             if (root.TryGetProperty("gram-altin", out var gram))
             {
-                specs.Gold.Add(CreateItem("gram_altin", "IconGold", "Gram Altın", gram));
+                specs.Gold.Add(CreateItem("gram_altin", "IconGoldBar", "Gram Altın", gram));
             }
 
             // 4. Çeyrek Altın
             if (root.TryGetProperty("ceyrek-altin", out var ceyrek))
             {
-                specs.Gold.Add(CreateItem("ceyrek_altin", "IconGold", "Çeyrek Altın", ceyrek));
+                specs.Gold.Add(CreateItem("ceyrek_altin", "IconGoldQuarter", "Çeyrek Altın", ceyrek));
             }
 
             // 5. Tam Altın
             if (root.TryGetProperty("tam-altin", out var tam))
             {
-                specs.Gold.Add(CreateItem("tam_altin", "IconGold", "Tam Altın", tam));
+                specs.Gold.Add(CreateItem("tam_altin", "IconGoldCoin", "Tam Altın", tam));
             }
         }
         catch { }
@@ -145,9 +145,9 @@ public class MarketFinanceService
         var specs = new FinanceSpecs { LastUpdatedText = "Piyasa Kurları" };
         specs.Currencies.Add(new FinanceItem("usd", "IconDollar", "Dolar (USD)", "49,84 ₺", "%0,00", "Neutral"));
         specs.Currencies.Add(new FinanceItem("eur", "IconEuro", "Euro (EUR)", "55,65 ₺", "%+0,14", "Up"));
-        specs.Gold.Add(new FinanceItem("gram_altin", "IconGold", "Gram Altın", "6.450 ₺", "%-1,03", "Down"));
-        specs.Gold.Add(new FinanceItem("ceyrek_altin", "IconGold", "Çeyrek Altın", "10.632 ₺", "%0,00", "Neutral"));
-        specs.Gold.Add(new FinanceItem("tam_altin", "IconGold", "Tam Altın", "42.400 ₺", "%0,00", "Neutral"));
+        specs.Gold.Add(new FinanceItem("gram_altin", "IconGoldBar", "Gram Altın", "6.450 ₺", "%-1,03", "Down"));
+        specs.Gold.Add(new FinanceItem("ceyrek_altin", "IconGoldQuarter", "Çeyrek Altın", "10.632 ₺", "%0,00", "Neutral"));
+        specs.Gold.Add(new FinanceItem("tam_altin", "IconGoldCoin", "Tam Altın", "42.400 ₺", "%0,00", "Neutral"));
         return specs;
     }
 }

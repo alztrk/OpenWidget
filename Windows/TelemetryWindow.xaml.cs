@@ -78,10 +78,10 @@ public partial class TelemetryWindow : Window, INotifyPropertyChanged
         // Initial scan
         RefreshData();
 
-        // 2-second timer
+        // 3-second timer
         _timer = new DispatcherTimer
         {
-            Interval = TimeSpan.FromSeconds(2)
+            Interval = TimeSpan.FromSeconds(3)
         };
         _timer.Tick += (s, args) => RefreshData();
         _timer.Start();

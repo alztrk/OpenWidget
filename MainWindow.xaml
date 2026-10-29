@@ -337,33 +337,6 @@
                 </DockPanel>
                 <ItemsControl ItemsSource="{Binding Finance.Gold}"
                               ItemTemplate="{StaticResource FinanceRowTemplate}" />
-
-                <!-- Footer Badge -->
-                <Border Background="{StaticResource GlassCardBgBrush}"
-                        BorderBrush="{StaticResource GlassCardBorderBrush}"
-                        BorderThickness="1"
-                        CornerRadius="5"
-                        Margin="0,3,0,0"
-                        Padding="7,2.5">
-                    <DockPanel>
-                        <Border Width="4"
-                                Height="4"
-                                CornerRadius="2"
-                                Background="{StaticResource AccentGreenBrush}"
-                                VerticalAlignment="Center"
-                                Margin="0,0,6,0" />
-                        <TextBlock Text="Truncgil Finans"
-                                   FontSize="8.5"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                   VerticalAlignment="Center" />
-                        <TextBlock Text="{Binding Finance.LastUpdatedText}"
-                                   FontSize="8.5"
-                                   Foreground="{StaticResource TextMutedBrush}"
-                                   HorizontalAlignment="Right"
-                                   VerticalAlignment="Center" />
-                    </DockPanel>
-                </Border>
             </StackPanel>
         </Border>
 
