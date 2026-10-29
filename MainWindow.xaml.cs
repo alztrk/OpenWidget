@@ -84,6 +84,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private DispatcherTimer? _telemetryTimer;
     private DispatcherTimer? _financeTimer;
 
+    private bool _isGamingThrottled = false;
+    private int _gamingThrottleCounter = 0;
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public HardwareSpecs Specs
@@ -250,6 +253,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         if (MenuHardware != null) MenuHardware.IsChecked = _config.Widgets.ShowHardware;
         if (MenuQuickActions != null) MenuQuickActions.IsChecked = _config.Widgets.ShowQuickActions;
         if (MenuAlwaysOnTop != null) MenuAlwaysOnTop.IsChecked = Topmost;
+        if (MenuGameMode != null) MenuGameMode.IsChecked = _config.Widget.AutoGameMode;
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -271,7 +275,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         // 1. Initial Telemetry & Timer (3s)
         RefreshTelemetry();
         _telemetryTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
-        _telemetryTimer.Tick += (s, args) => RefreshTelemetry();
+        _telemetryTimer.Tick += (s, args) => OnTelemetryTimerTick();
         _telemetryTimer.Start();
 
         // 2. Initial Finance & Timer (60s)
@@ -354,11 +358,59 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         PositionWidget();
     }
 
+    private void OnTelemetryTimerTick()
+    {
+        if (_config.Widget.AutoGameMode)
+        {
+            var handle = new WindowInteropHelper(this).Handle;
+            bool isGameFullscreen = GameModeService.IsFullscreenAppRunning(handle);
+
+            if (isGameFullscreen)
+            {
+                if (!_isGamingThrottled)
+                {
+                    _isGamingThrottled = true;
+                    _gamingThrottleCounter = 0;
+                    TrimMemory();
+                }
+
+                _gamingThrottleCounter++;
+                // Throttle polling: query only once every 10 ticks (3s * 10 = 30s) while gaming
+                if (_gamingThrottleCounter < 10)
+                {
+                    if (Telemetry != null && !Telemetry.IsGamingMode)
+                    {
+                        Telemetry.IsGamingMode = true;
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Telemetry)));
+                    }
+                    return;
+                }
+                _gamingThrottleCounter = 0;
+            }
+            else
+            {
+                if (_isGamingThrottled)
+                {
+                    _isGamingThrottled = false;
+                    _gamingThrottleCounter = 0;
+                }
+            }
+        }
+        else
+        {
+            _isGamingThrottled = false;
+        }
+
+        RefreshTelemetry();
+    }
+
     private void RefreshTelemetry()
     {
         if (_telemetryService != null)
         {
-            Telemetry = _telemetryService.GetTelemetrySpecs();
+            var specs = _telemetryService.GetTelemetrySpecs();
+            specs.IsGamingMode = _isGamingThrottled;
+            Telemetry = specs;
         }
     }
 
@@ -462,6 +514,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         _config.Save(_configPath);
         if (menuItem != null) menuItem.IsChecked = isChecked;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    private void MenuGameMode_Click(object sender, RoutedEventArgs e)
+    {
+        _config.Widget.AutoGameMode = !_config.Widget.AutoGameMode;
+        _config.Save(_configPath);
+        if (MenuGameMode != null) MenuGameMode.IsChecked = _config.Widget.AutoGameMode;
     }
 
     private void MenuAutoStart_Click(object sender, RoutedEventArgs e)

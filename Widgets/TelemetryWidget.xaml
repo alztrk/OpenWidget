@@ -9,7 +9,20 @@
         <converters:KeyToBrushConverter x:Key="BrushConverter" />
 
         <DataTemplate x:Key="TelemetryRowTemplate">
-            <Border Background="Transparent" CornerRadius="4" Padding="4,2.5" Margin="0,1">
+            <Border Background="Transparent" CornerRadius="4" Padding="4,2.5" Margin="0,1" BorderThickness="1" BorderBrush="Transparent">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsAlert}" Value="True">
+                                <Setter Property="Background" Value="#1AF87171" />
+                                <Setter Property="BorderBrush" Value="#40F87171" />
+                            </DataTrigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#10FFFFFF" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="18" />

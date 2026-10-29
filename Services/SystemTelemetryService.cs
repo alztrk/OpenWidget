@@ -143,7 +143,8 @@ public class SystemTelemetryService : IDisposable
             Percentage: cpuPercent,
             MainText: $"%{cpuPercent:F0}",
             SubText: "8 Çekirdek • 16 İzlek",
-            BarColorKey: cpuPercent > 85 ? "AccentRedBrush" : (cpuPercent > 65 ? "AccentAmberBrush" : "AccentBrush")
+            BarColorKey: cpuPercent > 85 ? "AccentRedBrush" : (cpuPercent > 65 ? "AccentAmberBrush" : "AccentBrush"),
+            IsAlert: cpuPercent > 85
         ));
 
         // 2. RAM Load
@@ -162,7 +163,8 @@ public class SystemTelemetryService : IDisposable
                 Percentage: ramPercent,
                 MainText: $"%{ramPercent:F0}",
                 SubText: $"{usedGb:F1} / {totalGb:F0} GB",
-                BarColorKey: ramPercent > 85 ? "AccentRedBrush" : (ramPercent > 70 ? "AccentAmberBrush" : "AccentGreenBrush")
+                BarColorKey: ramPercent > 85 ? "AccentRedBrush" : (ramPercent > 70 ? "AccentAmberBrush" : "AccentGreenBrush"),
+                IsAlert: ramPercent > 85
             ));
         }
 
@@ -173,6 +175,8 @@ public class SystemTelemetryService : IDisposable
             var (gpuPercent, vramPercent, vramUsedGb, vramTotalGb, gpuTemp) = gpuData.Value;
 
             string gpuSubtitle = gpuTemp > 0 ? $"{_gpuName} • {gpuTemp}°C" : _gpuName;
+            bool isGpuAlert = gpuTemp > 80 || gpuPercent > 90;
+
             specs.Performance.Add(new TelemetryItem(
                 Key: "gpu",
                 IconKey: "IconGpu",
@@ -180,7 +184,8 @@ public class SystemTelemetryService : IDisposable
                 Percentage: gpuPercent,
                 MainText: $"%{gpuPercent:F0}",
                 SubText: gpuSubtitle,
-                BarColorKey: gpuTemp > 80 ? "AccentRedBrush" : (gpuPercent > 85 ? "AccentRedBrush" : (gpuPercent > 65 ? "AccentAmberBrush" : "AccentBrush"))
+                BarColorKey: isGpuAlert ? "AccentRedBrush" : (gpuPercent > 65 ? "AccentAmberBrush" : "AccentBrush"),
+                IsAlert: isGpuAlert
             ));
 
             specs.Performance.Add(new TelemetryItem(
@@ -190,7 +195,8 @@ public class SystemTelemetryService : IDisposable
                 Percentage: vramPercent,
                 MainText: $"%{vramPercent:F0}",
                 SubText: $"{vramUsedGb:F1} / {vramTotalGb:F0} GB",
-                BarColorKey: vramPercent > 85 ? "AccentRedBrush" : (vramPercent > 70 ? "AccentAmberBrush" : "AccentGreenBrush")
+                BarColorKey: vramPercent > 85 ? "AccentRedBrush" : (vramPercent > 70 ? "AccentAmberBrush" : "AccentGreenBrush"),
+                IsAlert: vramPercent > 85
             ));
         }
 
@@ -218,7 +224,8 @@ public class SystemTelemetryService : IDisposable
                 Percentage: netPercent,
                 MainText: $"{_lastPingMs} ms",
                 SubText: $"↓ {FormatSpeed(downBps)}  ↑ {FormatSpeed(upBps)}",
-                BarColorKey: _lastPingMs > 80 ? "AccentRedBrush" : (_lastPingMs > 40 ? "AccentAmberBrush" : "AccentGreenBrush")
+                BarColorKey: _lastPingMs > 80 ? "AccentRedBrush" : (_lastPingMs > 40 ? "AccentAmberBrush" : "AccentGreenBrush"),
+                IsAlert: _lastPingMs > 100
             ));
         }
         catch { }
@@ -246,7 +253,8 @@ public class SystemTelemetryService : IDisposable
                     Percentage: diskPercent,
                     MainText: $"%{diskPercent:F0} Dolu",
                     SubText: $"{freeGb:F0} GB Boş / {totalGb:F0} GB",
-                    BarColorKey: diskPercent > 90 ? "AccentRedBrush" : (diskPercent > 75 ? "AccentAmberBrush" : "AccentBrush")
+                    BarColorKey: diskPercent > 90 ? "AccentRedBrush" : (diskPercent > 75 ? "AccentAmberBrush" : "AccentBrush"),
+                    IsAlert: diskPercent > 90
                 ));
             }
         }

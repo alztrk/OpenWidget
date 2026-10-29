@@ -37,6 +37,7 @@
             <Separator Background="{StaticResource DividerBrush}" />
             <MenuItem x:Name="MenuAutoStart" Header="🚀 Windows ile Birlikte Başlat" IsCheckable="True" Click="MenuAutoStart_Click" />
             <MenuItem x:Name="MenuAlwaysOnTop" Header="📌 Her Zaman Üstte" IsCheckable="True" Click="MenuAlwaysOnTop_Click" />
+            <MenuItem x:Name="MenuGameMode" Header="🎮 Oyun Modu (Otomatik Rölanti)" IsCheckable="True" Click="MenuGameMode_Click" />
             <Separator Background="{StaticResource DividerBrush}" />
             <MenuItem Header="🔄 Yenile" Click="MenuRefresh_Click" />
             <MenuItem Header="🎯 Konumu Varsayılana Sıfırla" Click="MenuResetPosition_Click" />
