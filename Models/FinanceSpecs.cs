@@ -16,6 +16,7 @@ public class FinanceSpecs
 {
     public List<FinanceItem> Currencies { get; set; } = new();
     public List<FinanceItem> Gold { get; set; } = new();
+    public List<FinanceItem> Crypto { get; set; } = new();
     public string LastUpdatedText { get; set; } = "Canlı Piyasa";
     public string WeatherText { get; set; } = "İstanbul 17°C";
 }

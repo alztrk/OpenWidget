@@ -171,16 +171,61 @@ public class HardwareScanner
 
     private HardwareItem GetGpuItem()
     {
-        return new HardwareItem(
-            Category: "Sistem",
-            IconKey: "IconGpu",
-            Label: "Ekran Kartı",
-            Value: "MSI RTX 3060 Ventus 2X OC",
-            SubValue: "12 GB GDDR6 • PCIe 4.0",
-            PriceFormatted: _priceService.GetPriceFormatted("gpu"),
-            Url: "https://www.amazon.com.tr/MSI-GEFORCE-VENTUS-RTX3060-1XHDMI/dp/B08WHJFYM8",
-            LinkDisplay: "amazon.com.tr ↗"
-        );
+        try
+        {
+            using var searcher = new ManagementObjectSearcher("SELECT Name, AdapterRAM FROM Win32_VideoController");
+            string bestGpu = string.Empty;
+            ulong maxRam = 0;
+
+            foreach (ManagementObject obj in searcher.Get())
+            {
+                var name = obj["Name"]?.ToString()?.Trim() ?? "";
+                if (string.IsNullOrEmpty(name)) continue;
+
+                if (name.Contains("Microsoft", StringComparison.OrdinalIgnoreCase) ||
+                    name.Contains("Basic Display", StringComparison.OrdinalIgnoreCase)) continue;
+
+                ulong ram = 0;
+                if (obj["AdapterRAM"] != null)
+                {
+                    ulong.TryParse(obj["AdapterRAM"].ToString(), out ram);
+                }
+
+                if (string.IsNullOrEmpty(bestGpu) || ram > maxRam ||
+                    name.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase) ||
+                    name.Contains("GeForce", StringComparison.OrdinalIgnoreCase) ||
+                    name.Contains("Radeon", StringComparison.OrdinalIgnoreCase) ||
+                    name.Contains("RTX", StringComparison.OrdinalIgnoreCase) ||
+                    name.Contains("Arc", StringComparison.OrdinalIgnoreCase))
+                {
+                    bestGpu = name;
+                    maxRam = ram;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(bestGpu))
+            {
+                string cleanGpu = bestGpu
+                    .Replace("NVIDIA ", "")
+                    .Replace("AMD ", "")
+                    .Trim();
+
+                double vramGb = maxRam > 0 ? Math.Round((double)maxRam / (1024 * 1024 * 1024)) : 0;
+                string vramText = vramGb > 0 ? $"{vramGb:F0} GB VRAM" : "Ekran Kartı";
+
+                return new HardwareItem(
+                    Category: "Sistem",
+                    IconKey: "IconGpu",
+                    Label: "Ekran Kartı",
+                    Value: cleanGpu,
+                    SubValue: vramText,
+                    PriceFormatted: _priceService.GetPriceFormatted("gpu")
+                );
+            }
+        }
+        catch { }
+
+        return new HardwareItem("Sistem", "IconGpu", "Ekran Kartı", "Harici Ekran Kartı", "GPU", _priceService.GetPriceFormatted("gpu"));
     }
 
     private HardwareItem GetMotherboardItem()
@@ -199,25 +244,53 @@ public class HardwareScanner
                 var full = string.IsNullOrEmpty(mfg) ? prod : $"{mfg} {prod}";
                 full = full.Replace(" (MS-7C95)", "").Trim();
 
-                return new HardwareItem("Sistem", "IconMotherboard", "Anakart", full, "MS-7C95 • AM4", _priceService.GetPriceFormatted("motherboard"), "https://www.amazon.com.tr/dp/B08BCZR77H", "amazon.com.tr ↗");
+                return new HardwareItem("Sistem", "IconMotherboard", "Anakart", full, "Anakart", _priceService.GetPriceFormatted("motherboard"));
             }
         }
         catch { }
-        return new HardwareItem("Sistem", "IconMotherboard", "Anakart", "MSI B550M PRO-VDH WIFI", "MS-7C95 • AM4", _priceService.GetPriceFormatted("motherboard"), "https://www.amazon.com.tr/dp/B08BCZR77H", "amazon.com.tr ↗");
+        return new HardwareItem("Sistem", "IconMotherboard", "Anakart", "Sistem Anakartı", "Mainboard", _priceService.GetPriceFormatted("motherboard"));
     }
 
     private HardwareItem GetMemoryItem()
     {
-        return new HardwareItem(
-            Category: "Sistem",
-            IconKey: "IconRam",
-            Label: "RAM",
-            Value: "48 GB (2x KF3600 + 1x Izoly)",
-            SubValue: "2x 3600MHz CL18 + 1x 3200MHz",
-            PriceFormatted: _priceService.GetPriceFormatted("ram"),
-            Url: "https://izoly.com/izoly-16gb-ddr4-3200mhz-cl22-1-2v-gaming-sogutuculu-desktop-ram/",
-            LinkDisplay: "izoly.com & amazon.com.tr ↗"
-        );
+        try
+        {
+            ulong totalBytes = 0;
+            int stickCount = 0;
+            uint speed = 0;
+            using var searcher = new ManagementObjectSearcher("SELECT Capacity, Speed FROM Win32_PhysicalMemory");
+            foreach (ManagementObject obj in searcher.Get())
+            {
+                if (obj["Capacity"] != null && ulong.TryParse(obj["Capacity"].ToString(), out var cap))
+                {
+                    totalBytes += cap;
+                    stickCount++;
+                }
+                if (speed == 0 && obj["Speed"] != null && uint.TryParse(obj["Speed"].ToString(), out var sp))
+                {
+                    speed = sp;
+                }
+            }
+
+            if (totalBytes > 0)
+            {
+                double totalGb = Math.Round((double)totalBytes / (1024 * 1024 * 1024));
+                string stickText = stickCount > 1 ? $"{stickCount}x Modül" : "Tek Modül";
+                string speedText = speed > 0 ? $"{speed} MHz" : "DDR";
+
+                return new HardwareItem(
+                    Category: "Sistem",
+                    IconKey: "IconRam",
+                    Label: "RAM",
+                    Value: $"{totalGb:F0} GB RAM ({stickText})",
+                    SubValue: speedText,
+                    PriceFormatted: _priceService.GetPriceFormatted("ram")
+                );
+            }
+        }
+        catch { }
+
+        return new HardwareItem("Sistem", "IconRam", "RAM", "32 GB RAM", "DDR4", _priceService.GetPriceFormatted("ram"));
     }
 
     private List<HardwareItem> GetStorageItems()
@@ -276,6 +349,10 @@ public class HardwareScanner
             return new HardwareItem("Çevre Birimleri", "IconMonitor", "Monitör", _config.Peripherals.Monitor, "27\" 180Hz 1440p QHD", _priceService.GetPriceFormatted("monitor"), "https://www.amazon.com.tr/dp/B0CYZ2B3D8", "amazon.com.tr ↗");
         }
 
+        int resX = (int)SystemParameters.PrimaryScreenWidth;
+        int resY = (int)SystemParameters.PrimaryScreenHeight;
+        string resText = $"{resX}x{resY} Çözünürlük";
+
         try
         {
             using var searcher = new ManagementObjectSearcher(@"root\wmi", "SELECT UserFriendlyName FROM WmiMonitorID");
@@ -287,14 +364,14 @@ public class HardwareScanner
                     var name = new string(chars).Trim();
                     if (!string.IsNullOrEmpty(name))
                     {
-                        return new HardwareItem("Çevre Birimleri", "IconMonitor", "Monitör", name, "27\" 180Hz 1440p QHD Curved", _priceService.GetPriceFormatted("monitor"), "https://www.amazon.com.tr/dp/B0CYZ2B3D8", "amazon.com.tr ↗");
+                        return new HardwareItem("Çevre Birimleri", "IconMonitor", "Monitör", name, resText, _priceService.GetPriceFormatted("monitor"));
                     }
                 }
             }
         }
         catch { }
 
-        return new HardwareItem("Çevre Birimleri", "IconMonitor", "Monitör", "MSI MAG 27CQ6F", "27\" 180Hz 1440p QHD Curved", _priceService.GetPriceFormatted("monitor"), "https://www.amazon.com.tr/dp/B0CYZ2B3D8", "amazon.com.tr ↗");
+        return new HardwareItem("Çevre Birimleri", "IconMonitor", "Monitör", "Birincil Ekran", resText, _priceService.GetPriceFormatted("monitor"));
     }
 
     private HardwareItem GetKeyboardItem()

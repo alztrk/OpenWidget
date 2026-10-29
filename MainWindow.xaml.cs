@@ -129,8 +129,19 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         InitializeComponent();
         DataContext = this;
+        LocalizationService.LanguageChanged += OnLanguageChanged;
         ResolvePaths();
         LoadConfig();
+    }
+
+    private void OnLanguageChanged()
+    {
+        Dispatcher.Invoke(() =>
+        {
+            UpdateContextMenuTexts();
+            RefreshTelemetry();
+            _ = RefreshFinanceLiveAsync();
+        });
     }
 
     protected override void OnSourceInitialized(EventArgs e)
@@ -230,7 +241,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         _priceService = new PriceService(_pricesPath);
         _telemetryService = new SystemTelemetryService();
         _financeService = new MarketFinanceService(_financeCachePath);
-        _weatherService = new WeatherService(_weatherCachePath);
+        _weatherService = new WeatherService(_weatherCachePath, _config.Widget.City);
     }
 
     private void LoadConfig()
@@ -242,7 +253,30 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         if (_config.Widget.Opacity > 0.1 && _config.Widget.Opacity <= 1.0) Opacity = _config.Widget.Opacity;
         Topmost = _config.Widget.AlwaysOnTop;
 
+        ThemeService.ApplyAccent(_config.Widget.AccentTheme);
+        LocalizationService.CurrentLanguage = _config.Widget.Language;
+        _weatherService?.UpdateCity(_config.Widget.City);
+
+        UpdateContextMenuTexts();
         SyncMenuCheckboxes();
+    }
+
+    private void UpdateContextMenuTexts()
+    {
+        if (MenuWidgetHeader != null) MenuWidgetHeader.Header = LocalizationService.Get("WidgetSelection");
+        if (MenuHeader != null) MenuHeader.Header = LocalizationService.Get("MenuHeader");
+        if (MenuTelemetry != null) MenuTelemetry.Header = LocalizationService.Get("MenuTelemetry");
+        if (MenuFinance != null) MenuFinance.Header = LocalizationService.Get("MenuFinance");
+        if (MenuHardware != null) MenuHardware.Header = LocalizationService.Get("MenuHardware");
+        if (MenuQuickActions != null) MenuQuickActions.Header = LocalizationService.Get("MenuQuickActions");
+        if (MenuAutoStart != null) MenuAutoStart.Header = LocalizationService.Get("MenuAutoStart");
+        if (MenuAlwaysOnTop != null) MenuAlwaysOnTop.Header = LocalizationService.Get("MenuAlwaysOnTop");
+        if (MenuGameMode != null) MenuGameMode.Header = LocalizationService.Get("MenuGameMode");
+        if (MenuSettings != null) MenuSettings.Header = LocalizationService.Get("MenuSettings");
+        if (MenuRefresh != null) MenuRefresh.Header = LocalizationService.Get("MenuRefresh");
+        if (MenuResetPos != null) MenuResetPos.Header = LocalizationService.Get("MenuResetPos");
+        if (MenuPrices != null) MenuPrices.Header = LocalizationService.Get("MenuPrices");
+        if (MenuExit != null) MenuExit.Header = LocalizationService.Get("MenuExit");
     }
 
     private void SyncMenuCheckboxes()
@@ -540,6 +574,38 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             MenuAlwaysOnTop.IsChecked = Topmost;
         }
+    }
+
+    private void MenuSettings_Click(object sender, RoutedEventArgs e)
+    {
+        var settingsWin = new Windows.SettingsWindow(_config, OnSettingsSaved);
+        settingsWin.Owner = this;
+        settingsWin.ShowDialog();
+    }
+
+    private void OnSettingsSaved(HardwareConfig updated)
+    {
+        _config = updated;
+        _config.Save(_configPath);
+
+        Opacity = _config.Widget.Opacity;
+        Topmost = _config.Widget.AlwaysOnTop;
+        ThemeService.ApplyAccent(_config.Widget.AccentTheme);
+        LocalizationService.CurrentLanguage = _config.Widget.Language;
+        _weatherService?.UpdateCity(_config.Widget.City);
+
+        UpdateContextMenuTexts();
+        SyncMenuCheckboxes();
+
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsHeaderVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsTelemetryVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsFinanceVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsHardwareVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsQuickActionsVisible)));
+
+        RefreshTelemetry();
+        _ = RefreshFinanceLiveAsync();
+        _ = RefreshHardwareSpecsAsync();
     }
 
     private async void MenuRefresh_Click(object sender, RoutedEventArgs e)

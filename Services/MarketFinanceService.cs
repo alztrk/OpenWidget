@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
@@ -24,24 +25,42 @@ public class MarketFinanceService
 
     public async Task<FinanceSpecs> FetchLatestAsync()
     {
+        using var client = new HttpClient();
+        client.Timeout = TimeSpan.FromSeconds(8);
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+
+        // 1. Currencies & Gold from Truncgil
         try
         {
-            using var client = new HttpClient();
-            client.Timeout = TimeSpan.FromSeconds(8);
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
-
             var json = await client.GetStringAsync("https://finans.truncgil.com/v3/today.json");
             var specs = ParseTruncgilJson(json);
             if (specs.Currencies.Count > 0 || specs.Gold.Count > 0)
             {
-                _cachedSpecs = specs;
+                _cachedSpecs.Currencies = specs.Currencies;
+                _cachedSpecs.Gold = specs.Gold;
+                _cachedSpecs.LastUpdatedText = specs.LastUpdatedText;
                 File.WriteAllText(_cacheFilePath, json);
-                return _cachedSpecs;
             }
         }
-        catch
+        catch { }
+
+        // 2. Crypto from Binance (BTC & ETH)
+        try
         {
-            // Fall back to cache on network issue
+            var btcJson = await client.GetStringAsync("https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT");
+            var btcItem = ParseBinanceTicker(btcJson, "btc", "IconBitcoin", LocalizationService.Get("Bitcoin"));
+
+            var ethJson = await client.GetStringAsync("https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT");
+            var ethItem = ParseBinanceTicker(ethJson, "eth", "IconEthereum", LocalizationService.Get("Ethereum"));
+
+            _cachedSpecs.Crypto = new List<FinanceItem> { btcItem, ethItem };
+        }
+        catch { }
+
+        if (_cachedSpecs.Crypto.Count == 0)
+        {
+            _cachedSpecs.Crypto.Add(new FinanceItem("btc", "IconBitcoin", LocalizationService.Get("Bitcoin"), "$84.250", "%+1,20", "Up"));
+            _cachedSpecs.Crypto.Add(new FinanceItem("eth", "IconEthereum", LocalizationService.Get("Ethereum"), "$2.940", "%-0,45", "Down"));
         }
 
         return _cachedSpecs;
@@ -63,6 +82,11 @@ public class MarketFinanceService
         {
             _cachedSpecs = CreateDefaultSpecs();
         }
+        else if (_cachedSpecs.Crypto.Count == 0)
+        {
+            _cachedSpecs.Crypto.Add(new FinanceItem("btc", "IconBitcoin", LocalizationService.Get("Bitcoin"), "$84.250", "%+1,20", "Up"));
+            _cachedSpecs.Crypto.Add(new FinanceItem("eth", "IconEthereum", LocalizationService.Get("Ethereum"), "$2.940", "%-0,45", "Down"));
+        }
     }
 
     private static FinanceSpecs ParseTruncgilJson(string json)
@@ -81,36 +105,71 @@ public class MarketFinanceService
             // 1. USD
             if (root.TryGetProperty("USD", out var usd))
             {
-                specs.Currencies.Add(CreateItem("usd", "IconDollar", "Dolar (USD)", usd));
+                specs.Currencies.Add(CreateItem("usd", "IconDollar", LocalizationService.Get("Dollar"), usd));
             }
 
             // 2. EUR
             if (root.TryGetProperty("EUR", out var eur))
             {
-                specs.Currencies.Add(CreateItem("eur", "IconEuro", "Euro (EUR)", eur));
+                specs.Currencies.Add(CreateItem("eur", "IconEuro", LocalizationService.Get("Euro"), eur));
             }
 
             // 3. Gram Altın
             if (root.TryGetProperty("gram-altin", out var gram))
             {
-                specs.Gold.Add(CreateItem("gram_altin", "IconGoldBar", "Gram Altın", gram));
+                specs.Gold.Add(CreateItem("gram_altin", "IconGoldBar", LocalizationService.Get("GramGold"), gram));
             }
 
             // 4. Çeyrek Altın
             if (root.TryGetProperty("ceyrek-altin", out var ceyrek))
             {
-                specs.Gold.Add(CreateItem("ceyrek_altin", "IconGoldQuarter", "Çeyrek Altın", ceyrek));
-            }
-
-            // 5. Tam Altın
-            if (root.TryGetProperty("tam-altin", out var tam))
-            {
-                specs.Gold.Add(CreateItem("tam_altin", "IconGoldCoin", "Tam Altın", tam));
+                specs.Gold.Add(CreateItem("ceyrek_altin", "IconGoldQuarter", LocalizationService.Get("QuarterGold"), ceyrek));
             }
         }
         catch { }
 
         return specs;
+    }
+
+    private static FinanceItem ParseBinanceTicker(string json, string key, string iconKey, string label)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            var lastPriceStr = root.TryGetProperty("lastPrice", out var lp) ? lp.GetString() ?? "0" : "0";
+            var changePercentStr = root.TryGetProperty("priceChangePercent", out var cp) ? cp.GetString() ?? "0" : "0";
+
+            string direction = "Neutral";
+            double changeNum = 0;
+            if (double.TryParse(changePercentStr, NumberStyles.Any, CultureInfo.InvariantCulture, out changeNum))
+            {
+                if (changeNum > 0.001) direction = "Up";
+                else if (changeNum < -0.001) direction = "Down";
+            }
+
+            string formattedPrice = "$0";
+            if (decimal.TryParse(lastPriceStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var priceNum))
+            {
+                formattedPrice = priceNum >= 1000 ? $"${priceNum:N0}" : $"${priceNum:N2}";
+            }
+
+            string sign = changeNum > 0 ? "+" : "";
+            string formattedChange = $"%{sign}{changeNum:F2}".Replace(".", ",");
+
+            return new FinanceItem(
+                Key: key,
+                IconKey: iconKey,
+                Label: label,
+                ValueFormatted: formattedPrice,
+                ChangeFormatted: formattedChange,
+                ChangeDirection: direction
+            );
+        }
+        catch
+        {
+            return new FinanceItem(key, iconKey, label, "$0", "%0,00", "Neutral");
+        }
     }
 
     private static FinanceItem CreateItem(string key, string iconKey, string label, JsonElement element)
@@ -143,11 +202,12 @@ public class MarketFinanceService
     private static FinanceSpecs CreateDefaultSpecs()
     {
         var specs = new FinanceSpecs { LastUpdatedText = "Piyasa Kurları" };
-        specs.Currencies.Add(new FinanceItem("usd", "IconDollar", "Dolar (USD)", "49,84 ₺", "%0,00", "Neutral"));
-        specs.Currencies.Add(new FinanceItem("eur", "IconEuro", "Euro (EUR)", "55,65 ₺", "%+0,14", "Up"));
-        specs.Gold.Add(new FinanceItem("gram_altin", "IconGoldBar", "Gram Altın", "6.450 ₺", "%-1,03", "Down"));
-        specs.Gold.Add(new FinanceItem("ceyrek_altin", "IconGoldQuarter", "Çeyrek Altın", "10.632 ₺", "%0,00", "Neutral"));
-        specs.Gold.Add(new FinanceItem("tam_altin", "IconGoldCoin", "Tam Altın", "42.400 ₺", "%0,00", "Neutral"));
+        specs.Currencies.Add(new FinanceItem("usd", "IconDollar", LocalizationService.Get("Dollar"), "49,84 ₺", "%0,00", "Neutral"));
+        specs.Currencies.Add(new FinanceItem("eur", "IconEuro", LocalizationService.Get("Euro"), "55,65 ₺", "%+0,14", "Up"));
+        specs.Gold.Add(new FinanceItem("gram_altin", "IconGoldBar", LocalizationService.Get("GramGold"), "6.450 ₺", "%-1,03", "Down"));
+        specs.Gold.Add(new FinanceItem("ceyrek_altin", "IconGoldQuarter", LocalizationService.Get("QuarterGold"), "10.632 ₺", "%0,00", "Neutral"));
+        specs.Crypto.Add(new FinanceItem("btc", "IconBitcoin", LocalizationService.Get("Bitcoin"), "$84.250", "%+1,20", "Up"));
+        specs.Crypto.Add(new FinanceItem("eth", "IconEthereum", LocalizationService.Get("Ethereum"), "$2.940", "%-0,45", "Down"));
         return specs;
     }
 }

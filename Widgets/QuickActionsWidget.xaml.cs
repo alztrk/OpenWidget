@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using OpenWidget.Services;
 
 namespace OpenWidget.Widgets;
 
@@ -18,6 +19,32 @@ public partial class QuickActionsWidget : UserControl
     public QuickActionsWidget()
     {
         InitializeComponent();
+        LocalizationService.LanguageChanged += OnLanguageChanged;
+    }
+
+    private void UserControl_Loaded(object sender, RoutedEventArgs e)
+    {
+        UpdateTexts();
+    }
+
+    private void OnLanguageChanged()
+    {
+        Dispatcher.Invoke(UpdateTexts);
+    }
+
+    private void UpdateTexts()
+    {
+        TxtTaskMgr.Text = LocalizationService.Get("TaskMgr");
+        BtnTaskMgr.ToolTip = LocalizationService.Get("TaskMgrTooltip");
+
+        TxtVolume.Text = LocalizationService.Get("Volume");
+        BtnVolume.ToolTip = LocalizationService.Get("VolumeTooltip");
+
+        TxtTerminal.Text = LocalizationService.Get("Terminal");
+        BtnTerminal.ToolTip = LocalizationService.Get("TerminalTooltip");
+
+        TxtCleanRam.Text = LocalizationService.Get("CleanRam");
+        BtnCleanRam.ToolTip = LocalizationService.Get("CleanRamTooltip");
     }
 
     private void BtnTaskMgr_Click(object sender, RoutedEventArgs e)
@@ -83,12 +110,12 @@ public partial class QuickActionsWidget : UserControl
 
             if (TxtCleanRam != null)
             {
-                TxtCleanRam.Text = "Temizlendi!";
+                TxtCleanRam.Text = LocalizationService.Get("Cleaned");
                 TxtCleanRam.Foreground = Application.Current.Resources["AccentGreenBrush"] as Brush ?? Brushes.LightGreen;
 
                 await Task.Delay(1500);
 
-                TxtCleanRam.Text = "Bellek Boşalt";
+                TxtCleanRam.Text = LocalizationService.Get("CleanRam");
                 TxtCleanRam.ClearValue(TextBlock.ForegroundProperty);
             }
         }

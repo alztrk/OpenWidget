@@ -132,17 +132,20 @@ public class SystemTelemetryService : IDisposable
 
         // 0. System Uptime
         var uptime = TimeSpan.FromMilliseconds(Environment.TickCount64);
-        specs.UptimeText = uptime.Days > 0 ? $"{uptime.Days}g {uptime.Hours}s" : $"{uptime.Hours}s {uptime.Minutes}dk";
+        var isEn = LocalizationService.CurrentLanguage.Equals("en", StringComparison.OrdinalIgnoreCase);
+        specs.UptimeText = uptime.Days > 0
+            ? (isEn ? $"{uptime.Days}d {uptime.Hours}h" : $"{uptime.Days}g {uptime.Hours}s")
+            : (isEn ? $"{uptime.Hours}h {uptime.Minutes}m" : $"{uptime.Hours}s {uptime.Minutes}dk");
 
         // 1. CPU Load
         double cpuPercent = GetCpuUsage();
         specs.Performance.Add(new TelemetryItem(
             Key: "cpu",
             IconKey: "IconCpu",
-            Label: "İşlemci (CPU)",
+            Label: LocalizationService.Get("Cpu"),
             Percentage: cpuPercent,
             MainText: $"%{cpuPercent:F0}",
-            SubText: "8 Çekirdek • 16 İzlek",
+            SubText: isEn ? "8 Cores • 16 Threads" : "8 Çekirdek • 16 İzlek",
             BarColorKey: cpuPercent > 85 ? "AccentRedBrush" : (cpuPercent > 65 ? "AccentAmberBrush" : "AccentBrush"),
             IsAlert: cpuPercent > 85
         ));
@@ -159,7 +162,7 @@ public class SystemTelemetryService : IDisposable
             specs.Performance.Add(new TelemetryItem(
                 Key: "ram",
                 IconKey: "IconRam",
-                Label: "Bellek (RAM)",
+                Label: LocalizationService.Get("Ram"),
                 Percentage: ramPercent,
                 MainText: $"%{ramPercent:F0}",
                 SubText: $"{usedGb:F1} / {totalGb:F0} GB",
@@ -180,7 +183,7 @@ public class SystemTelemetryService : IDisposable
             specs.Performance.Add(new TelemetryItem(
                 Key: "gpu",
                 IconKey: "IconGpu",
-                Label: "Ekran Kartı (GPU)",
+                Label: LocalizationService.Get("Gpu"),
                 Percentage: gpuPercent,
                 MainText: $"%{gpuPercent:F0}",
                 SubText: gpuSubtitle,
@@ -191,7 +194,7 @@ public class SystemTelemetryService : IDisposable
             specs.Performance.Add(new TelemetryItem(
                 Key: "vram",
                 IconKey: "IconRam",
-                Label: "Video Belleği (VRAM)",
+                Label: LocalizationService.Get("Vram"),
                 Percentage: vramPercent,
                 MainText: $"%{vramPercent:F0}",
                 SubText: $"{vramUsedGb:F1} / {vramTotalGb:F0} GB",
@@ -220,7 +223,7 @@ public class SystemTelemetryService : IDisposable
             specs.Performance.Add(new TelemetryItem(
                 Key: "network",
                 IconKey: "IconNetwork",
-                Label: "Ağ Trafiği",
+                Label: LocalizationService.Get("Network"),
                 Percentage: netPercent,
                 MainText: $"{_lastPingMs} ms",
                 SubText: $"↓ {FormatSpeed(downBps)}  ↑ {FormatSpeed(upBps)}",
@@ -246,13 +249,17 @@ public class SystemTelemetryService : IDisposable
                 double diskPercent = totalGb > 0 ? (usedGb / totalGb) * 100.0 : 0;
 
                 var diskType = letter == "C" ? "NVMe SSD" : "SATA SSD";
+                string fullStr = isEn ? "Used" : "Dolu";
+                string freeStr = isEn ? "Free" : "Boş";
+                string driveStr = isEn ? "Drive" : "Diski";
+
                 specs.Storage.Add(new TelemetryItem(
                     Key: $"disk_{letter.ToLowerInvariant()}",
                     IconKey: "IconStorage",
-                    Label: $"{letter}: Diski ({diskType})",
+                    Label: $"{letter}: {driveStr} ({diskType})",
                     Percentage: diskPercent,
-                    MainText: $"%{diskPercent:F0} Dolu",
-                    SubText: $"{freeGb:F0} GB Boş / {totalGb:F0} GB",
+                    MainText: $"%{diskPercent:F0} {fullStr}",
+                    SubText: $"{freeGb:F0} GB {freeStr} / {totalGb:F0} GB",
                     BarColorKey: diskPercent > 90 ? "AccentRedBrush" : (diskPercent > 75 ? "AccentAmberBrush" : "AccentBrush"),
                     IsAlert: diskPercent > 90
                 ));

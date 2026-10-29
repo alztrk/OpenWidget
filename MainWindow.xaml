@@ -28,10 +28,10 @@
 
     <Window.ContextMenu>
         <ContextMenu>
-            <MenuItem Header="⚙️ Widget Seçimi" IsEnabled="False" FontWeight="Bold" />
+            <MenuItem x:Name="MenuWidgetHeader" Header="⚙️ Widget Seçimi" IsEnabled="False" FontWeight="Bold" />
             <MenuItem x:Name="MenuHeader" Header="🌤️ Hava Durumu &amp; Süre" IsCheckable="True" Click="MenuHeader_Click" />
             <MenuItem x:Name="MenuTelemetry" Header="📊 Sistem Telemetrisi" IsCheckable="True" Click="MenuTelemetry_Click" />
-            <MenuItem x:Name="MenuFinance" Header="💰 Canlı Piyasa" IsCheckable="True" Click="MenuFinance_Click" />
+            <MenuItem x:Name="MenuFinance" Header="💰 Canlı Piyasa &amp; Kripto" IsCheckable="True" Click="MenuFinance_Click" />
             <MenuItem x:Name="MenuHardware" Header="🖥️ Donanım Bileşenleri" IsCheckable="True" Click="MenuHardware_Click" />
             <MenuItem x:Name="MenuQuickActions" Header="⚡ Hızlı Araçlar" IsCheckable="True" Click="MenuQuickActions_Click" />
             <Separator Background="{StaticResource DividerBrush}" />
@@ -39,12 +39,12 @@
             <MenuItem x:Name="MenuAlwaysOnTop" Header="📌 Her Zaman Üstte" IsCheckable="True" Click="MenuAlwaysOnTop_Click" />
             <MenuItem x:Name="MenuGameMode" Header="🎮 Oyun Modu (Otomatik Rölanti)" IsCheckable="True" Click="MenuGameMode_Click" />
             <Separator Background="{StaticResource DividerBrush}" />
-            <MenuItem Header="🔄 Yenile" Click="MenuRefresh_Click" />
-            <MenuItem Header="🎯 Konumu Varsayılana Sıfırla" Click="MenuResetPosition_Click" />
-            <MenuItem Header="⚙️ Ayarlar (hardware-config.json)" Click="MenuEditConfig_Click" />
-            <MenuItem Header="💰 Fiyatlar (hardware-prices.json)" Click="MenuEditPrices_Click" />
+            <MenuItem x:Name="MenuSettings" Header="⚙️ Ayarlar" Click="MenuSettings_Click" FontWeight="SemiBold" />
+            <MenuItem x:Name="MenuRefresh" Header="🔄 Yenile" Click="MenuRefresh_Click" />
+            <MenuItem x:Name="MenuResetPos" Header="🎯 Konumu Varsayılana Sıfırla" Click="MenuResetPosition_Click" />
+            <MenuItem x:Name="MenuPrices" Header="💰 Fiyatlar (hardware-prices.json)" Click="MenuEditPrices_Click" />
             <Separator Background="{StaticResource DividerBrush}" />
-            <MenuItem Header="❌ Kapat" Click="MenuExit_Click" />
+            <MenuItem x:Name="MenuExit" Header="❌ Kapat" Click="MenuExit_Click" />
         </ContextMenu>
     </Window.ContextMenu>
 

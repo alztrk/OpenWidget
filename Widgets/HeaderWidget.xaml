@@ -1,7 +1,8 @@
 <UserControl x:Class="OpenWidget.Widgets.HeaderWidget"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             Margin="0,0,0,12">
+             Margin="0,0,0,12"
+             Loaded="UserControl_Loaded">
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
@@ -23,14 +24,21 @@
                     Padding="5,1.5"
                     Margin="0,0,8,0"
                     Visibility="{Binding Telemetry.IsGamingMode, Converter={StaticResource BoolToVis}}">
-                <TextBlock Text="Oyun Modu"
+                <TextBlock x:Name="TxtGameMode"
+                           Text="Oyun Modu"
                            FontSize="10"
                            FontWeight="SemiBold"
                            Foreground="{StaticResource AccentGreenBrush}"
                            VerticalAlignment="Center" />
             </Border>
 
-            <TextBlock Text="{Binding Telemetry.UptimeText, StringFormat='Açık: {0}'}"
+            <TextBlock x:Name="TxtUptimePrefix"
+                       Text="Açık: "
+                       FontSize="11"
+                       Foreground="{StaticResource TextSecondaryBrush}"
+                       VerticalAlignment="Center" />
+
+            <TextBlock Text="{Binding Telemetry.UptimeText}"
                        FontSize="11"
                        Foreground="{StaticResource TextSecondaryBrush}"
                        VerticalAlignment="Center"

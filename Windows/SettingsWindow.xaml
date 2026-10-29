@@ -1,0 +1,236 @@
+<Window x:Class="OpenWidget.Windows.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="OpenWidget - Ayarlar"
+        Width="440"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        ShowInTaskbar="True"
+        FontFamily="Segoe UI Variable Text, Segoe UI, -apple-system, sans-serif"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType">
+
+    <Window.Resources>
+        <!-- Modern Scroll & Control Styles -->
+        <Style x:Key="ModernCheckBox" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Margin" Value="0,4" />
+        </Style>
+
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#1CFFFFFF" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="#25FFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="8,6" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="CaretBrush" Value="{StaticResource AccentBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="2" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+            <Setter Property="Foreground" Value="#090D16" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="16,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.9" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#18FFFFFF" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}" BorderBrush="#20FFFFFF" BorderThickness="1" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#25FFFFFF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <!-- Frosted Acrylic Dialog Surface -->
+    <Border Background="#F00F172A"
+            BorderBrush="{StaticResource MasterHudBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="14"
+            Padding="20,18"
+            MouseLeftButtonDown="Header_MouseLeftButtonDown">
+        <StackPanel>
+            <!-- Header Bar -->
+            <DockPanel Margin="0,0,0,16">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <Path Data="{StaticResource GeoPerformance}"
+                          Fill="{StaticResource AccentBrush}"
+                          Stretch="Uniform"
+                          Width="16" Height="16"
+                          VerticalAlignment="Center"
+                          Margin="0,0,8,0" />
+                    <TextBlock x:Name="TxtTitle"
+                               Text="OpenWidget • Ayarlar"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+
+                <Button DockPanel.Dock="Right"
+                        Width="26" Height="26"
+                        HorizontalAlignment="Right"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Padding="0"
+                        Click="BtnClose_Click">
+                    <TextBlock Text="✕" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </Button>
+            </DockPanel>
+
+            <!-- 1. GENEL AYARLAR -->
+            <Border Background="#12FFFFFF" BorderBrush="#14FFFFFF" BorderThickness="1" CornerRadius="8" Padding="14,12" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock x:Name="LblGeneralHeader" Text="Genel Yapılandırma" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,10" />
+
+                    <!-- Dil Seçimi -->
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="130" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="LblLanguage" Text="Arayüz Dili" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                        <ComboBox x:Name="CmbLanguage" Grid.Column="1" Height="28" Background="#1CFFFFFF" Foreground="#0F172A">
+                            <ComboBoxItem Content="Türkçe" Tag="tr" IsSelected="True" />
+                            <ComboBoxItem Content="English" Tag="en" />
+                        </ComboBox>
+                    </Grid>
+
+                    <!-- Hava Durumu Konumu -->
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="180" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="LblCity" Text="Hava Durumu Şehri" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" />
+                            <TextBlock x:Name="LblCityHelp" Text="Boş bırakırsanız IP üzerinden algılar" FontSize="10" Foreground="{StaticResource TextMutedBrush}" />
+                        </StackPanel>
+                        <TextBox x:Name="TxtCity" Grid.Column="1" Height="28" Style="{StaticResource ModernTextBox}" />
+                    </Grid>
+
+                    <!-- Opaklık Slider -->
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="42" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="LblOpacity" Text="Pencere Opaklığı" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                        <Slider x:Name="SliderOpacity" Grid.Column="1" Minimum="30" Maximum="100" Value="100" VerticalAlignment="Center" ValueChanged="SliderOpacity_ValueChanged" />
+                        <TextBlock x:Name="TxtOpacityValue" Grid.Column="2" Text="100%" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <!-- Vurgu Teması -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="130" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="LblAccent" Text="Vurgu Teması" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                        <ComboBox x:Name="CmbAccent" Grid.Column="1" Height="28" Background="#1CFFFFFF" Foreground="#0F172A">
+                            <ComboBoxItem Content="Sky (Mavi)" Tag="Sky" IsSelected="True" />
+                            <ComboBoxItem Content="Emerald (Yeşil)" Tag="Emerald" />
+                            <ComboBoxItem Content="Amber (Sarı)" Tag="Amber" />
+                            <ComboBoxItem Content="Rose (Gül)" Tag="Rose" />
+                            <ComboBoxItem Content="Purple (Mor)" Tag="Purple" />
+                        </ComboBox>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 2. WIDGET GÖRÜNÜRLÜKLERİ -->
+            <Border Background="#12FFFFFF" BorderBrush="#14FFFFFF" BorderThickness="1" CornerRadius="8" Padding="14,12" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock x:Name="LblWidgetsHeader" Text="Görüntülenecek Widgetlar" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,8" />
+                    <CheckBox x:Name="ChkHeader" Content="Hava Durumu &amp; Açık Kalma Süresi" Style="{StaticResource ModernCheckBox}" />
+                    <CheckBox x:Name="ChkTelemetry" Content="Sistem Telemetrisi (CPU / GPU / RAM / Disk)" Style="{StaticResource ModernCheckBox}" />
+                    <CheckBox x:Name="ChkFinance" Content="Canlı Piyasa &amp; Kripto (USD, EUR, Altın, BTC, ETH)" Style="{StaticResource ModernCheckBox}" />
+                    <CheckBox x:Name="ChkHardware" Content="Donanım Özellikleri &amp; Fiyat Listesi" Style="{StaticResource ModernCheckBox}" />
+                    <CheckBox x:Name="ChkQuickActions" Content="Hızlı Araç Çubuğu (Kısayollar)" Style="{StaticResource ModernCheckBox}" />
+                </StackPanel>
+            </Border>
+
+            <!-- 3. SİSTEM & PERFORMANS -->
+            <Border Background="#12FFFFFF" BorderBrush="#14FFFFFF" BorderThickness="1" CornerRadius="8" Padding="14,12" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock x:Name="LblPerformanceHeader" Text="Sistem &amp; Performans" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,8" />
+                    <CheckBox x:Name="ChkAutoStart" Content="Windows ile birlikte otomatik başlat" Style="{StaticResource ModernCheckBox}" />
+                    <CheckBox x:Name="ChkAlwaysOnTop" Content="Pencereyi her zaman en üstte tut" Style="{StaticResource ModernCheckBox}" />
+                    <CheckBox x:Name="ChkGameMode" Content="Oyun Modu (Tam ekran oyunlarda rölantiye al)" Style="{StaticResource ModernCheckBox}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Bottom Actions -->
+            <DockPanel>
+                <Button x:Name="BtnReset"
+                        Content="Varsayılana Sıfırla"
+                        DockPanel.Dock="Left"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Click="BtnReset_Click" />
+
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+                    <Button x:Name="BtnCancel"
+                            Content="İptal"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Margin="0,0,8,0"
+                            Click="BtnClose_Click" />
+                    <Button x:Name="BtnSave"
+                            Content="Kaydet ve Uygula"
+                            Style="{StaticResource ActionButtonStyle}"
+                            Click="BtnSave_Click" />
+                </StackPanel>
+            </DockPanel>
+        </StackPanel>
+    </Border>
+</Window>

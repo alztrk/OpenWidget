@@ -42,6 +42,9 @@ public class WidgetConfig
     public bool AutoGameMode { get; set; } = true;
     public bool IsLocked { get; set; } = false;
     public bool OnlyShowOnDesktop { get; set; } = false;
+    public string Language { get; set; } = "tr";
+    public string City { get; set; } = "auto";
+    public string AccentTheme { get; set; } = "Sky";
 }
 
 public class WidgetSelectionConfig
