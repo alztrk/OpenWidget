@@ -51,10 +51,10 @@
             BorderBrush="{StaticResource SectionBorderBrush}"
             BorderThickness="1"
             CornerRadius="8"
-            Padding="10,9">
+            Padding="11,10">
         <StackPanel>
             <!-- Top Row: Thumbnail + Info + Controls -->
-            <Grid Margin="0,0,0,8">
+            <Grid Margin="0,0,0,9">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -63,8 +63,8 @@
 
                 <!-- Thumbnail Container -->
                 <Border Grid.Column="0"
-                        Width="36" Height="36"
-                        CornerRadius="6"
+                        Width="42" Height="42"
+                        CornerRadius="7"
                         Background="#15FFFFFF"
                         BorderBrush="{StaticResource MasterHudBorderBrush}"
                         BorderThickness="1"
@@ -75,7 +75,7 @@
                               Data="{StaticResource GeoMusic}"
                               Fill="{StaticResource AccentBrush}"
                               Stretch="Uniform"
-                              Width="14" Height="14"
+                              Width="16" Height="16"
                               VerticalAlignment="Center"
                               HorizontalAlignment="Center" />
                         <Image x:Name="ImgThumbnail"
@@ -88,32 +88,32 @@
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
                     <TextBlock x:Name="TxtTitle"
                                Text="Medya Oynatılıyor"
-                               FontSize="11.5"
+                               FontSize="13.5"
                                FontWeight="SemiBold"
                                Foreground="{StaticResource TextPrimaryBrush}"
                                TextTrimming="CharacterEllipsis" />
                     <TextBlock x:Name="TxtArtist"
                                Text="Bilinmeyen Sanatçı"
-                               FontSize="10"
+                               FontSize="11.5"
                                Foreground="{StaticResource TextSecondaryBrush}"
                                TextTrimming="CharacterEllipsis"
-                               Margin="0,1.5,0,0" />
+                               Margin="0,2.5,0,0" />
                 </StackPanel>
 
                 <!-- Media Playback Controls -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button x:Name="BtnPrev"
                             Style="{StaticResource MediaControlBtn}"
-                            Width="22" Height="22"
+                            Width="26" Height="26"
                             ToolTip="Önceki Parça"
                             Click="BtnPrev_Click">
                         <Path Data="{StaticResource GeoPrevious}"
                               Fill="{StaticResource TextSecondaryBrush}"
-                              Stretch="Uniform" Width="9" Height="9" />
+                              Stretch="Uniform" Width="10.5" Height="10.5" />
                     </Button>
 
                     <Button x:Name="BtnPlayPause"
-                            Width="24" Height="24"
+                            Width="28" Height="28"
                             Background="#2538BDF8"
                             BorderBrush="#4038BDF8"
                             BorderThickness="1"
@@ -123,7 +123,7 @@
                             Click="BtnPlayPause_Click">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <Border x:Name="pbd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="12">
+                                <Border x:Name="pbd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="14">
                                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <ControlTemplate.Triggers>
@@ -136,23 +136,23 @@
                         <Path x:Name="PathPlayPause"
                               Data="{StaticResource GeoPlay}"
                               Fill="{StaticResource AccentBrush}"
-                              Stretch="Uniform" Width="9" Height="9" />
+                              Stretch="Uniform" Width="11" Height="11" />
                     </Button>
 
                     <Button x:Name="BtnNext"
                             Style="{StaticResource MediaControlBtn}"
-                            Width="22" Height="22"
+                            Width="26" Height="26"
                             ToolTip="Sonraki Parça"
                             Click="BtnNext_Click">
                         <Path Data="{StaticResource GeoNext}"
                               Fill="{StaticResource TextSecondaryBrush}"
-                              Stretch="Uniform" Width="9" Height="9" />
+                              Stretch="Uniform" Width="10.5" Height="10.5" />
                     </Button>
                 </StackPanel>
             </Grid>
 
             <!-- Middle Row: Progress / Seek Slider (Always visible) -->
-            <Grid x:Name="SeekPanel" Margin="0,0,0,6">
+            <Grid x:Name="SeekPanel" Margin="0,0,0,7">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -164,26 +164,28 @@
                         Maximum="100"
                         Value="0"
                         VerticalAlignment="Center"
-                        Height="16"
+                        Height="18"
                         PreviewMouseDown="SliderSeek_PreviewMouseDown"
                         PreviewMouseUp="SliderSeek_PreviewMouseUp"
                         ValueChanged="SliderSeek_ValueChanged" />
 
                 <!-- Left Time & Right Remaining Time -->
-                <DockPanel Grid.Row="1" Margin="1,2,1,0">
+                <DockPanel Grid.Row="1" Margin="1,2.5,1,0">
                     <TextBlock x:Name="TxtCurrentTime"
                                Text="00:00"
-                               FontSize="9.5"
+                               FontSize="11"
+                               FontWeight="Medium"
                                FontFamily="Roboto, Consolas, Segoe UI"
-                               Foreground="{StaticResource TextMutedBrush}"
+                               Foreground="{StaticResource TextSecondaryBrush}"
                                VerticalAlignment="Center" />
                     <TextBlock x:Name="TxtTotalTime"
                                DockPanel.Dock="Right"
                                HorizontalAlignment="Right"
                                Text="00:00"
-                               FontSize="9.5"
+                               FontSize="11"
+                               FontWeight="Medium"
                                FontFamily="Roboto, Consolas, Segoe UI"
-                               Foreground="{StaticResource TextMutedBrush}"
+                               Foreground="{StaticResource TextSecondaryBrush}"
                                VerticalAlignment="Center" />
                 </DockPanel>
             </Grid>
@@ -200,14 +202,14 @@
                 <Button x:Name="BtnMediaMute"
                         Grid.Column="0"
                         Style="{StaticResource MediaMiniBtn}"
-                        Width="20" Height="20"
+                        Width="24" Height="24"
                         Margin="0,0,6,0"
                         ToolTip="Medyayı Sessize Al / Aç"
                         Click="BtnMediaMute_Click">
                     <Path x:Name="PathMediaVolume"
                           Data="{StaticResource GeoSpeaker}"
                           Fill="{StaticResource TextSecondaryBrush}"
-                          Stretch="Uniform" Width="10" Height="10" />
+                          Stretch="Uniform" Width="12" Height="12" />
                 </Button>
 
                 <!-- Volume Slider -->
@@ -217,7 +219,7 @@
                         Maximum="100"
                         Value="70"
                         VerticalAlignment="Center"
-                        Height="16"
+                        Height="18"
                         Margin="0,0,8,0"
                         ToolTip="Oynatılan Medyanın / Videonun Ses Seviyesi"
                         PreviewMouseDown="SliderMediaVolume_PreviewMouseDown"
@@ -228,11 +230,11 @@
                 <TextBlock x:Name="TxtMediaVolumePercent"
                            Grid.Column="2"
                            Text="70%"
-                           FontSize="10"
-                           FontWeight="Medium"
+                           FontSize="11.5"
+                           FontWeight="SemiBold"
                            Foreground="{StaticResource TextSecondaryBrush}"
                            VerticalAlignment="Center"
-                           Width="28"
+                           Width="34"
                            TextAlignment="Right" />
             </Grid>
         </StackPanel>
