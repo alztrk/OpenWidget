@@ -46,20 +46,28 @@ public class HardwareScanner
         specs.CoolingAndPower.Add(new HardwareItem(
             Category: "Soğutma",
             IconKey: "IconCooler",
-            Label: "Sıvı Soğutma",
-            Value: _config.CoolingAndPower.CpuCooler,
-            SubValue: "240mm AIO Sıvı Soğutucu"
+            Label: "Soğutucu",
+            Value: CleanItemName(_config.CoolingAndPower.CpuCooler, "CORSAIR iCUE LINK TITAN 240 RX"),
+            SubValue: "240mm AIO"
         ));
 
         specs.CoolingAndPower.Add(new HardwareItem(
             Category: "Güç",
             IconKey: "IconPsu",
-            Label: "Güç Kaynağı (PSU)",
-            Value: _config.CoolingAndPower.Psu,
-            SubValue: "750W 80+ Gold Modüler"
+            Label: "PSU",
+            Value: CleanItemName(_config.CoolingAndPower.Psu, "MSI MPG A750GF White"),
+            SubValue: "750W Gold"
         ));
 
         return specs;
+    }
+
+    private static string CleanItemName(string? raw, string fallback)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return fallback;
+        return raw.Replace(" POWER SUPPLY-BEYAZ", "")
+                  .Replace(" RGB AIO 240mm İşlemci Soğutucusu (CW-9061016-WW)", "")
+                  .Trim();
     }
 
     private HardwareItem GetCpuItem()
@@ -69,33 +77,22 @@ public class HardwareScanner
             using var searcher = new ManagementObjectSearcher("SELECT Name, NumberOfCores, NumberOfLogicalProcessors FROM Win32_Processor");
             foreach (ManagementObject obj in searcher.Get())
             {
-                var rawName = obj["Name"]?.ToString()?.Trim() ?? "Bilinmeyen İşlemci";
-                var cleanName = CleanCpuName(rawName);
-                var cores = obj["NumberOfCores"]?.ToString();
-                var threads = obj["NumberOfLogicalProcessors"]?.ToString();
-                var sub = (cores != null && threads != null) ? $"{cores} Çekirdek / {threads} İzlek" : null;
+                var rawName = obj["Name"]?.ToString()?.Trim() ?? "AMD Ryzen 7 5700X";
+                var cleanName = rawName
+                    .Replace(" 8-Core Processor", "")
+                    .Replace(" 6-Core Processor", "")
+                    .Replace(" 12-Core Processor", "")
+                    .Replace(" 16-Core Processor", "")
+                    .Trim();
 
-                return new HardwareItem("Sistem", "IconCpu", "İşlemci (CPU)", cleanName, sub);
+                var cores = obj["NumberOfCores"]?.ToString() ?? "8";
+                var threads = obj["NumberOfLogicalProcessors"]?.ToString() ?? "16";
+
+                return new HardwareItem("Sistem", "IconCpu", "İşlemci", cleanName, $"{cores}C / {threads}T");
             }
         }
-        catch
-        {
-            // Fallback
-        }
-        return new HardwareItem("Sistem", "IconCpu", "İşlemci (CPU)", "AMD Ryzen 7 5700X", "8 Çekirdek / 16 İzlek");
-    }
-
-    private string CleanCpuName(string name)
-    {
-        // Strip common redundant suffixes
-        return name
-            .Replace(" 8-Core Processor", "")
-            .Replace(" 6-Core Processor", "")
-            .Replace(" 12-Core Processor", "")
-            .Replace(" 16-Core Processor", "")
-            .Replace(" Six-Core Processor", "")
-            .Replace(" Eight-Core Processor", "")
-            .Trim();
+        catch { }
+        return new HardwareItem("Sistem", "IconCpu", "İşlemci", "AMD Ryzen 7 5700X", "8C / 16T");
     }
 
     private HardwareItem GetGpuItem()
@@ -120,11 +117,13 @@ public class HardwareScanner
                              ?? gpus.FirstOrDefault()
                              ?? "NVIDIA GeForce RTX 3060";
 
-            return new HardwareItem("Sistem", "IconGpu", "Ekran Kartı (GPU)", primaryGpu, "Ayrık Grafik Kartı");
+            var cleanGpu = primaryGpu.Replace("NVIDIA ", "").Trim();
+
+            return new HardwareItem("Sistem", "IconGpu", "Ekran Kartı", cleanGpu, "PCIe");
         }
         catch
         {
-            return new HardwareItem("Sistem", "IconGpu", "Ekran Kartı (GPU)", "NVIDIA GeForce RTX 3060", "Ayrık Grafik Kartı");
+            return new HardwareItem("Sistem", "IconGpu", "Ekran Kartı", "GeForce RTX 3060", "PCIe");
         }
     }
 
@@ -142,21 +141,20 @@ public class HardwareScanner
                 if (mfg.Contains("ASUSTeK", StringComparison.OrdinalIgnoreCase)) mfg = "ASUS";
 
                 var full = string.IsNullOrEmpty(mfg) ? prod : $"{mfg} {prod}";
-                return new HardwareItem("Sistem", "IconMotherboard", "Anakart", full, "AM4 Platform");
+                full = full.Replace(" (MS-7C95)", "").Trim();
+
+                return new HardwareItem("Sistem", "IconMotherboard", "Anakart", full, "AM4");
             }
         }
-        catch
-        {
-            // Fallback
-        }
-        return new HardwareItem("Sistem", "IconMotherboard", "Anakart", "MSI B550M PRO-VDH WIFI", "AM4 Platform");
+        catch { }
+        return new HardwareItem("Sistem", "IconMotherboard", "Anakart", "MSI B550M PRO-VDH WIFI", "AM4");
     }
 
     private HardwareItem GetMemoryItem()
     {
         try
         {
-            using var searcher = new ManagementObjectSearcher("SELECT Capacity, Speed, Manufacturer, PartNumber FROM Win32_PhysicalMemory");
+            using var searcher = new ManagementObjectSearcher("SELECT Capacity, Speed, Manufacturer FROM Win32_PhysicalMemory");
             long totalBytes = 0;
             int count = 0;
             uint speed = 0;
@@ -180,18 +178,14 @@ public class HardwareScanner
             }
 
             var totalGb = (int)Math.Round((double)totalBytes / (1024 * 1024 * 1024));
-            var stickGb = count > 0 ? totalGb / count : 16;
-            var speedStr = speed > 0 ? $"{speed} MHz" : "DDR4";
             var brandStr = !string.IsNullOrEmpty(mfg) ? mfg : "Kingston";
+            var speedStr = speed > 0 ? $"{speed} MHz" : "3600 MHz";
 
-            var value = $"{totalGb} GB DDR4";
-            var subValue = $"{count}x {stickGb} GB ({brandStr} @ {speedStr})";
-
-            return new HardwareItem("Sistem", "IconRam", "Bellek (RAM)", value, subValue);
+            return new HardwareItem("Sistem", "IconRam", "RAM", $"{totalGb} GB {brandStr}", speedStr);
         }
         catch
         {
-            return new HardwareItem("Sistem", "IconRam", "Bellek (RAM)", "48 GB DDR4", "3x 16 GB Kingston @ 3600 MHz");
+            return new HardwareItem("Sistem", "IconRam", "RAM", "48 GB Kingston", "3600 MHz");
         }
     }
 
@@ -201,52 +195,44 @@ public class HardwareScanner
         try
         {
             using var searcher = new ManagementObjectSearcher("SELECT Model, Size, MediaType FROM Win32_DiskDrive");
-            int driveIndex = 1;
             foreach (ManagementObject obj in searcher.Get())
             {
-                var model = obj["Model"]?.ToString()?.Trim() ?? $"Sürücü #{driveIndex}";
+                var model = obj["Model"]?.ToString()?.Trim() ?? "Disk";
                 long size = 0;
                 if (obj["Size"] != null) long.TryParse(obj["Size"].ToString(), out size);
 
                 var sizeGb = (int)Math.Round((double)size / (1000 * 1000 * 1000));
-                string sizeStr;
-                if (sizeGb >= 900 && sizeGb <= 1100) sizeStr = "1 TB";
-                else if (sizeGb >= 1900 && sizeGb <= 2100) sizeStr = "2 TB";
-                else sizeStr = $"{sizeGb} GB";
+                string sizeStr = sizeGb >= 900 && sizeGb <= 1100 ? "1 TB" : $"{sizeGb} GB";
 
-                string type = "NVMe / SSD";
                 string cleanModel = model;
+                string sub = sizeStr;
 
                 if (model.Contains("SNV2S1000G", StringComparison.OrdinalIgnoreCase))
                 {
-                    cleanModel = "Kingston NV2 NVMe SSD";
-                    type = "M.2 PCIe 4.0";
+                    cleanModel = "Kingston NV2 NVMe";
+                    sub = "1 TB M.2";
                 }
                 else if (model.StartsWith("SSD", StringComparison.OrdinalIgnoreCase))
                 {
-                    cleanModel = "SATA III High-Speed SSD";
-                    type = "2.5\" SSD";
+                    cleanModel = "SATA III SSD";
+                    sub = "512 GB";
                 }
 
                 items.Add(new HardwareItem(
                     Category: "Depolama",
                     IconKey: "IconStorage",
-                    Label: $"Depolama ({sizeStr})",
+                    Label: "SSD",
                     Value: cleanModel,
-                    SubValue: $"{sizeStr} • {type}"
+                    SubValue: sub
                 ));
-                driveIndex++;
             }
         }
-        catch
-        {
-            // Fallback to detected values
-        }
+        catch { }
 
         if (items.Count == 0)
         {
-            items.Add(new HardwareItem("Depolama", "IconStorage", "Depolama (1 TB)", "Kingston NV2 NVMe SSD", "1 TB • M.2 PCIe 4.0"));
-            items.Add(new HardwareItem("Depolama", "IconStorage", "Depolama (512 GB)", "SATA III SSD", "512 GB • 2.5\" SSD"));
+            items.Add(new HardwareItem("Depolama", "IconStorage", "SSD", "Kingston NV2 NVMe", "1 TB M.2"));
+            items.Add(new HardwareItem("Depolama", "IconStorage", "SSD", "SATA III SSD", "512 GB"));
         }
 
         return items;
@@ -256,7 +242,7 @@ public class HardwareScanner
     {
         if (!string.IsNullOrEmpty(_config.Peripherals.Monitor))
         {
-            return new HardwareItem("Çevre Birimleri", "IconMonitor", "Monitör", _config.Peripherals.Monitor, "Birincil Ekran");
+            return new HardwareItem("Çevre Birimleri", "IconMonitor", "Monitör", _config.Peripherals.Monitor, "1440p");
         }
 
         try
@@ -270,44 +256,37 @@ public class HardwareScanner
                     var name = new string(chars).Trim();
                     if (!string.IsNullOrEmpty(name))
                     {
-                        var width = (int)SystemParameters.PrimaryScreenWidth;
-                        var height = (int)SystemParameters.PrimaryScreenHeight;
-                        var resStr = (width > 0 && height > 0) ? $"{width}x{height} QHD" : "Curved Gaming";
-
-                        return new HardwareItem("Çevre Birimleri", "IconMonitor", "Monitör", name, resStr);
+                        return new HardwareItem("Çevre Birimleri", "IconMonitor", "Monitör", name, "180Hz 1440p");
                     }
                 }
             }
         }
-        catch
-        {
-            // Ignore WMI WmiMonitorID permission / availability issues
-        }
+        catch { }
 
-        return new HardwareItem("Çevre Birimleri", "IconMonitor", "Monitör", "MSI MAG 27CQ6F", "2560x1440 180Hz Curved");
+        return new HardwareItem("Çevre Birimleri", "IconMonitor", "Monitör", "MSI MAG 27CQ6F", "180Hz 1440p");
     }
 
     private HardwareItem GetKeyboardItem()
     {
         var name = _config.Peripherals.Keyboard ?? "Corsair K55 RGB PRO XT";
-        return new HardwareItem("Çevre Birimleri", "IconKeyboard", "Klavye", name, "RGB Gaming Keyboard");
+        return new HardwareItem("Çevre Birimleri", "IconKeyboard", "Klavye", name, "Klavye");
     }
 
     private HardwareItem GetMouseItem()
     {
-        var name = _config.Peripherals.Mouse ?? "ROG Harpe Ace Aim Lab Edition";
-        return new HardwareItem("Çevre Birimleri", "IconMouse", "Fare", name, "Wireless Ultralight 54g");
+        var name = _config.Peripherals.Mouse ?? "ROG Harpe Ace Aim Lab";
+        return new HardwareItem("Çevre Birimleri", "IconMouse", "Fare", name, "Fare");
     }
 
     private HardwareItem GetHeadsetItem()
     {
         var name = _config.Peripherals.Headset ?? "Razer Kraken Kitty V2 BT";
-        return new HardwareItem("Çevre Birimleri", "IconHeadset", "Kulaklık", name, "7.1 Surround Sound");
+        return new HardwareItem("Çevre Birimleri", "IconHeadset", "Kulaklık", name, "Kulaklık");
     }
 
     private HardwareItem GetMicrophoneItem()
     {
         var name = _config.Peripherals.Microphone ?? "Razer Seiren V3 Chroma";
-        return new HardwareItem("Çevre Birimleri", "IconMic", "Mikrofon", name, "USB Kondenser & Chroma RGB");
+        return new HardwareItem("Çevre Birimleri", "IconMic", "Mikrofon", name, "Mikrofon");
     }
 }

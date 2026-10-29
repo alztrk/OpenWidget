@@ -1,43 +1,45 @@
 # RigBadge
 
-Windows masaüstü için hafif, çerçevesiz ve modern donanım kimlik widgetı.
+Windows masaüstü için doğrudan masaüstü katmanına gömülü, minimalist ve şık donanım gadgetı.
 
-Bilgisayarınıza bağlı olan çekirdek bileşenleri (CPU, GPU, Anakart, RAM), depolama birimlerini (SSD), çevre birimlerini (Monitör, Klavye, Fare, Kulaklık, Mikrofon) otomatik olarak algılar; yazılımla raporlanmayan parçaları (PSU, Sıvı Soğutma) ise `hardware-config.json` dosyasından okuyarak masaüstünüzün sağ üst köşesinde derli toplu bir şekilde sergiler.
+Uygulama penceresi hissi veren başlık çubukları, kapatma/ayar butonları ve kalın çerçeveler barındırmaz. Doğrudan masaüstü arka planı seviyesinde (`HWND_BOTTOM`) çalışarak, açık pencerelerin arkasında doğal bir masaüstü bilgi panosu olarak konumlanır.
 
 ---
 
 ## Özellikler
 
-* **Otomatik Donanım Algılama:** WMI ve Windows PnP üzerinden CPU, GPU, Anakart, bellek kapasite/hızları, takılı SSD'ler ve monitör bilgileri dinamik taranır.
-* **Manuel Bileşen Desteği:** PSU ve CPU soğutucu gibi sistemden modeli doğrudan okunamayan donanımlar için `hardware-config.json` desteği.
-* **Modern Koyu Tema:** Çerçevesiz pencere (`WindowStyle=None`), yarı saydam koyu akrilik arka plan, özel minimalist kaydırma çubuğu ve donanım rozetleri.
-* **Masaüstü Entegrasyonu:**
-  * Ekranın sağ üst köşesinde görev çubuğunu ve pencereleri engellemeyecek şekilde konumlanır.
-  * Sol tık ile masaüstünde istenen yere sürüklenebilir.
-  * Sağ tık menüsü veya üst bardaki iğne simgesi ile konumu kilitlenebilir (`IsLocked`).
-  * Sağ tık menüsünden doğrudan yapılandırma dosyasını açma (`hardware-config.json`), bilgileri yenileme ve kapatma seçenekleri.
+* **Masaüstüne Gömülü (Desktop-Pinned Gadget):**
+  * Pencerelerin en alt katmanında (`HWND_BOTTOM`) durur; tarayıcı veya diğer uygulamalar açıldığında onların arkasında kalır.
+  * `WS_EX_TOOLWINDOW` ve `WS_EX_NOACTIVATE` sayesinde görev çubuğunda veya Alt+Tab listesinde yer kaplamaz, odağı çalmaz.
+* **Minimalist Gadget Tasarımı:**
+  * Çerçevesiz, yarı saydam koyu zemin (`#0D1117` %88 opaklık), ince ayrım çizgileri ve sade iki sütunlu donanım satırları.
+  * Buton veya pencere kontrolü bulunmaz; sağ tıklandığında hafif bir bağlam menüsü (Yenile, Ayarları Aç, Kapat) sunar.
+  * Sol tık basılı tutularak masaüstünde istenen yere taşınabilir.
+* **Otomatik Donanım Taraması:**
+  * WMI ve Windows PnP üzerinden CPU, GPU, Anakart, RAM hızı/kapasitesi, takılı SSD'ler ve monitör bilgileri otomatik taranır.
+  * PSU ve soğutucu gibi yazılımla doğrudan modeli okunamayan parçalar `hardware-config.json` dosyasından okunur.
 
 ---
 
 ## Gösterilen Donanımlar
 
-1. **Sistem Bileşenleri:**
-   * **İşlemci (CPU):** AMD Ryzen 7 5700X (8 Çekirdek / 16 İzlek)
-   * **Ekran Kartı (GPU):** NVIDIA GeForce RTX 3060 (Ayrık Grafik Kartı)
-   * **Anakart:** MSI B550M PRO-VDH WIFI (AM4 Platform)
-   * **Bellek (RAM):** 48 GB DDR4 (3x 16 GB Kingston @ 3600 MHz)
-2. **Depolama Birimleri:**
-   * **SSD 1:** Kingston NV2 NVMe SSD (1 TB • M.2 PCIe 4.0)
-   * **SSD 2:** SATA III High-Speed SSD (512 GB • 2.5" SSD)
-3. **Çevre Birimleri:**
-   * **Monitör:** MSI MAG 27CQ6F (Curved Gaming Display)
-   * **Klavye:** Corsair K55 RGB PRO XT (RGB Gaming Keyboard)
-   * **Fare:** ASUS ROG Harpe Ace Aim Lab Edition (Wireless Ultralight 54g)
-   * **Kulaklık:** Razer Kraken Kitty V2 BT (7.1 Surround Sound)
-   * **Mikrofon:** Razer Seiren V3 Chroma (USB Kondenser & Chroma RGB)
-4. **Soğutma ve Güç:**
-   * **İşlemci Soğutucu:** CORSAIR iCUE LINK TITAN 240 RX RGB AIO
-   * **Güç Kaynağı (PSU):** MSI MPG A750GF White 750W 80+ Gold
+1. **SİSTEM**
+   * **İşlemci:** AMD Ryzen 7 5700X (`8C / 16T`)
+   * **Ekran Kartı:** GeForce RTX 3060 (`PCIe`)
+   * **Anakart:** MSI B550M PRO-VDH WIFI (`AM4`)
+   * **RAM:** 48 GB Kingston (`3600 MHz`)
+2. **DEPOLAMA**
+   * **M.2 SSD:** Kingston NV2 NVMe (`1 TB M.2`)
+   * **SATA SSD:** SATA III SSD (`512 GB`)
+3. **ÇEVRE BİRİMLERİ**
+   * **Monitör:** MSI MAG 27CQ6F (`180Hz 1440p`)
+   * **Klavye:** Corsair K55 RGB PRO XT (`Klavye`)
+   * **Fare:** ROG Harpe Ace Aim Lab (`Fare`)
+   * **Kulaklık:** Razer Kraken Kitty V2 BT (`Kulaklık`)
+   * **Mikrofon:** Razer Seiren V3 Chroma (`Mikrofon`)
+4. **SOĞUTMA VE GÜÇ**
+   * **Soğutucu:** Corsair iCUE LINK TITAN 240 RX (`240mm AIO`)
+   * **PSU:** MSI MPG A750GF White (`750W Gold`)
 
 ---
 
@@ -51,16 +53,15 @@ Bilgisayarınıza bağlı olan çekirdek bileşenleri (CPU, GPU, Anakart, RAM), 
   },
   "peripherals": {
     "keyboard": "Corsair K55 RGB PRO XT",
-    "mouse": "ROG Harpe Ace Aim Lab Edition",
+    "mouse": "ROG Harpe Ace Aim Lab",
     "headset": "Razer Kraken Kitty V2 BT",
     "microphone": "Razer Seiren V3 Chroma"
   },
   "widget": {
-    "opacity": 0.94,
-    "offsetX": 24,
-    "offsetY": 24,
-    "width": 380,
-    "height": 780,
+    "opacity": 0.88,
+    "offsetX": 20,
+    "offsetY": 20,
+    "width": 310,
     "alwaysOnTop": false,
     "isLocked": false
   }
@@ -72,12 +73,7 @@ Bilgisayarınıza bağlı olan çekirdek bileşenleri (CPU, GPU, Anakart, RAM), 
 ## Derleme ve Çalıştırma
 
 ```powershell
-# Proje dizinine geçiş
 cd D:\projects\RigBadge
-
-# Derleme
 dotnet build -c Release
-
-# Çalıştırma
 & "D:\projects\RigBadge\bin\x64\Release\net10.0-windows\RigBadge.exe"
 ```
