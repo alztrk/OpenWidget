@@ -19,6 +19,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private const int WS_EX_TOOLWINDOW = 0x00000080;
     private const int WS_EX_NOACTIVATE = 0x08000000;
 
+    private const int DWMWA_SYSTEMBACKDROP_TYPE = 38;
+    private const int DWMSBT_TRANSIENTWINDOW = 3; // Acrylic backdrop
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
+
     [DllImport("user32.dll", SetLastError = true)]
     private static extern IntPtr FindWindow(string? lpClassName, string? lpWindowName);
 
@@ -31,6 +37,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private HardwareConfig _config = new();
     private HardwareSpecs _specs = new();
     private string _configPath = string.Empty;
+    private string _pricesPath = string.Empty;
+    private PriceService? _priceService;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -48,7 +56,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         InitializeComponent();
         DataContext = this;
-        ResolveConfigPath();
+        ResolvePaths();
         LoadConfig();
     }
 
@@ -59,13 +67,20 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         var handle = new WindowInteropHelper(this).Handle;
         if (handle == IntPtr.Zero) return;
 
+        // Apply Windows 11 Acrylic Glassmorphism effect via DWM
+        try
+        {
+            int backdrop = DWMSBT_TRANSIENTWINDOW;
+            DwmSetWindowAttribute(handle, DWMWA_SYSTEMBACKDROP_TYPE, ref backdrop, sizeof(int));
+        }
+        catch { }
+
         // Apply ToolWindow (hide from Alt+Tab) and NoActivate (no focus stealing)
         var exStyle = (long)GetWindowLongPtr(handle, GWL_EXSTYLE);
         exStyle |= WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
         SetWindowLongPtr(handle, GWL_EXSTYLE, (IntPtr)exStyle);
 
-        // Make window owned by Windows Desktop Shell (Progman)
-        // Owned windows always stay rendered ABOVE their owner, preventing the wallpaper from covering the gadget.
+        // Bind window ownership to Windows Desktop Shell (Progman)
         var progman = FindWindow("Progman", null);
         if (progman != IntPtr.Zero)
         {
@@ -73,24 +88,25 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
-    private void ResolveConfigPath()
+    private void ResolvePaths()
     {
         var baseDir = AppContext.BaseDirectory;
-        var directPath = Path.Combine(baseDir, "hardware-config.json");
-        if (File.Exists(directPath))
+
+        _configPath = Path.Combine(baseDir, "hardware-config.json");
+        if (!File.Exists(_configPath))
         {
-            _configPath = directPath;
-            return;
+            var cwdPath = Path.Combine(Environment.CurrentDirectory, "hardware-config.json");
+            if (File.Exists(cwdPath)) _configPath = cwdPath;
         }
 
-        var cwdPath = Path.Combine(Environment.CurrentDirectory, "hardware-config.json");
-        if (File.Exists(cwdPath))
+        _pricesPath = Path.Combine(baseDir, "hardware-prices.json");
+        if (!File.Exists(_pricesPath))
         {
-            _configPath = cwdPath;
-            return;
+            var cwdPrices = Path.Combine(Environment.CurrentDirectory, "hardware-prices.json");
+            if (File.Exists(cwdPrices)) _pricesPath = cwdPrices;
         }
 
-        _configPath = directPath;
+        _priceService = new PriceService(_pricesPath);
     }
 
     private void LoadConfig()
@@ -110,6 +126,17 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
         PositionWidget();
+
+        // Ensure auto-start on boot is registered
+        if (!AutoStartService.IsAutoStartEnabled())
+        {
+            AutoStartService.SetAutoStart(true);
+        }
+        if (MenuAutoStart != null)
+        {
+            MenuAutoStart.IsChecked = AutoStartService.IsAutoStartEnabled();
+        }
+
         await RefreshHardwareSpecsAsync();
     }
 
@@ -127,7 +154,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         try
         {
-            var scanner = new HardwareScanner(_config);
+            _priceService ??= new PriceService(_pricesPath);
+            _priceService.CheckAndApplyDailyUpdate();
+
+            var scanner = new HardwareScanner(_config, _priceService);
             var result = await Task.Run(() => scanner.Scan());
             Specs = result;
         }
@@ -149,6 +179,16 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
+    private void MenuAutoStart_Click(object sender, RoutedEventArgs e)
+    {
+        var current = AutoStartService.IsAutoStartEnabled();
+        AutoStartService.SetAutoStart(!current);
+        if (MenuAutoStart != null)
+        {
+            MenuAutoStart.IsChecked = !current;
+        }
+    }
+
     private void MenuAlwaysOnTop_Click(object sender, RoutedEventArgs e)
     {
         Topmost = !Topmost;
@@ -161,24 +201,35 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private async void MenuRefresh_Click(object sender, RoutedEventArgs e)
     {
         LoadConfig();
+        _priceService = new PriceService(_pricesPath);
         await RefreshHardwareSpecsAsync();
+    }
+
+    private void MenuEditPrices_Click(object sender, RoutedEventArgs e)
+    {
+        OpenFileWithDefaultEditor(_pricesPath);
     }
 
     private void MenuEditConfig_Click(object sender, RoutedEventArgs e)
     {
+        OpenFileWithDefaultEditor(_configPath);
+    }
+
+    private void OpenFileWithDefaultEditor(string path)
+    {
         try
         {
-            if (File.Exists(_configPath))
+            if (File.Exists(path))
             {
                 Process.Start(new ProcessStartInfo
                 {
-                    FileName = _configPath,
+                    FileName = path,
                     UseShellExecute = true
                 });
             }
             else
             {
-                MessageBox.Show($"Yapılandırma dosyası bulunamadı:\n{_configPath}", "RigBadge", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Dosya bulunamadı:\n{path}", "RigBadge", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
         catch (Exception ex)

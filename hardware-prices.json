@@ -1,0 +1,19 @@
+{
+  "lastUpdated": "2026-10-29",
+  "currency": "₺",
+  "items": {
+    "cpu": 8250,
+    "gpu": 12800,
+    "motherboard": 5200,
+    "ram": 5550,
+    "ssd_nvme": 2650,
+    "ssd_sata": 1250,
+    "monitor": 14320,
+    "keyboard": 2450,
+    "mouse": 3570,
+    "headset": 4250,
+    "microphone": 5600,
+    "cooler": 5200,
+    "psu": 7490
+  }
+}

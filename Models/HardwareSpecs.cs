@@ -7,7 +7,8 @@ public record HardwareItem(
     string IconKey,
     string Label,
     string Value,
-    string? SubValue = null
+    string? SubValue = null,
+    string? PriceFormatted = null
 );
 
 public class HardwareSpecs
@@ -16,4 +17,7 @@ public class HardwareSpecs
     public List<HardwareItem> Storage { get; set; } = new();
     public List<HardwareItem> Peripherals { get; set; } = new();
     public List<HardwareItem> CoolingAndPower { get; set; } = new();
+
+    public string TotalPriceFormatted { get; set; } = "0 ₺";
+    public string LastUpdatedText { get; set; } = "Bugün";
 }
