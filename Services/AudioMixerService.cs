@@ -240,7 +240,7 @@ public static class AudioMixerService
 
                         for (int i = 0; i < count; i++)
                         {
-                            if (sessionEnum.GetSession(i, out var sessionCtrl) == 0 && sessionCtrl != null)
+                            if (sessionEnum.GetSession(i, out var sessObj) == 0 && sessObj is IAudioSessionControl sessionCtrl)
                             {
                                 try
                                 {
@@ -386,18 +386,134 @@ public static class AudioMixerService
         return false;
     }
 
+    private static ISimpleAudioVolume? FindMediaAudioSession(string sourceApp)
+    {
+        try
+        {
+            var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorComObject();
+            if (enumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out var device) != 0 || device == null)
+            {
+                return null;
+            }
+
+            var iidMgr = IID_IAudioSessionManager2;
+            if (device.Activate(ref iidMgr, 1, IntPtr.Zero, out var mgrObj) != 0 || mgrObj is not IAudioSessionManager2 mgr)
+            {
+                return null;
+            }
+
+            if (mgr.GetSessionEnumerator(out var sessionEnum) != 0 || sessionEnum == null)
+            {
+                return null;
+            }
+
+            sessionEnum.GetCount(out int count);
+            ISimpleAudioVolume? bestCandidate = null;
+
+            string target = (sourceApp ?? "").Trim().ToLowerInvariant();
+            if (target.EndsWith(".exe")) target = target[..^4];
+
+            string[] knownMediaPlayers = ["librewolf", "chrome", "firefox", "msedge", "brave", "spotify", "vlc", "mpv", "opera", "vivaldi"];
+
+            for (int i = 0; i < count; i++)
+            {
+                if (sessionEnum.GetSession(i, out var sessObj) == 0 && sessObj is ISimpleAudioVolume sav && sessObj is IAudioSessionControl2 ctl2)
+                {
+                    ctl2.GetState(out var state);
+                    if (state == AudioSessionState.AudioSessionStateExpired) continue;
+
+                    ctl2.GetProcessId(out uint pid);
+                    if (pid == 0) continue;
+
+                    string procName = "";
+                    try
+                    {
+                        using var proc = Process.GetProcessById((int)pid);
+                        procName = proc.ProcessName.ToLowerInvariant();
+                    }
+                    catch { }
+
+                    bool matchesSource = !string.IsNullOrEmpty(target) && (procName.Contains(target) || target.Contains(procName));
+
+                    if (matchesSource)
+                    {
+                        if (state == AudioSessionState.AudioSessionStateActive)
+                        {
+                            return sav;
+                        }
+                        bestCandidate ??= sav;
+                    }
+                    else if (state == AudioSessionState.AudioSessionStateActive)
+                    {
+                        foreach (var known in knownMediaPlayers)
+                        {
+                            if (procName.Contains(known))
+                            {
+                                bestCandidate ??= sav;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return bestCandidate;
+        }
+        catch { }
+
+        return null;
+    }
+
     public static (float Volume, bool IsMuted) GetMediaVolume(string sourceApp)
     {
+        try
+        {
+            var sav = FindMediaAudioSession(sourceApp);
+            if (sav != null)
+            {
+                sav.GetMasterVolume(out float vol);
+                sav.GetMute(out bool isMuted);
+                return ((float)Math.Round(vol * 100), isMuted);
+            }
+        }
+        catch { }
+
         return GetMasterVolume();
     }
 
     public static void SetMediaVolume(string sourceApp, float volume)
     {
+        try
+        {
+            var sav = FindMediaAudioSession(sourceApp);
+            if (sav != null)
+            {
+                var guid = Guid.Empty;
+                sav.SetMasterVolume(Math.Clamp(volume / 100f, 0f, 1f), ref guid);
+                return;
+            }
+        }
+        catch { }
+
         SetMasterVolume(volume);
     }
 
     public static bool ToggleMediaMute(string sourceApp)
     {
+        try
+        {
+            var sav = FindMediaAudioSession(sourceApp);
+            if (sav != null)
+            {
+                sav.GetMute(out bool isMuted);
+                bool newMute = !isMuted;
+                var guid = Guid.Empty;
+                sav.SetMute(newMute, ref guid);
+                return newMute;
+            }
+        }
+        catch { }
+
         return ToggleMasterMute();
     }
 }
@@ -510,7 +626,7 @@ public interface IAudioEndpointVolume
 }
 
 [Guid("77AA99A0-1BD6-484F-8BC7-2C654C9A9B6F"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-internal interface IAudioSessionManager2
+public interface IAudioSessionManager2
 {
     int GetAudioSessionControl(ref Guid AudioSessionGuid, uint StreamFlags, out IntPtr SessionControl);
     int GetSimpleAudioVolume(ref Guid AudioSessionGuid, uint StreamFlags, out ISimpleAudioVolume AudioVolume);
@@ -523,16 +639,16 @@ internal interface IAudioSessionManager2
 }
 
 [Guid("E2F5BB11-0570-40CA-ACDD-3AA01277DEE8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-internal interface IAudioSessionEnumerator
+public interface IAudioSessionEnumerator
 {
     [PreserveSig]
     int GetCount(out int SessionCount);
     [PreserveSig]
-    int GetSession(int SessionIndex, out IAudioSessionControl Session);
+    int GetSession(int SessionIndex, [MarshalAs(UnmanagedType.IUnknown)] out object Session);
 }
 
 [Guid("F4B1A599-7266-4319-A8CA-E70ACB11E8CD"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-internal interface IAudioSessionControl
+public interface IAudioSessionControl
 {
     [PreserveSig]
     int GetState(out AudioSessionState pRetVal);
@@ -548,13 +664,13 @@ internal interface IAudioSessionControl
     int UnregisterAudioSessionNotification(IntPtr NewNotifications);
 }
 
-[Guid("bfb7ff88-7239-4d45-9199-015697a442de"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-internal interface IAudioSessionControl2 : IAudioSessionControl
+[Guid("bfb7ff88-7239-4fc9-8fa2-07c950be9c6d"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+public interface IAudioSessionControl2 : IAudioSessionControl
 {
-    new int GetState(out AudioSessionState pRetVal);
-    new int GetDisplayName([MarshalAs(UnmanagedType.LPWStr)] out string pRetVal);
+    [PreserveSig] new int GetState(out AudioSessionState pRetVal);
+    [PreserveSig] new int GetDisplayName([MarshalAs(UnmanagedType.LPWStr)] out string pRetVal);
     new int SetDisplayName([MarshalAs(UnmanagedType.LPWStr)] string Value, ref Guid EventContext);
-    new int GetIconPath([MarshalAs(UnmanagedType.LPWStr)] out string pRetVal);
+    [PreserveSig] new int GetIconPath([MarshalAs(UnmanagedType.LPWStr)] out string pRetVal);
     new int SetIconPath([MarshalAs(UnmanagedType.LPWStr)] string Value, ref Guid EventContext);
     new int GetGroupingParam(out Guid pRetVal);
     new int SetGroupingParam(ref Guid Override, ref Guid EventContext);
@@ -572,8 +688,8 @@ internal interface IAudioSessionControl2 : IAudioSessionControl
     int SetDuckingPreference([MarshalAs(UnmanagedType.Bool)] bool optOut);
 }
 
-[Guid("87CE5498-68D6-44E5-AC9E-06C5910E04E8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-internal interface ISimpleAudioVolume
+[Guid("87CE5498-68D6-44E5-9215-6DA47EF883D8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+public interface ISimpleAudioVolume
 {
     [PreserveSig]
     int SetMasterVolume(float fLevel, ref Guid EventContext);

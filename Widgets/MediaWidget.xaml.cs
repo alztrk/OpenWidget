@@ -156,7 +156,8 @@ public partial class MediaWidget : UserControl
 
         try
         {
-            var (vol, isMuted) = AudioMixerService.GetMasterVolume();
+            string sourceApp = _service?.CurrentTrack.SourceApp ?? "";
+            var (vol, isMuted) = AudioMixerService.GetMediaVolume(sourceApp);
 
             _isUpdatingVolumeInternal = true;
             SliderMediaVolume.Value = vol;
@@ -242,12 +243,14 @@ public partial class MediaWidget : UserControl
             TxtMediaVolumePercent.Text = $"{(int)Math.Round(newVol)}%";
         }
 
-        AudioMixerService.SetMasterVolume(newVol);
+        string sourceApp = _service?.CurrentTrack.SourceApp ?? "";
+        AudioMixerService.SetMediaVolume(sourceApp, newVol);
     }
 
     private void BtnMediaMute_Click(object sender, RoutedEventArgs e)
     {
-        bool isMuted = AudioMixerService.ToggleMasterMute();
+        string sourceApp = _service?.CurrentTrack.SourceApp ?? "";
+        bool isMuted = AudioMixerService.ToggleMediaMute(sourceApp);
         UpdateMuteIcon(isMuted);
     }
 
