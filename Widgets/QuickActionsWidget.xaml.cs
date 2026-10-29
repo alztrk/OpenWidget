@@ -15,6 +15,7 @@ public partial class QuickActionsWidget : UserControl
     private static extern int EmptyWorkingSet(IntPtr hwProc);
 
     public event EventHandler? RamCleaned;
+    private DateTime _lastPopupClosedTime = DateTime.MinValue;
 
     public QuickActionsWidget()
     {
@@ -61,6 +62,65 @@ public partial class QuickActionsWidget : UserControl
     }
 
     private void BtnVolume_Click(object sender, RoutedEventArgs e)
+    {
+        if (PopupVolumeMixer == null) return;
+
+        // Prevent immediate re-opening if click dismissed an open popup
+        if ((DateTime.UtcNow - _lastPopupClosedTime).TotalMilliseconds < 250)
+        {
+            return;
+        }
+
+        if (PopupVolumeMixer.IsOpen)
+        {
+            PopupVolumeMixer.IsOpen = false;
+        }
+        else
+        {
+            RefreshAudioMixer();
+            PopupVolumeMixer.IsOpen = true;
+        }
+    }
+
+    private void PopupVolumeMixer_Closed(object sender, EventArgs e)
+    {
+        _lastPopupClosedTime = DateTime.UtcNow;
+    }
+
+    private void RefreshAudioMixer()
+    {
+        try
+        {
+            var (master, sessions) = AudioMixerService.GetAudioState();
+            MasterDeviceCard.DataContext = master;
+            ListAppSessions.ItemsSource = sessions;
+            TxtNoApps.Visibility = sessions.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+        catch { }
+    }
+
+    private void BtnRefreshMixer_Click(object sender, RoutedEventArgs e)
+    {
+        RefreshAudioMixer();
+    }
+
+    private void BtnMasterMute_Click(object sender, RoutedEventArgs e)
+    {
+        if (MasterDeviceCard.DataContext is MasterVolumeModel master)
+        {
+            master.ToggleMute();
+        }
+    }
+
+    private void BtnAppMute_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.DataContext is AudioSessionModel session)
+        {
+            session.ToggleMute();
+        }
+    }
+
+    private void BtnClassicMixer_Click(object sender, RoutedEventArgs e)
     {
         try
         {

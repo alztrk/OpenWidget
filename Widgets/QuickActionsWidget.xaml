@@ -5,6 +5,7 @@
              Loaded="UserControl_Loaded">
 
     <UserControl.Resources>
+        <!-- Standard Toolbar Button Style -->
         <Style x:Key="ToolbarBtnStyle" TargetType="Button">
             <Setter Property="Background" Value="#12FFFFFF" />
             <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
@@ -38,63 +39,352 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- Mute Toggle Button Style -->
+        <Style x:Key="MixerMuteBtnStyle" TargetType="Button">
+            <Setter Property="Background" Value="#12FFFFFF" />
+            <Setter Property="BorderBrush" Value="{StaticResource MasterHudBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Width" Value="28" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#24FFFFFF" />
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#38FFFFFF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Mini Icon Button Style (Refresh / Classic) -->
+        <Style x:Key="MixerMiniBtnStyle" TargetType="Button">
+            <Setter Property="Background" Value="#10FFFFFF" />
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource MasterHudBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Height" Value="22" />
+            <Setter Property="Padding" Value="6,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#24FFFFFF" />
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Dynamic Mute Icon Style -->
+        <Style x:Key="MuteIconPathStyle" TargetType="Path">
+            <Setter Property="Data" Value="{StaticResource GeoSpeaker}" />
+            <Setter Property="Fill" Value="{StaticResource TextSecondaryBrush}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsMuted}" Value="True">
+                    <Setter Property="Data" Value="{StaticResource GeoSpeakerMute}" />
+                    <Setter Property="Fill" Value="#EF4444" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
-    <UniformGrid Columns="4">
-        <!-- Görev Yöneticisi -->
-        <Button x:Name="BtnTaskMgr"
-                Style="{StaticResource ToolbarBtnStyle}"
-                Margin="0,0,3,0"
-                ToolTip="Görev Yöneticisi (Ctrl+Shift+Esc)"
-                Click="BtnTaskMgr_Click">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Path Data="{StaticResource GeoTaskmgr}"
-                      Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                      Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
-                <TextBlock x:Name="TxtTaskMgr" Text="Görev Yön." FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
-            </StackPanel>
-        </Button>
+    <Grid>
+        <UniformGrid Columns="4">
+            <!-- Görev Yöneticisi -->
+            <Button x:Name="BtnTaskMgr"
+                    Style="{StaticResource ToolbarBtnStyle}"
+                    Margin="0,0,3,0"
+                    ToolTip="Görev Yöneticisi (Ctrl+Shift+Esc)"
+                    Click="BtnTaskMgr_Click">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Path Data="{StaticResource GeoTaskmgr}"
+                          Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                          Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
+                    <TextBlock x:Name="TxtTaskMgr" Text="Görev Yön." FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
 
-        <!-- Ses Karıştırıcısı -->
-        <Button x:Name="BtnVolume"
-                Style="{StaticResource ToolbarBtnStyle}"
-                Margin="3,0,3,0"
-                ToolTip="Ses Düzeyi Karıştırıcısı"
-                Click="BtnVolume_Click">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Path Data="{StaticResource GeoSpeaker}"
-                      Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                      Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
-                <TextBlock x:Name="TxtVolume" Text="Ses" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
-            </StackPanel>
-        </Button>
+            <!-- Ses Karıştırıcısı -->
+            <Button x:Name="BtnVolume"
+                    Style="{StaticResource ToolbarBtnStyle}"
+                    Margin="3,0,3,0"
+                    ToolTip="Ses Düzeyi Karıştırıcısı"
+                    Click="BtnVolume_Click">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Path Data="{StaticResource GeoSpeaker}"
+                          Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                          Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
+                    <TextBlock x:Name="TxtVolume" Text="Ses" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
 
-        <!-- Terminal -->
-        <Button x:Name="BtnTerminal"
-                Style="{StaticResource ToolbarBtnStyle}"
-                Margin="3,0,3,0"
-                ToolTip="Windows Terminal / PowerShell"
-                Click="BtnTerminal_Click">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Path Data="{StaticResource GeoTerminal}"
-                      Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                      Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
-                <TextBlock x:Name="TxtTerminal" Text="Terminal" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
-            </StackPanel>
-        </Button>
+            <!-- Terminal -->
+            <Button x:Name="BtnTerminal"
+                    Style="{StaticResource ToolbarBtnStyle}"
+                    Margin="3,0,3,0"
+                    ToolTip="Windows Terminal / PowerShell"
+                    Click="BtnTerminal_Click">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Path Data="{StaticResource GeoTerminal}"
+                          Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                          Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
+                    <TextBlock x:Name="TxtTerminal" Text="Terminal" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
 
-        <!-- Bellek Temizle -->
-        <Button x:Name="BtnCleanRam"
-                Style="{StaticResource ToolbarBtnStyle}"
-                Margin="3,0,0,0"
-                ToolTip="Çalışma Kümesini ve Belleği Temizle"
-                Click="BtnCleanRam_Click">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Path Data="{StaticResource GeoClean}"
-                      Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                      Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
-                <TextBlock x:Name="TxtCleanRam" Text="Bellek Boşalt" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
-            </StackPanel>
-        </Button>
-    </UniformGrid>
+            <!-- Bellek Temizle -->
+            <Button x:Name="BtnCleanRam"
+                    Style="{StaticResource ToolbarBtnStyle}"
+                    Margin="3,0,0,0"
+                    ToolTip="Çalışma Kümesini ve Belleği Temizle"
+                    Click="BtnCleanRam_Click">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Path Data="{StaticResource GeoClean}"
+                          Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                          Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
+                    <TextBlock x:Name="TxtCleanRam" Text="Bellek Boşalt" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </UniformGrid>
+
+        <!-- Upward Sound Mixer Dropdown Popup -->
+        <Popup x:Name="PopupVolumeMixer"
+               PlacementTarget="{Binding ElementName=BtnVolume}"
+               Placement="Top"
+               VerticalOffset="-6"
+               AllowsTransparency="True"
+               StaysOpen="False"
+               PopupAnimation="Fade"
+               Closed="PopupVolumeMixer_Closed">
+            <Border Width="310"
+                    MaxHeight="390"
+                    Background="#F5090D16"
+                    BorderBrush="{StaticResource MasterHudBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="12,10">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" Direction="90" ShadowDepth="6" Color="#000000" Opacity="0.65" />
+                </Border.Effect>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Header Row -->
+                    <DockPanel Grid.Row="0" Margin="0,2,0,10">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Path Data="{StaticResource GeoSpeaker}"
+                                  Fill="{StaticResource AccentBrush}"
+                                  Stretch="Uniform" Width="13" Height="13"
+                                  VerticalAlignment="Center" Margin="0,0,6,0" />
+                            <TextBlock Text="Ses Karıştırıcısı"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <Button x:Name="BtnClassicMixer"
+                                DockPanel.Dock="Right"
+                                HorizontalAlignment="Right"
+                                Style="{StaticResource MixerMiniBtnStyle}"
+                                ToolTip="Klasik Windows Ses Karıştırıcısını Aç"
+                                Click="BtnClassicMixer_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource GeoExternalLink}"
+                                      Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                                      Stretch="Uniform" Width="10" Height="10" Margin="0,0,4,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Klasik" FontSize="10" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </DockPanel>
+
+                    <!-- Master Output Device (Kulaklık / Hoparlör) -->
+                    <Border x:Name="MasterDeviceCard"
+                            Grid.Row="1"
+                            Background="#12FFFFFF"
+                            BorderBrush="{StaticResource MasterHudBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="10,8"
+                            Margin="0,0,0,10">
+                        <StackPanel>
+                            <!-- Device Label & Percentage -->
+                            <DockPanel Margin="0,0,0,6">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Path Data="{StaticResource GeoHeadset}"
+                                          Fill="{StaticResource TextSecondaryBrush}"
+                                          Stretch="Uniform" Width="12" Height="12"
+                                          VerticalAlignment="Center" Margin="0,0,6,0" />
+                                    <TextBlock Text="{Binding DeviceName}"
+                                               FontSize="11.5"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextPrimaryBrush}"
+                                               TextTrimming="CharacterEllipsis"
+                                               MaxWidth="200"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+
+                                <TextBlock Text="{Binding VolumePercentText}"
+                                           DockPanel.Dock="Right"
+                                           HorizontalAlignment="Right"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource AccentBrush}"
+                                           VerticalAlignment="Center" />
+                            </DockPanel>
+
+                            <!-- Controls: Mute + Slider -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Button Grid.Column="0"
+                                        Style="{StaticResource MixerMuteBtnStyle}"
+                                        Click="BtnMasterMute_Click"
+                                        ToolTip="Sesi Kapat / Aç"
+                                        Margin="0,0,8,0">
+                                    <Path Style="{StaticResource MuteIconPathStyle}"
+                                          Stretch="Uniform" Width="13" Height="13" />
+                                </Button>
+
+                                <Slider Grid.Column="1"
+                                        Minimum="0" Maximum="100"
+                                        Value="{Binding Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        VerticalAlignment="Center" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Active Apps Title Row -->
+                    <DockPanel Grid.Row="2" Margin="0,0,0,6">
+                        <TextBlock Text="Uygulama Sesleri"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center" />
+
+                        <Button x:Name="BtnRefreshMixer"
+                                DockPanel.Dock="Right"
+                                HorizontalAlignment="Right"
+                                Style="{StaticResource MixerMiniBtnStyle}"
+                                ToolTip="Uygulama Listesini Yenile"
+                                Click="BtnRefreshMixer_Click">
+                            <Path Data="{StaticResource GeoRefresh}"
+                                  Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                                  Stretch="Uniform" Width="10" Height="10" VerticalAlignment="Center" />
+                        </Button>
+                    </DockPanel>
+
+                    <!-- Active Applications List / Empty State -->
+                    <Grid Grid.Row="3">
+                        <TextBlock x:Name="TxtNoApps"
+                                   Text="Aktif ses çalan uygulama bulunamadı"
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextMutedBrush}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Margin="0,16"
+                                   Visibility="Collapsed" />
+
+                        <ScrollViewer MaxHeight="200"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl x:Name="ListAppSessions">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#0DFFFFFF"
+                                                BorderBrush="{StaticResource MasterHudBorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="7"
+                                                Padding="8,6"
+                                                Margin="0,0,0,5">
+                                            <StackPanel>
+                                                <DockPanel Margin="0,0,0,5">
+                                                    <TextBlock Text="{Binding DisplayName}"
+                                                               FontSize="11"
+                                                               FontWeight="Medium"
+                                                               Foreground="{StaticResource TextPrimaryBrush}"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               MaxWidth="210"
+                                                               VerticalAlignment="Center" />
+
+                                                    <TextBlock Text="{Binding VolumePercentText}"
+                                                               DockPanel.Dock="Right"
+                                                               HorizontalAlignment="Right"
+                                                               FontSize="10.5"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{StaticResource TextSecondaryBrush}"
+                                                               VerticalAlignment="Center" />
+                                                </DockPanel>
+
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <Button Grid.Column="0"
+                                                            Style="{StaticResource MixerMuteBtnStyle}"
+                                                            Click="BtnAppMute_Click"
+                                                            ToolTip="Uygulama Sesini Kapat / Aç"
+                                                            Margin="0,0,8,0">
+                                                        <Path Style="{StaticResource MuteIconPathStyle}"
+                                                              Stretch="Uniform" Width="12" Height="12" />
+                                                    </Button>
+
+                                                    <Slider Grid.Column="1"
+                                                            Minimum="0" Maximum="100"
+                                                            Value="{Binding Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                            VerticalAlignment="Center" />
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Popup>
+    </Grid>
 </UserControl>
