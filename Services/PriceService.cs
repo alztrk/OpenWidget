@@ -40,11 +40,11 @@ public class PriceService
             client.Timeout = TimeSpan.FromSeconds(8);
             client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
 
-            // 1. Izoly RAM (16GB 3200MHz)
+            // 1. Izoly RAM (16GB 3200MHz Gaming)
             var ramHtml = await client.GetStringAsync("https://izoly.com/izoly-16gb-ddr4-3200mhz-cl22-1-2v-gaming-sogutuculu-desktop-ram/");
             var ramPrice = ExtractPrice(ramHtml);
 
-            // 2. Izoly SSD (512GB S280 SATA3)
+            // 2. Izoly SSD (512GB S280 Gaming SATA3)
             var ssdHtml = await client.GetStringAsync("https://izoly.com/izoly-512gb-gaming-sata3-s280-550-520mb-s-ssd/");
             var ssdPrice = ExtractPrice(ssdHtml);
 
@@ -57,8 +57,8 @@ public class PriceService
 
             if (ramPrice > 0)
             {
-                // 2x 16GB Kingston (Amazon.com.tr ~3900 TL) + 1x 16GB Izoly
-                decimal kingston2x = 3900m;
+                // 2x 16GB Kingston KF3600C18D4 (Gerçek Akakçe: 2x 7.500 TL = 15.000 TL) + 1x Izoly (6.426 TL)
+                decimal kingston2x = 15000m;
                 _prices.Items["ram"] = kingston2x + ramPrice;
                 changed = true;
             }

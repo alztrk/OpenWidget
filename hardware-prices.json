@@ -1,20 +1,20 @@
 {
-  "source": "Amazon.com.tr & Izoly.com",
+  "source": "Akakçe & Izoly.com (Gerçek Model Numaralı Piyasa)",
   "lastUpdated": "2026-10-29",
   "currency": "₺",
   "items": {
-    "cpu": 8790,
-    "gpu": 13450,
-    "motherboard": 5290,
-    "ram": 10326,
-    "ssd_nvme": 2750,
+    "cpu": 8600,
+    "gpu": 23800,
+    "motherboard": 5200,
+    "ram": 21426,
+    "ssd_nvme": 8799,
     "ssd_sata": 4192,
-    "monitor": 14490,
-    "keyboard": 2490,
-    "mouse": 3650,
-    "headset": 4390,
-    "microphone": 5690,
-    "cooler": 5350,
-    "psu": 7590
+    "monitor": 14320,
+    "keyboard": 1800,
+    "mouse": 3568,
+    "headset": 4799,
+    "microphone": 4849,
+    "cooler": 5199,
+    "psu": 7492
   }
 }
