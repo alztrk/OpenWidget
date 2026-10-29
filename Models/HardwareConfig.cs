@@ -32,12 +32,12 @@ public class AccessoriesConfig
 public class WidgetConfig
 {
     public double Opacity { get; set; } = 1.0;
-    public double OffsetX { get; set; } = 20;
-    public double OffsetY { get; set; } = 20;
+    public double OffsetX { get; set; } = 28;
+    public double OffsetY { get; set; } = 28;
     public double Width { get; set; } = 380;
     public double Height { get; set; } = 780;
     public bool AlwaysOnTop { get; set; } = false;
-    public bool IsLocked { get; set; } = false;
+    public bool IsLocked { get; set; } = true;
     public bool OnlyShowOnDesktop { get; set; } = false;
 }
 

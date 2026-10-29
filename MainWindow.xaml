@@ -229,7 +229,7 @@
     </Window.ContextMenu>
 
     <!-- Single Unified Vertical Stack (Downward-Ordered, Fixed & Non-Movable) -->
-    <StackPanel>
+    <StackPanel Margin="0,0,0,24">
 
         <!-- CARD 1: SİSTEM TELEMETRİSİ -->
         <Border Visibility="{Binding IsTelemetryVisible, Converter={StaticResource BoolToVis}}"
