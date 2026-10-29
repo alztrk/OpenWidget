@@ -63,6 +63,19 @@ public class PriceService
                 changed = true;
             }
 
+            // 3. Wraith Esports Mousepad (Spirit of Aim Speed / White - Variant 47478471262401)
+            try
+            {
+                var mousepadHtml = await client.GetStringAsync("https://wraithesports.com/products/wraith-spirit-of-aim-mousepad?variant=47478471262401");
+                var mousepadPrice = ExtractWraithPrice(mousepadHtml, "47478471262401");
+                if (mousepadPrice > 0)
+                {
+                    _prices.Items["mousepad"] = mousepadPrice;
+                    changed = true;
+                }
+            }
+            catch { }
+
             if (changed)
             {
                 _prices.LastUpdated = DateTime.Today.ToString("yyyy-MM-dd");
@@ -90,6 +103,24 @@ public class PriceService
             {
                 return price;
             }
+        }
+        return 0;
+    }
+
+    private static decimal ExtractWraithPrice(string html, string variantId)
+    {
+        var pattern = $@"""{variantId}"":\s*\{{[^}}]*""price"":\s*([0-9]+)";
+        var match = Regex.Match(html, pattern, RegexOptions.Singleline);
+        if (match.Success && decimal.TryParse(match.Groups[1].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var priceCents))
+        {
+            return priceCents / 100m;
+        }
+
+        var schemaPattern = $@"""price"":\s*""([0-9\.]+)""[^}}]*variant={variantId}";
+        var schemaMatch = Regex.Match(html, schemaPattern, RegexOptions.Singleline);
+        if (schemaMatch.Success && decimal.TryParse(schemaMatch.Groups[1].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var price))
+        {
+            return price;
         }
         return 0;
     }

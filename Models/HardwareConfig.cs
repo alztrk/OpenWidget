@@ -14,6 +14,7 @@ public class PeripheralsConfig
 {
     public string? Keyboard { get; set; } = "Corsair K55 RGB PRO XT";
     public string? Mouse { get; set; } = "ROG Harpe Ace Aim Lab";
+    public string? Mousepad { get; set; } = "Wraith Spirit of Aim";
     public string? Headset { get; set; } = "Razer Kraken Kitty V2 BT";
     public string? Microphone { get; set; } = "Razer Seiren V3 Chroma";
     public string? Monitor { get; set; }

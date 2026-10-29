@@ -41,6 +41,7 @@ public class HardwareScanner
         specs.Peripherals.Add(GetMonitorItem());
         specs.Peripherals.Add(GetKeyboardItem());
         specs.Peripherals.Add(GetMouseItem());
+        specs.Peripherals.Add(GetMousepadItem());
         specs.Peripherals.Add(GetHeadsetItem());
         specs.Peripherals.Add(GetMicrophoneItem());
 
@@ -282,6 +283,12 @@ public class HardwareScanner
     {
         var name = _config.Peripherals.Mouse ?? "ROG Harpe Ace Aim Lab";
         return new HardwareItem("Çevre Birimleri", "IconMouse", "Fare", name, "Ultralight 54g Wireless", _priceService.GetPriceFormatted("mouse"));
+    }
+
+    private HardwareItem GetMousepadItem()
+    {
+        var name = _config.Peripherals.Mousepad ?? "Wraith Spirit of Aim";
+        return new HardwareItem("Çevre Birimleri", "IconMousepad", "Mousepad", name, "Speed / White • 470x420x3mm", _priceService.GetPriceFormatted("mousepad"));
     }
 
     private HardwareItem GetHeadsetItem()
