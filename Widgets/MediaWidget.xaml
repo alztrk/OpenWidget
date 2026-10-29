@@ -24,21 +24,37 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="MediaMiniBtn" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="4" Padding="2">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#24FFFFFF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <Border Background="{StaticResource SectionBgBrush}"
             BorderBrush="{StaticResource SectionBorderBrush}"
             BorderThickness="1"
             CornerRadius="8"
-            Padding="10,8">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-
+            Padding="10,9">
+        <StackPanel>
             <!-- Top Row: Thumbnail + Info + Controls -->
-            <Grid Grid.Row="0">
+            <Grid Margin="0,0,0,8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -47,7 +63,7 @@
 
                 <!-- Thumbnail Container -->
                 <Border Grid.Column="0"
-                        Width="34" Height="34"
+                        Width="36" Height="36"
                         CornerRadius="6"
                         Background="#15FFFFFF"
                         BorderBrush="{StaticResource MasterHudBorderBrush}"
@@ -81,10 +97,10 @@
                                FontSize="10"
                                Foreground="{StaticResource TextSecondaryBrush}"
                                TextTrimming="CharacterEllipsis"
-                               Margin="0,1,0,0" />
+                               Margin="0,1.5,0,0" />
                 </StackPanel>
 
-                <!-- Media Controls -->
+                <!-- Media Playback Controls -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button x:Name="BtnPrev"
                             Style="{StaticResource MediaControlBtn}"
@@ -135,33 +151,87 @@
                 </StackPanel>
             </Grid>
 
-            <!-- Bottom Row: Seek Bar + Duration Display -->
-            <Grid Grid.Row="1" x:Name="SeekPanel" Margin="0,6,0,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+            <!-- Middle Row: Progress / Seek Slider (Always visible) -->
+            <Grid x:Name="SeekPanel" Margin="0,0,0,6">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
                 <Slider x:Name="SliderSeek"
-                        Grid.Column="0"
+                        Grid.Row="0"
                         Minimum="0"
                         Maximum="100"
                         Value="0"
                         VerticalAlignment="Center"
-                        Height="18"
-                        Margin="0,0,8,0"
+                        Height="16"
                         PreviewMouseDown="SliderSeek_PreviewMouseDown"
                         PreviewMouseUp="SliderSeek_PreviewMouseUp"
                         ValueChanged="SliderSeek_ValueChanged" />
 
-                <TextBlock x:Name="TxtTime"
-                           Grid.Column="1"
-                           Text="00:00 / 00:00"
-                           FontSize="9.5"
-                           FontFamily="Consolas, Segoe UI"
-                           Foreground="{StaticResource TextMutedBrush}"
-                           VerticalAlignment="Center" />
+                <!-- Left Time & Right Remaining Time -->
+                <DockPanel Grid.Row="1" Margin="1,2,1,0">
+                    <TextBlock x:Name="TxtCurrentTime"
+                               Text="00:00"
+                               FontSize="9.5"
+                               FontFamily="Consolas, Segoe UI"
+                               Foreground="{StaticResource TextMutedBrush}"
+                               VerticalAlignment="Center" />
+                    <TextBlock x:Name="TxtTotalTime"
+                               DockPanel.Dock="Right"
+                               HorizontalAlignment="Right"
+                               Text="00:00"
+                               FontSize="9.5"
+                               FontFamily="Consolas, Segoe UI"
+                               Foreground="{StaticResource TextMutedBrush}"
+                               VerticalAlignment="Center" />
+                </DockPanel>
             </Grid>
-        </Grid>
+
+            <!-- Bottom Row: Media Volume Control -->
+            <Grid Margin="0,2,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Mute / Unmute Button -->
+                <Button x:Name="BtnMediaMute"
+                        Grid.Column="0"
+                        Style="{StaticResource MediaMiniBtn}"
+                        Width="20" Height="20"
+                        Margin="0,0,6,0"
+                        ToolTip="Medyayı Sessize Al / Aç"
+                        Click="BtnMediaMute_Click">
+                    <Path x:Name="PathMediaVolume"
+                          Data="{StaticResource GeoSpeaker}"
+                          Fill="{StaticResource TextSecondaryBrush}"
+                          Stretch="Uniform" Width="10" Height="10" />
+                </Button>
+
+                <!-- Volume Slider -->
+                <Slider x:Name="SliderMediaVolume"
+                        Grid.Column="1"
+                        Minimum="0"
+                        Maximum="100"
+                        Value="70"
+                        VerticalAlignment="Center"
+                        Height="16"
+                        Margin="0,0,8,0"
+                        ValueChanged="SliderMediaVolume_ValueChanged" />
+
+                <!-- Volume Percentage -->
+                <TextBlock x:Name="TxtMediaVolumePercent"
+                           Grid.Column="2"
+                           Text="70%"
+                           FontSize="10"
+                           FontWeight="Medium"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           VerticalAlignment="Center"
+                           Width="28"
+                           TextAlignment="Right" />
+            </Grid>
+        </StackPanel>
     </Border>
 </UserControl>

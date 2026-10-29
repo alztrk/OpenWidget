@@ -325,6 +325,78 @@ public static class AudioMixerService
 
         return (master, sessions);
     }
+
+    public static (float Volume, bool IsMuted) GetMediaVolume(string sourceApp)
+    {
+        try
+        {
+            var (master, sessions) = GetAudioState();
+            if (!string.IsNullOrWhiteSpace(sourceApp))
+            {
+                foreach (var s in sessions)
+                {
+                    if (s.DisplayName.Contains(sourceApp, StringComparison.OrdinalIgnoreCase) ||
+                        sourceApp.Contains(s.DisplayName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (s.Volume, s.IsMuted);
+                    }
+                }
+            }
+            return (master.Volume, master.IsMuted);
+        }
+        catch
+        {
+            return (50f, false);
+        }
+    }
+
+    public static void SetMediaVolume(string sourceApp, float volume)
+    {
+        try
+        {
+            var (master, sessions) = GetAudioState();
+            if (!string.IsNullOrWhiteSpace(sourceApp))
+            {
+                foreach (var s in sessions)
+                {
+                    if (s.DisplayName.Contains(sourceApp, StringComparison.OrdinalIgnoreCase) ||
+                        sourceApp.Contains(s.DisplayName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        s.Volume = volume;
+                        return;
+                    }
+                }
+            }
+            master.Volume = volume;
+        }
+        catch { }
+    }
+
+    public static bool ToggleMediaMute(string sourceApp)
+    {
+        try
+        {
+            var (master, sessions) = GetAudioState();
+            if (!string.IsNullOrWhiteSpace(sourceApp))
+            {
+                foreach (var s in sessions)
+                {
+                    if (s.DisplayName.Contains(sourceApp, StringComparison.OrdinalIgnoreCase) ||
+                        sourceApp.Contains(s.DisplayName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        s.ToggleMute();
+                        return s.IsMuted;
+                    }
+                }
+            }
+            master.ToggleMute();
+            return master.IsMuted;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }
 
 #region COM Declarations
