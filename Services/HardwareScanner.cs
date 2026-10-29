@@ -161,40 +161,14 @@ public class HardwareScanner
 
     private HardwareItem GetMemoryItem()
     {
-        try
-        {
-            using var searcher = new ManagementObjectSearcher("SELECT Capacity, Speed, Manufacturer FROM Win32_PhysicalMemory");
-            long totalBytes = 0;
-            int count = 0;
-            uint speed = 0;
-            string? mfg = null;
-
-            foreach (ManagementObject obj in searcher.Get())
-            {
-                if (obj["Capacity"] != null && long.TryParse(obj["Capacity"].ToString(), out var bytes))
-                {
-                    totalBytes += bytes;
-                    count++;
-                }
-                if (obj["Speed"] != null && uint.TryParse(obj["Speed"].ToString(), out var spd) && spd > speed)
-                {
-                    speed = spd;
-                }
-                if (string.IsNullOrEmpty(mfg) && obj["Manufacturer"] != null)
-                {
-                    mfg = obj["Manufacturer"].ToString()?.Trim();
-                }
-            }
-
-            var totalGb = (int)Math.Round((double)totalBytes / (1024 * 1024 * 1024));
-            var brandStr = !string.IsNullOrEmpty(mfg) ? mfg : "Kingston";
-
-            return new HardwareItem("Sistem", "IconRam", "RAM", $"{totalGb} GB {brandStr}", "3600 MHz", _priceService.GetPriceFormatted("ram"));
-        }
-        catch
-        {
-            return new HardwareItem("Sistem", "IconRam", "RAM", "48 GB Kingston", "3600 MHz", _priceService.GetPriceFormatted("ram"));
-        }
+        return new HardwareItem(
+            Category: "Sistem",
+            IconKey: "IconRam",
+            Label: "RAM",
+            Value: "48 GB (2x Kingston + 1x Izoly)",
+            SubValue: "2x 3600MHz + 1x 3200MHz",
+            PriceFormatted: _priceService.GetPriceFormatted("ram")
+        );
     }
 
     private List<HardwareItem> GetStorageItems()
@@ -222,10 +196,10 @@ public class HardwareScanner
                     sub = "1 TB M.2";
                     priceKey = "ssd_nvme";
                 }
-                else if (model.StartsWith("SSD", StringComparison.OrdinalIgnoreCase))
+                else if (model.StartsWith("SSD", StringComparison.OrdinalIgnoreCase) || model.Contains("512GB", StringComparison.OrdinalIgnoreCase))
                 {
-                    cleanModel = "SATA III SSD";
-                    sub = "512 GB";
+                    cleanModel = "Izoly S280 Gaming SSD";
+                    sub = "512 GB SATA3";
                     priceKey = "ssd_sata";
                 }
 
@@ -244,7 +218,7 @@ public class HardwareScanner
         if (items.Count == 0)
         {
             items.Add(new HardwareItem("Depolama", "IconStorage", "SSD", "Kingston NV2 NVMe", "1 TB M.2", _priceService.GetPriceFormatted("ssd_nvme")));
-            items.Add(new HardwareItem("Depolama", "IconStorage", "SSD", "SATA III SSD", "512 GB", _priceService.GetPriceFormatted("ssd_sata")));
+            items.Add(new HardwareItem("Depolama", "IconStorage", "SSD", "Izoly S280 Gaming SSD", "512 GB SATA3", _priceService.GetPriceFormatted("ssd_sata")));
         }
 
         return items;

@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:converters="clr-namespace:RigBadge.Converters"
         Title="RigBadge"
-        Width="340"
+        Width="350"
         SizeToContent="Height"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -19,7 +19,7 @@
         <converters:IconKeyToGeometryConverter x:Key="IconConverter" />
         <converters:StringToVisibilityConverter x:Key="StringToVis" />
 
-        <!-- Minimalist Obsidian Glass Row Template -->
+        <!-- Minimalist Matte Black Row Template -->
         <DataTemplate x:Key="GadgetRowTemplate">
             <Grid Margin="0,2,0,3">
                 <Grid.ColumnDefinitions>
@@ -52,7 +52,7 @@
                                Visibility="{Binding SubValue, Converter={StaticResource StringToVis}}" />
                 </StackPanel>
 
-                <!-- Amazon Market Price -->
+                <!-- Market Price -->
                 <TextBlock Grid.Column="2"
                            Text="{Binding PriceFormatted}"
                            FontSize="10.5"
@@ -77,20 +77,20 @@
         </ContextMenu>
     </Window.ContextMenu>
 
-    <!-- Deep Obsidian Black Glass Panel (No White) -->
+    <!-- Solid Matte Black HUD Panel -->
     <Border Margin="8">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="30"
+            <DropShadowEffect BlurRadius="24"
                               Color="#000000"
-                              Opacity="0.75"
-                              ShadowDepth="5" />
+                              Opacity="0.8"
+                              ShadowDepth="4" />
         </Border.Effect>
 
-        <!-- Pure Dark Smoky Glass Shell -->
+        <!-- Pure Flat Matte Obsidian Shell (Zero Glassmorphism) -->
         <Border Background="{StaticResource GlassBgBrush}"
                 BorderBrush="{StaticResource GlassBorderBrush}"
                 BorderThickness="1"
-                CornerRadius="12"
+                CornerRadius="10"
                 Padding="12,11">
             <StackPanel>
 
@@ -146,11 +146,11 @@
                 <ItemsControl ItemsSource="{Binding Specs.CoolingAndPower}"
                               ItemTemplate="{StaticResource GadgetRowTemplate}" />
 
-                <!-- 5. TOPLAM DONANIM DEĞERİ (OBSIDIAN SUMMARY BADGE) -->
+                <!-- 5. TOPLAM DONANIM DEĞERİ (MATTE SUMMARY BADGE) -->
                 <Border Background="{StaticResource GlassCardBgBrush}"
                         BorderBrush="{StaticResource GlassCardBorderBrush}"
                         BorderThickness="1"
-                        CornerRadius="8"
+                        CornerRadius="7"
                         Margin="0,6,0,0"
                         Padding="10,6">
                     <DockPanel LastChildFill="True">
@@ -174,7 +174,7 @@
                                            Foreground="{StaticResource TextSecondaryBrush}"
                                            VerticalAlignment="Center" />
                             </StackPanel>
-                            <TextBlock Text="Amazon.com.tr Günlük"
+                            <TextBlock Text="{Binding Specs.PriceSource, StringFormat='{}{0} Günlük'}"
                                        FontSize="7.5"
                                        Foreground="{StaticResource TextMutedBrush}"
                                        Margin="10,1,0,0" />

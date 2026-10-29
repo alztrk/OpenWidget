@@ -19,12 +19,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private const int WS_EX_TOOLWINDOW = 0x00000080;
     private const int WS_EX_NOACTIVATE = 0x08000000;
 
-    private const int DWMWA_SYSTEMBACKDROP_TYPE = 38;
-    private const int DWMSBT_TRANSIENTWINDOW = 3; // Acrylic backdrop
-
-    [DllImport("dwmapi.dll")]
-    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
-
     [DllImport("user32.dll", SetLastError = true)]
     private static extern IntPtr FindWindow(string? lpClassName, string? lpWindowName);
 
@@ -66,14 +60,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         var handle = new WindowInteropHelper(this).Handle;
         if (handle == IntPtr.Zero) return;
-
-        // Apply Windows 11 Acrylic Glassmorphism effect via DWM
-        try
-        {
-            int backdrop = DWMSBT_TRANSIENTWINDOW;
-            DwmSetWindowAttribute(handle, DWMWA_SYSTEMBACKDROP_TYPE, ref backdrop, sizeof(int));
-        }
-        catch { }
 
         // Apply ToolWindow (hide from Alt+Tab) and NoActivate (no focus stealing)
         var exStyle = (long)GetWindowLongPtr(handle, GWL_EXSTYLE);
@@ -156,6 +142,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             _priceService ??= new PriceService(_pricesPath);
             _priceService.CheckAndApplyDailyUpdate();
+
+            // Fetch live Izoly prices in background
+            await _priceService.UpdateIzolyPricesAsync();
 
             var scanner = new HardwareScanner(_config, _priceService);
             var result = await Task.Run(() => scanner.Scan());

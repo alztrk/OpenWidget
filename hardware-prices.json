@@ -1,14 +1,14 @@
 {
-  "source": "Amazon.com.tr",
+  "source": "Amazon.com.tr & Izoly.com",
   "lastUpdated": "2026-10-29",
   "currency": "₺",
   "items": {
     "cpu": 8790,
     "gpu": 13450,
     "motherboard": 5290,
-    "ram": 5850,
+    "ram": 10326,
     "ssd_nvme": 2750,
-    "ssd_sata": 1290,
+    "ssd_sata": 4192,
     "monitor": 14490,
     "keyboard": 2490,
     "mouse": 3650,
