@@ -12,18 +12,9 @@ namespace OpenWidget.Windows;
 
 public partial class SettingsWindow : Window
 {
-    private static readonly string[] PredefinedCities =
-    [
-        "İstanbul", "Ankara", "İzmir", "Bursa", "Antalya", "Adana", "Konya", "Gaziantep",
-        "Şanlıurfa", "Kocaeli", "Mersin", "Diyarbakır", "Hatay", "Manisa", "Kayseri",
-        "Samsun", "Balıkesir", "Kahramanmaraş", "Van", "Aydın", "Tekirdağ", "Denizli",
-        "Sakarya", "Muğla", "Eskişehir", "Trabzon", "Malatya", "Ordu", "Erzurum",
-        "Afyonkarahisar", "Sivas", "Çanakkale", "Edirne", "Rize", "Kütahya",
-        "London", "New York", "Berlin", "Paris", "Tokyo", "Rome", "Amsterdam", "Dubai"
-    ];
-
     private readonly HardwareConfig _config;
     private readonly Action<HardwareConfig> _onSave;
+    private string _selectedCity = "auto";
 
     public SettingsWindow(HardwareConfig config, Action<HardwareConfig> onSave)
     {
@@ -48,10 +39,9 @@ public partial class SettingsWindow : Window
             }
         }
 
-        // City
-        TxtCity.Text = string.Equals(_config.Widget.City, "auto", StringComparison.OrdinalIgnoreCase)
-            ? ""
-            : (_config.Widget.City ?? "");
+        // City (Default to current city from config)
+        _selectedCity = string.IsNullOrWhiteSpace(_config.Widget.City) ? "auto" : _config.Widget.City;
+        UpdateCityDisplay();
 
         // Opacity
         var op = _config.Widget.Opacity > 0.1 ? _config.Widget.Opacity * 100 : 100;
@@ -90,6 +80,22 @@ public partial class SettingsWindow : Window
         ChkGameMode.IsChecked = _config.Widget.AutoGameMode;
     }
 
+    private void UpdateCityDisplay()
+    {
+        if (TxtSelectedCity == null) return;
+
+        if (string.Equals(_selectedCity, "auto", StringComparison.OrdinalIgnoreCase))
+        {
+            TxtSelectedCity.Text = LocalizationService.CurrentLanguage == "en"
+                ? "Auto Detect (IP)"
+                : "Otomatik Algıla (IP)";
+        }
+        else
+        {
+            TxtSelectedCity.Text = _selectedCity;
+        }
+    }
+
     private void ApplyLocalization()
     {
         TxtTitle.Text = LocalizationService.Get("SettingsTitle");
@@ -106,6 +112,8 @@ public partial class SettingsWindow : Window
         BtnReset.Content = LocalizationService.Get("ResetDefaultsBtn");
         BtnCancel.Content = LocalizationService.CurrentLanguage == "en" ? "Cancel" : "Vazgeç";
         BtnSave.Content = LocalizationService.Get("SaveAndApplyBtn");
+
+        UpdateCityDisplay();
     }
 
     private void Tab_Checked(object sender, RoutedEventArgs e)
@@ -134,90 +142,82 @@ public partial class SettingsWindow : Window
         }
     }
 
-    private void TxtCity_GotFocus(object sender, RoutedEventArgs e)
+    private void BtnOpacityPreset_Click(object sender, RoutedEventArgs e)
     {
-        UpdateCitySuggestions();
-    }
-
-    private void TxtCity_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        UpdateCitySuggestions();
-    }
-
-    private void TxtCity_PreviewKeyDown(object sender, KeyEventArgs e)
-    {
-        if (e.Key == Key.Escape)
+        if (sender is Button btn && btn.Tag != null && double.TryParse(btn.Tag.ToString(), out var presetValue))
         {
-            PopupCitySuggestions.IsOpen = false;
-            e.Handled = true;
-        }
-        else if (e.Key == Key.Enter)
-        {
-            PopupCitySuggestions.IsOpen = false;
+            SliderOpacity.Value = presetValue;
         }
     }
 
-    private void UpdateCitySuggestions()
+    private void BtnCityDropdown_Click(object sender, RoutedEventArgs e)
     {
-        if (TxtCity == null || PopupCitySuggestions == null || ListCitySuggestions == null) return;
+        if (PopupCityDirectory == null) return;
 
-        var query = TxtCity.Text?.Trim() ?? "";
-        var results = new List<string>();
-
-        var autoLabel = LocalizationService.CurrentLanguage == "en" ? "📍 Auto Detect (IP Location)" : "📍 Otomatik Algıla (IP)";
-
-        if (string.IsNullOrEmpty(query))
+        if (PopupCityDirectory.IsOpen)
         {
-            results.Add(autoLabel);
-            results.AddRange(PredefinedCities.Take(7));
+            PopupCityDirectory.IsOpen = false;
+            BtnCityDropdown.IsChecked = false;
         }
         else
         {
-            if (autoLabel.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0 ||
-                "auto".IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0 ||
-                "otomatik".IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                results.Add(autoLabel);
-            }
+            TxtCitySearch.Text = "";
+            TxtSearchPlaceholder.Visibility = Visibility.Visible;
+            ListCountryGroups.ItemsSource = WorldCityService.GetAll();
+            PopupCityDirectory.IsOpen = true;
+            BtnCityDropdown.IsChecked = true;
 
-            var culture = new CultureInfo("tr-TR");
-            var matched = PredefinedCities.Where(c => culture.CompareInfo.IndexOf(c, query, CompareOptions.IgnoreCase) >= 0);
-            results.AddRange(matched.Take(8));
-        }
-
-        if (results.Count > 0 && TxtCity.IsFocused)
-        {
-            ListCitySuggestions.ItemsSource = results;
-            PopupCitySuggestions.IsOpen = true;
-        }
-        else
-        {
-            PopupCitySuggestions.IsOpen = false;
+            Dispatcher.BeginInvoke(() => TxtCitySearch.Focus(), System.Windows.Threading.DispatcherPriority.Input);
         }
     }
 
-    private void CityItem_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    private void PopupCityDirectory_Closed(object sender, EventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is string selectedCity)
+        if (BtnCityDropdown != null)
         {
-            if (selectedCity.StartsWith("📍"))
-            {
-                TxtCity.Text = "";
-            }
-            else
-            {
-                TxtCity.Text = selectedCity;
-            }
-            PopupCitySuggestions.IsOpen = false;
-            TxtCity.Focus();
-            TxtCity.CaretIndex = TxtCity.Text.Length;
+            BtnCityDropdown.IsChecked = false;
         }
+    }
+
+    private void TxtCitySearch_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (TxtSearchPlaceholder != null)
+        {
+            TxtSearchPlaceholder.Visibility = string.IsNullOrEmpty(TxtCitySearch.Text)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+
+        if (ListCountryGroups != null)
+        {
+            ListCountryGroups.ItemsSource = WorldCityService.Filter(TxtCitySearch.Text);
+        }
+    }
+
+    private void CityRow_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is FrameworkElement fe && fe.DataContext is string cityName)
+        {
+            _selectedCity = cityName;
+            UpdateCityDisplay();
+            PopupCityDirectory.IsOpen = false;
+            BtnCityDropdown.IsChecked = false;
+        }
+    }
+
+    private void BtnAutoDetectCity_Click(object sender, MouseButtonEventArgs e)
+    {
+        _selectedCity = "auto";
+        UpdateCityDisplay();
+        PopupCityDirectory.IsOpen = false;
+        BtnCityDropdown.IsChecked = false;
     }
 
     private void BtnReset_Click(object sender, RoutedEventArgs e)
     {
         CmbLanguage.SelectedIndex = 0; // TR
-        TxtCity.Text = "";
+        _selectedCity = "auto";
+        UpdateCityDisplay();
         SliderOpacity.Value = 100;
         CmbAccent.SelectedIndex = 0; // Sky
         RadioModeFull.IsChecked = true;
@@ -249,9 +249,8 @@ public partial class SettingsWindow : Window
             LocalizationService.CurrentLanguage = _config.Widget.Language;
         }
 
-        // 2. City
-        var cityText = TxtCity.Text?.Trim();
-        _config.Widget.City = string.IsNullOrWhiteSpace(cityText) ? "auto" : cityText;
+        // 2. City (from worldwide directory)
+        _config.Widget.City = string.IsNullOrWhiteSpace(_selectedCity) ? "auto" : _selectedCity;
 
         // 3. Opacity
         _config.Widget.Opacity = Math.Round(SliderOpacity.Value / 100.0, 2);
