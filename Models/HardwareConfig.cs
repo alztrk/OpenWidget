@@ -118,10 +118,23 @@ public class HardwareConfig
             TelemetryWidget.Enabled = Widgets.ShowTelemetry;
             FinanceWidget.Enabled = Widgets.ShowFinance;
 
-            var options = new JsonSerializerOptions { WriteIndented = true };
+            var dir = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            };
             var json = JsonSerializer.Serialize(this, options);
             File.WriteAllText(path, json);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error saving config to {path}: {ex.Message}");
+        }
     }
 }

@@ -232,6 +232,8 @@ public partial class SettingsWindow : Window
         RadioModeFull.IsChecked = true;
         RadioModeCompact.IsChecked = false;
         ChkHeader.IsChecked = true;
+        ChkWeather.IsChecked = true;
+        ChkClipboard.IsChecked = true;
         ChkTelemetry.IsChecked = true;
         ChkFinance.IsChecked = true;
         ChkMedia.IsChecked = true;
@@ -300,6 +302,9 @@ public partial class SettingsWindow : Window
             AutoStartService.SetAutoStart(autoStart);
         }
 
-        AnimationHelper.AnimateWindowExit(this, MasterDialogBorder, () => _onSave?.Invoke(_config));
+        // Persist settings immediately and synchronously
+        _onSave?.Invoke(_config);
+
+        AnimationHelper.AnimateWindowExit(this, MasterDialogBorder);
     }
 }

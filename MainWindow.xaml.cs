@@ -81,6 +81,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private FinanceSpecs _finance = new();
 
     private string _configPath = string.Empty;
+    private string _appDataConfigPath = string.Empty;
+    private string _fallbackRepoConfigPath = string.Empty;
     private string _pricesPath = string.Empty;
     private string _financeCachePath = string.Empty;
     private string _weatherCachePath = string.Empty;
@@ -175,7 +177,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         DataContext = this;
         LocalizationService.LanguageChanged += OnLanguageChanged;
         ResolvePaths();
-        LoadConfig();
     }
 
     private void OnLanguageChanged()
@@ -264,6 +265,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void ResolvePaths()
     {
         var baseDir = AppContext.BaseDirectory;
+        var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        _appDataConfigPath = Path.Combine(appData, "OpenWidget", "hardware-config.json");
 
         _configPath = Path.Combine(baseDir, "hardware-config.json");
         if (!File.Exists(_configPath))
@@ -272,15 +275,26 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             if (File.Exists(cwdPath)) _configPath = cwdPath;
         }
 
+        const string repoRoot = @"D:\projects\OpenWidget";
+        var repoConfig = Path.Combine(repoRoot, "hardware-config.json");
+        if (File.Exists(repoConfig))
+        {
+            _fallbackRepoConfigPath = repoConfig;
+        }
+
         _pricesPath = Path.Combine(baseDir, "hardware-prices.json");
         if (!File.Exists(_pricesPath))
         {
             var cwdPrices = Path.Combine(Environment.CurrentDirectory, "hardware-prices.json");
             if (File.Exists(cwdPrices)) _pricesPath = cwdPrices;
+            else if (File.Exists(Path.Combine(repoRoot, "hardware-prices.json"))) _pricesPath = Path.Combine(repoRoot, "hardware-prices.json");
         }
 
         _financeCachePath = Path.Combine(baseDir, "finance-cache.json");
         _weatherCachePath = Path.Combine(baseDir, "weather-cache.json");
+
+        // Load configuration before dependent services are initialized
+        LoadConfig();
 
         _priceService = new PriceService(_pricesPath);
         _telemetryService = new SystemTelemetryService();
@@ -298,7 +312,24 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void LoadConfig()
     {
-        _config = HardwareConfig.Load(_configPath);
+        if (File.Exists(_appDataConfigPath))
+        {
+            _config = HardwareConfig.Load(_appDataConfigPath);
+        }
+        else if (File.Exists(_configPath))
+        {
+            _config = HardwareConfig.Load(_configPath);
+            SaveConfig();
+        }
+        else if (!string.IsNullOrEmpty(_fallbackRepoConfigPath) && File.Exists(_fallbackRepoConfigPath))
+        {
+            _config = HardwareConfig.Load(_fallbackRepoConfigPath);
+            SaveConfig();
+        }
+        else
+        {
+            _config = new HardwareConfig();
+        }
 
         Width = 360;
 
@@ -315,6 +346,47 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         UpdateContextMenuTexts();
         SyncMenuCheckboxes();
+
+        NotifyAllWidgetVisibilities();
+    }
+
+    public void SaveConfig()
+    {
+        try
+        {
+            if (!string.IsNullOrEmpty(_appDataConfigPath))
+            {
+                _config.Save(_appDataConfigPath);
+            }
+
+            if (!string.IsNullOrEmpty(_configPath))
+            {
+                _config.Save(_configPath);
+            }
+
+            if (!string.IsNullOrEmpty(_fallbackRepoConfigPath) && File.Exists(_fallbackRepoConfigPath))
+            {
+                _config.Save(_fallbackRepoConfigPath);
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to save config: {ex.Message}");
+        }
+    }
+
+    private void NotifyAllWidgetVisibilities()
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsHeaderVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsWeatherVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsClipboardVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsTelemetryVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsFinanceVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsMediaVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsHardwareVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsQuickActionsVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsCompactViewVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsFullViewVisible)));
     }
 
     private void ApplyLockState()
@@ -383,6 +455,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
         PositionWidget();
+        ApplyLockState();
+        ApplyDesktopPinning();
+        SyncMenuCheckboxes();
+        NotifyAllWidgetVisibilities();
 
         Microsoft.Win32.SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
 
@@ -525,7 +601,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         animOut.Completed += (_, _) =>
         {
             _config.Widget.IsCompact = !_config.Widget.IsCompact;
-            _config.Save(_configPath);
+            SaveConfig();
             SyncMenuCheckboxes();
             NotifyCompactState();
 
@@ -552,14 +628,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         _config.Widget.CustomLeft = Math.Round(Left);
         _config.Widget.CustomTop = Math.Round(Top);
-        _config.Save(_configPath);
+        SaveConfig();
     }
 
     private void MenuResetPosition_Click(object sender, RoutedEventArgs e)
     {
         _config.Widget.CustomLeft = null;
         _config.Widget.CustomTop = null;
-        _config.Save(_configPath);
+        SaveConfig();
         PositionWidget();
     }
 
@@ -740,7 +816,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void MenuLockPosition_Click(object sender, RoutedEventArgs e)
     {
         _config.Widget.IsLocked = !_config.Widget.IsLocked;
-        _config.Save(_configPath);
+        SaveConfig();
         ApplyLockState();
         SyncMenuCheckboxes();
     }
@@ -753,14 +829,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             _config.Widget.AlwaysOnTop = false;
             Topmost = false;
         }
-        _config.Save(_configPath);
+        SaveConfig();
         ApplyDesktopPinning();
         SyncMenuCheckboxes();
     }
 
     private void SaveAndNotifyLayout(string propertyName, MenuItem? menuItem, bool isChecked)
     {
-        _config.Save(_configPath);
+        SaveConfig();
         if (menuItem != null) menuItem.IsChecked = isChecked;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
@@ -768,7 +844,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void MenuGameMode_Click(object sender, RoutedEventArgs e)
     {
         _config.Widget.AutoGameMode = !_config.Widget.AutoGameMode;
-        _config.Save(_configPath);
+        SaveConfig();
         if (MenuGameMode != null) MenuGameMode.IsChecked = _config.Widget.AutoGameMode;
     }
 
@@ -786,7 +862,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         Topmost = !Topmost;
         _config.Widget.AlwaysOnTop = Topmost;
-        _config.Save(_configPath);
+        SaveConfig();
         if (MenuAlwaysOnTop != null)
         {
             MenuAlwaysOnTop.IsChecked = Topmost;
@@ -803,7 +879,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void OnSettingsSaved(HardwareConfig updated)
     {
         _config = updated;
-        _config.Save(_configPath);
+        SaveConfig();
 
         Opacity = _config.Widget.Opacity;
         Topmost = _config.Widget.AlwaysOnTop;
@@ -850,7 +926,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void MenuEditConfig_Click(object sender, RoutedEventArgs e)
     {
-        OpenFileWithDefaultEditor(_configPath);
+        var target = File.Exists(_appDataConfigPath) ? _appDataConfigPath : _configPath;
+        OpenFileWithDefaultEditor(target);
     }
 
     private static void OpenFileWithDefaultEditor(string path)
