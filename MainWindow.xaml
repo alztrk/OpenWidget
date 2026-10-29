@@ -210,6 +210,40 @@
                 </StackPanel>
             </Grid>
         </DataTemplate>
+
+        <!-- 4. Quick Toolbar Button Style -->
+        <Style x:Key="ToolbarBtnStyle" TargetType="Button">
+            <Setter Property="Background" Value="#18FFFFFF" />
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="BorderBrush" Value="#22FFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="4,3.5" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#33FFFFFF" />
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#4DFFFFFF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Window.ContextMenu>
@@ -254,6 +288,13 @@
                                Foreground="{StaticResource AccentBrush}"
                                VerticalAlignment="Center"
                                Margin="0,0,6,0" />
+                    <TextBlock Text="{Binding Telemetry.UptimeText, StringFormat='Açık: {0}'}"
+                               DockPanel.Dock="Right"
+                               FontSize="9"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               VerticalAlignment="Center"
+                               Margin="6,0,0,0" />
                     <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
                 </DockPanel>
 
@@ -309,6 +350,13 @@
                                Foreground="{StaticResource AccentBrush}"
                                VerticalAlignment="Center"
                                Margin="0,0,6,0" />
+                    <TextBlock Text="{Binding Finance.WeatherText}"
+                               DockPanel.Dock="Right"
+                               FontSize="9"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               VerticalAlignment="Center"
+                               Margin="6,0,0,0" />
                     <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
                 </DockPanel>
 
@@ -446,6 +494,69 @@
                 </Border>
 
             </StackPanel>
+        </Border>
+
+        <!-- CARD 4: HIZLI SİSTEM ARAÇLARI (QUICK ACTIONS TOOLBAR) -->
+        <Border Background="{StaticResource GlassBgBrush}"
+                BorderBrush="{StaticResource GlassBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="8,5"
+                Margin="0,6,0,0">
+            <UniformGrid Columns="4">
+                <!-- Button 1: Task Manager -->
+                <Button Style="{StaticResource ToolbarBtnStyle}"
+                        Margin="0,0,3,0"
+                        ToolTip="Görev Yöneticisi (Ctrl+Shift+Esc)"
+                        Click="BtnTaskMgr_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Path Data="{StaticResource GeoTaskmgr}"
+                              Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                              Stretch="Uniform" Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,4,0" />
+                        <TextBlock Text="Görev Yön." FontSize="9.5" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <!-- Button 2: Volume Mixer -->
+                <Button Style="{StaticResource ToolbarBtnStyle}"
+                        Margin="3,0,3,0"
+                        ToolTip="Ses Düzeyi Karıştırıcısı"
+                        Click="BtnVolume_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Path Data="{StaticResource GeoSpeaker}"
+                              Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                              Stretch="Uniform" Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,4,0" />
+                        <TextBlock Text="Ses" FontSize="9.5" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <!-- Button 3: Terminal -->
+                <Button Style="{StaticResource ToolbarBtnStyle}"
+                        Margin="3,0,3,0"
+                        ToolTip="Windows Terminal / PowerShell"
+                        Click="BtnTerminal_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Path Data="{StaticResource GeoTerminal}"
+                              Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                              Stretch="Uniform" Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,4,0" />
+                        <TextBlock Text="Terminal" FontSize="9.5" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <!-- Button 4: Clean RAM -->
+                <Button x:Name="BtnCleanRam"
+                        Style="{StaticResource ToolbarBtnStyle}"
+                        Margin="3,0,0,0"
+                        ToolTip="Çalışma Kümesini ve Belleği Temizle"
+                        Click="BtnCleanRam_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Path Data="{StaticResource GeoClean}"
+                              Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                              Stretch="Uniform" Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,4,0" />
+                        <TextBlock x:Name="TxtCleanRam" Text="Bellek Boşalt" FontSize="9.5" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </UniformGrid>
         </Border>
     </StackPanel>
 </Window>

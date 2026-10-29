@@ -17,6 +17,7 @@ public record TelemetryItem(
 
 public class TelemetrySpecs
 {
+    public string UptimeText { get; set; } = "0s 0dk";
     public List<TelemetryItem> Performance { get; set; } = new();
     public List<TelemetryItem> Storage { get; set; } = new();
 }

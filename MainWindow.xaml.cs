@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
@@ -40,10 +41,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private string _configPath = string.Empty;
     private string _pricesPath = string.Empty;
     private string _financeCachePath = string.Empty;
+    private string _weatherCachePath = string.Empty;
 
     private PriceService? _priceService;
     private SystemTelemetryService? _telemetryService;
     private MarketFinanceService? _financeService;
+    private WeatherService? _weatherService;
 
     private DispatcherTimer? _telemetryTimer;
     private DispatcherTimer? _financeTimer;
@@ -130,10 +133,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
 
         _financeCachePath = Path.Combine(baseDir, "finance-cache.json");
+        _weatherCachePath = Path.Combine(baseDir, "weather-cache.json");
 
         _priceService = new PriceService(_pricesPath);
         _telemetryService = new SystemTelemetryService();
         _financeService = new MarketFinanceService(_financeCachePath);
+        _weatherService = new WeatherService(_weatherCachePath);
     }
 
     private void LoadConfig()
@@ -223,7 +228,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         if (_financeService != null)
         {
-            Finance = _financeService.GetCurrentSpecs();
+            var specs = _financeService.GetCurrentSpecs();
+            if (_weatherService != null)
+            {
+                specs.WeatherText = _weatherService.GetCurrentWeather();
+            }
+            Finance = specs;
         }
     }
 
@@ -231,7 +241,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         if (_financeService != null)
         {
-            Finance = await _financeService.FetchLatestAsync();
+            var specs = await _financeService.FetchLatestAsync();
+            if (_weatherService != null)
+            {
+                specs.WeatherText = await _weatherService.FetchLatestAsync();
+            }
+            Finance = specs;
         }
     }
 
@@ -373,6 +388,77 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             }
             catch { }
         }
+    }
+
+    private void BtnTaskMgr_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "taskmgr.exe",
+                UseShellExecute = true
+            });
+        }
+        catch { }
+    }
+
+    private void BtnVolume_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "sndvol.exe",
+                UseShellExecute = true
+            });
+        }
+        catch { }
+    }
+
+    private void BtnTerminal_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "wt.exe",
+                    UseShellExecute = true
+                });
+            }
+            catch
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "powershell.exe",
+                    UseShellExecute = true
+                });
+            }
+        }
+        catch { }
+    }
+
+    private async void BtnCleanRam_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            TrimMemory();
+            RefreshTelemetry();
+
+            if (TxtCleanRam != null)
+            {
+                TxtCleanRam.Text = "Temizlendi!";
+                TxtCleanRam.Foreground = Application.Current.Resources["AccentGreenBrush"] as System.Windows.Media.Brush ?? System.Windows.Media.Brushes.LightGreen;
+
+                await Task.Delay(1500);
+
+                TxtCleanRam.Text = "Bellek Boşalt";
+                TxtCleanRam.ClearValue(TextBlock.ForegroundProperty);
+            }
+        }
+        catch { }
     }
 
     private void MenuExit_Click(object sender, RoutedEventArgs e)

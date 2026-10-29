@@ -1,7 +1,9 @@
 using System;
 using System.IO;
+using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 using RigBadge.Models;
 
 namespace RigBadge.Services;
@@ -59,6 +61,9 @@ public class SystemTelemetryService : IDisposable
     [DllImport("nvml.dll", EntryPoint = "nvmlDeviceGetMemoryInfo")]
     private static extern int NvmlDeviceGetMemoryInfo(IntPtr device, ref NvmlMemory memory);
 
+    [DllImport("nvml.dll", EntryPoint = "nvmlDeviceGetTemperature")]
+    private static extern int NvmlDeviceGetTemperature(IntPtr device, int sensorType, out uint temp);
+
     [DllImport("nvml.dll", EntryPoint = "nvmlShutdown")]
     private static extern int NvmlShutdown();
 
@@ -68,9 +73,16 @@ public class SystemTelemetryService : IDisposable
     private IntPtr _nvmlDevice = IntPtr.Zero;
     private string _gpuName = "RTX 3060";
 
+    // Network stats tracking
+    private long _prevBytesReceived, _prevBytesSent;
+    private DateTime _prevNetTime = DateTime.UtcNow;
+    private int _lastPingMs = 9;
+    private DateTime _lastPingTime = DateTime.MinValue;
+
     public SystemTelemetryService()
     {
         TryInitNvml();
+        InitNetworkBaselines();
     }
 
     private void TryInitNvml()
@@ -103,9 +115,24 @@ public class SystemTelemetryService : IDisposable
         }
     }
 
+    private void InitNetworkBaselines()
+    {
+        try
+        {
+            GetTotalNetworkBytes(out _prevBytesReceived, out _prevBytesSent);
+            _prevNetTime = DateTime.UtcNow;
+            UpdatePingAsync();
+        }
+        catch { }
+    }
+
     public TelemetrySpecs GetTelemetrySpecs()
     {
         var specs = new TelemetrySpecs();
+
+        // 0. System Uptime
+        var uptime = TimeSpan.FromMilliseconds(Environment.TickCount64);
+        specs.UptimeText = uptime.Days > 0 ? $"{uptime.Days}g {uptime.Hours}s" : $"{uptime.Hours}s {uptime.Minutes}dk";
 
         // 1. CPU Load
         double cpuPercent = GetCpuUsage();
@@ -139,20 +166,21 @@ public class SystemTelemetryService : IDisposable
             ));
         }
 
-        // 3. GPU & VRAM Load (NVIDIA NVML)
+        // 3. GPU & VRAM Load (NVIDIA NVML with live temp)
         var gpuData = GetGpuUsage();
         if (gpuData.HasValue)
         {
-            var (gpuPercent, vramPercent, vramUsedGb, vramTotalGb) = gpuData.Value;
+            var (gpuPercent, vramPercent, vramUsedGb, vramTotalGb, gpuTemp) = gpuData.Value;
 
+            string gpuSubtitle = gpuTemp > 0 ? $"{_gpuName} • {gpuTemp}°C" : _gpuName;
             specs.Performance.Add(new TelemetryItem(
                 Key: "gpu",
                 IconKey: "IconGpu",
                 Label: "Ekran Kartı (GPU)",
                 Percentage: gpuPercent,
                 MainText: $"%{gpuPercent:F0}",
-                SubText: _gpuName,
-                BarColorKey: gpuPercent > 85 ? "AccentRedBrush" : (gpuPercent > 65 ? "AccentAmberBrush" : "AccentBrush")
+                SubText: gpuSubtitle,
+                BarColorKey: gpuTemp > 80 ? "AccentRedBrush" : (gpuPercent > 85 ? "AccentRedBrush" : (gpuPercent > 65 ? "AccentAmberBrush" : "AccentBrush"))
             ));
 
             specs.Performance.Add(new TelemetryItem(
@@ -166,7 +194,36 @@ public class SystemTelemetryService : IDisposable
             ));
         }
 
-        // 4. Disk Space (C: and D:)
+        // 4. Network Traffic & Ping
+        try
+        {
+            GetTotalNetworkBytes(out long currRx, out long currTx);
+            var now = DateTime.UtcNow;
+            double elapsedSec = Math.Max(0.5, (now - _prevNetTime).TotalSeconds);
+
+            double downBps = Math.Max(0, (currRx - _prevBytesReceived) / elapsedSec);
+            double upBps = Math.Max(0, (currTx - _prevBytesSent) / elapsedSec);
+
+            _prevBytesReceived = currRx;
+            _prevBytesSent = currTx;
+            _prevNetTime = now;
+
+            UpdatePingAsync();
+
+            double netPercent = Math.Min(100.0, Math.Max(2.0, (downBps * 8.0 / 100_000_000.0) * 100.0));
+            specs.Performance.Add(new TelemetryItem(
+                Key: "network",
+                IconKey: "IconNetwork",
+                Label: "Ağ Trafiği",
+                Percentage: netPercent,
+                MainText: $"{_lastPingMs} ms",
+                SubText: $"↓ {FormatSpeed(downBps)}  ↑ {FormatSpeed(upBps)}",
+                BarColorKey: _lastPingMs > 80 ? "AccentRedBrush" : (_lastPingMs > 40 ? "AccentAmberBrush" : "AccentGreenBrush")
+            ));
+        }
+        catch { }
+
+        // 5. Disk Space (C: and D:)
         try
         {
             var drives = DriveInfo.GetDrives();
@@ -198,7 +255,7 @@ public class SystemTelemetryService : IDisposable
         return specs;
     }
 
-    private (double gpuPercent, double vramPercent, double vramUsedGb, double vramTotalGb)? GetGpuUsage()
+    private (double gpuPercent, double vramPercent, double vramUsedGb, double vramTotalGb, uint temp)? GetGpuUsage()
     {
         TryInitNvml();
         if (!_nvmlInitialized || _nvmlDevice == IntPtr.Zero) return null;
@@ -211,16 +268,70 @@ public class SystemTelemetryService : IDisposable
             var mem = new NvmlMemory();
             if (NvmlDeviceGetMemoryInfo(_nvmlDevice, ref mem) != 0) return null;
 
+            uint temp = 0;
+            try { NvmlDeviceGetTemperature(_nvmlDevice, 0, out temp); } catch { }
+
             double usedGb = (double)mem.Used / (1024 * 1024 * 1024);
             double totalGb = (double)mem.Total / (1024 * 1024 * 1024);
             double vramPercent = totalGb > 0 ? (usedGb / totalGb) * 100.0 : 0;
 
-            return (util.Gpu, vramPercent, usedGb, totalGb);
+            return (util.Gpu, vramPercent, usedGb, totalGb, temp);
         }
         catch
         {
             return null;
         }
+    }
+
+    private void UpdatePingAsync()
+    {
+        if ((DateTime.UtcNow - _lastPingTime).TotalSeconds < 6) return;
+        _lastPingTime = DateTime.UtcNow;
+
+        Task.Run(async () =>
+        {
+            try
+            {
+                using var ping = new Ping();
+                var reply = await ping.SendPingAsync("1.1.1.1", 500);
+                if (reply.Status == IPStatus.Success)
+                {
+                    _lastPingMs = (int)reply.RoundtripTime;
+                }
+            }
+            catch { }
+        });
+    }
+
+    private static void GetTotalNetworkBytes(out long rx, out long tx)
+    {
+        rx = 0;
+        tx = 0;
+        try
+        {
+            var interfaces = NetworkInterface.GetAllNetworkInterfaces();
+            foreach (var ni in interfaces)
+            {
+                if (ni.OperationalStatus == OperationalStatus.Up &&
+                    ni.NetworkInterfaceType != NetworkInterfaceType.Loopback &&
+                    ni.NetworkInterfaceType != NetworkInterfaceType.Tunnel)
+                {
+                    var stats = ni.GetIPStatistics();
+                    rx += stats.BytesReceived;
+                    tx += stats.BytesSent;
+                }
+            }
+        }
+        catch { }
+    }
+
+    private static string FormatSpeed(double bytesPerSec)
+    {
+        double bitsPerSec = bytesPerSec * 8.0;
+        if (bitsPerSec >= 1_000_000_000) return $"{bitsPerSec / 1_000_000_000:F1} Gbps";
+        if (bitsPerSec >= 1_000_000) return $"{bitsPerSec / 1_000_000:F1} Mbps";
+        if (bitsPerSec >= 1_000) return $"{bitsPerSec / 1_000:F0} Kbps";
+        return $"{bitsPerSec:F0} bps";
     }
 
     private double GetCpuUsage()
