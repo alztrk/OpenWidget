@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Windows.Media.Control;
@@ -20,6 +24,13 @@ public record MediaTrackInfo(
 
 public class MediaSessionService : IDisposable
 {
+    private static readonly HttpClient _httpClient = new()
+    {
+        Timeout = TimeSpan.FromSeconds(5)
+    };
+    private static readonly ConcurrentDictionary<string, TimeSpan> _durationCache = new();
+    private CancellationTokenSource? _durationCts;
+
     private GlobalSystemMediaTransportControlsSessionManager? _manager;
     private GlobalSystemMediaTransportControlsSession? _currentSession;
     private MediaTrackInfo _currentTrack = new(false, "", "", false, "");
@@ -185,6 +196,7 @@ public class MediaSessionService : IDisposable
                 if (source.Contains("Spotify", StringComparison.OrdinalIgnoreCase)) source = "Spotify";
                 else if (source.Contains("Chrome", StringComparison.OrdinalIgnoreCase)) source = "Chrome";
                 else if (source.Contains("Edge", StringComparison.OrdinalIgnoreCase)) source = "Edge";
+                else if (source.Contains("Firefox", StringComparison.OrdinalIgnoreCase) || source.Contains("LibreWolf", StringComparison.OrdinalIgnoreCase) || source.StartsWith("83C1C0F3FA8524B1", StringComparison.OrdinalIgnoreCase)) source = "LibreWolf";
 
                 byte[]? thumbBytes = null;
                 if (props.Thumbnail != null)
@@ -215,9 +227,29 @@ public class MediaSessionService : IDisposable
                 }
                 else if (trackChanged)
                 {
-                    _trackDuration = TimeSpan.Zero;
                     _trackBasePosition = TimeSpan.Zero;
                     _trackStopwatch.Restart();
+
+                    if (_durationCache.TryGetValue(trackKey, out var cachedDur) && cachedDur > TimeSpan.Zero)
+                    {
+                        _trackDuration = cachedDur;
+                    }
+                    else
+                    {
+                        _trackDuration = TimeSpan.Zero;
+                        ResolveWebMediaDurationAsync(props.Title, props.Artist, trackKey);
+                    }
+                }
+                else if (_trackDuration <= TimeSpan.Zero)
+                {
+                    if (_durationCache.TryGetValue(trackKey, out var cachedDur) && cachedDur > TimeSpan.Zero)
+                    {
+                        _trackDuration = cachedDur;
+                    }
+                    else
+                    {
+                        ResolveWebMediaDurationAsync(props.Title, props.Artist, trackKey);
+                    }
                 }
 
                 _activeTrackKey = trackKey;
@@ -324,8 +356,86 @@ public class MediaSessionService : IDisposable
         catch { }
     }
 
+    private void ResolveWebMediaDurationAsync(string title, string artist, string trackKey)
+    {
+        try
+        {
+            _durationCts?.Cancel();
+            _durationCts?.Dispose();
+            _durationCts = new CancellationTokenSource();
+            var token = _durationCts.Token;
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var dur = await FetchDurationFromWebAsync(title, artist, token);
+                    if (dur > TimeSpan.Zero)
+                    {
+                        _durationCache[trackKey] = dur;
+                        if (_activeTrackKey == trackKey)
+                        {
+                            _trackDuration = dur;
+                            var pos = CurrentPlaybackPosition;
+                            _currentTrack = _currentTrack with { Position = pos, Duration = dur };
+                            PositionChanged?.Invoke(pos, dur);
+                            MediaChanged?.Invoke(_currentTrack);
+                        }
+                    }
+                }
+                catch { }
+            }, token);
+        }
+        catch { }
+    }
+
+    private static async Task<TimeSpan> FetchDurationFromWebAsync(string title, string artist, CancellationToken ct)
+    {
+        try
+        {
+            string query = Uri.EscapeDataString(string.IsNullOrWhiteSpace(artist) ? title : $"{title} {artist}");
+            var url = $"https://www.youtube.com/results?search_query={query}";
+
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+            request.Headers.Add("Accept-Language", "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7");
+
+            var response = await _httpClient.SendAsync(request, ct);
+            if (!response.IsSuccessStatusCode) return TimeSpan.Zero;
+
+            var html = await response.Content.ReadAsStringAsync(ct);
+            var m = Regex.Match(html, "\"simpleText\":\"(\\d+:\\d+(?::\\d+)?)\"");
+            if (m.Success)
+            {
+                return ParseDuration(m.Groups[1].Value);
+            }
+        }
+        catch { }
+        return TimeSpan.Zero;
+    }
+
+    private static TimeSpan ParseDuration(string raw)
+    {
+        try
+        {
+            var parts = raw.Split(':');
+            if (parts.Length == 2 && int.TryParse(parts[0], out int m) && int.TryParse(parts[1], out int s))
+            {
+                return TimeSpan.FromMinutes(m) + TimeSpan.FromSeconds(s);
+            }
+            if (parts.Length == 3 && int.TryParse(parts[0], out int h) && int.TryParse(parts[1], out int m2) && int.TryParse(parts[2], out int s2))
+            {
+                return TimeSpan.FromHours(h) + TimeSpan.FromMinutes(m2) + TimeSpan.FromSeconds(s2);
+            }
+        }
+        catch { }
+        return TimeSpan.Zero;
+    }
+
     public void Dispose()
     {
+        _durationCts?.Cancel();
+        _durationCts?.Dispose();
         _progressTimer.Stop();
         _progressTimer.Dispose();
         _trackStopwatch.Stop();

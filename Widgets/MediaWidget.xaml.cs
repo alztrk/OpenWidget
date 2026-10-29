@@ -63,13 +63,13 @@ public partial class MediaWidget : UserControl
             }
             else
             {
-                // Web stream / YouTube / video without fixed timeline metadata
+                // Web stream / video without fixed timeline metadata or resolving
                 SliderSeek.IsEnabled = true;
                 SliderSeek.IsHitTestVisible = false;
                 double scale = Math.Max(300, pos.TotalSeconds * 1.25);
                 SliderSeek.Maximum = scale;
                 SliderSeek.Value = Math.Clamp(pos.TotalSeconds, 0, scale);
-                TxtTotalTime.Text = "Çalıyor";
+                TxtTotalTime.Text = "--:--";
             }
         });
     }
@@ -142,7 +142,7 @@ public partial class MediaWidget : UserControl
             double scale = Math.Max(300, info.Position.TotalSeconds * 1.25);
             SliderSeek.Maximum = scale;
             SliderSeek.Value = Math.Clamp(info.Position.TotalSeconds, 0, scale);
-            TxtTotalTime.Text = "Çalıyor";
+            TxtTotalTime.Text = "--:--";
         }
 
         // Initialize Real Master Volume Control
