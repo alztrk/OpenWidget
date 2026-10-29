@@ -201,10 +201,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         var workArea = SystemParameters.WorkArea;
 
-        // Auto-calculate 10% margins based on current resolution
-        double rightMargin = workArea.Width * 0.10;
-        double topMargin = workArea.Height * 0.10;
-        double availableHeight = workArea.Height * 0.80;
+        // Auto-calculate 5% margins based on current resolution
+        double rightMargin = workArea.Width * 0.05;
+        double topMargin = workArea.Height * 0.05;
+        double availableHeight = workArea.Height * 0.90;
 
         Width = 380;
         MaxHeight = availableHeight;
