@@ -163,6 +163,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         PositionWidget();
 
+        Microsoft.Win32.SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
+
         // Ensure auto-start on boot is registered
         if (!AutoStartService.IsAutoStartEnabled())
         {
@@ -190,16 +192,25 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         await RefreshHardwareSpecsAsync();
     }
 
+    private void OnDisplaySettingsChanged(object? sender, EventArgs e)
+    {
+        Dispatcher.Invoke(PositionWidget);
+    }
+
     public void PositionWidget()
     {
-        Width = 380;
-
         var workArea = SystemParameters.WorkArea;
-        var targetLeft = workArea.Right - Width - _config.Widget.OffsetX;
-        var targetTop = workArea.Top + _config.Widget.OffsetY;
 
-        Left = Math.Max(workArea.Left, targetLeft);
-        Top = Math.Max(workArea.Top, targetTop);
+        // Auto-calculate 10% margins based on current resolution
+        double rightMargin = workArea.Width * 0.10;
+        double topMargin = workArea.Height * 0.10;
+        double availableHeight = workArea.Height * 0.80;
+
+        Width = 380;
+        MaxHeight = availableHeight;
+
+        Left = Math.Round(workArea.Right - Width - rightMargin);
+        Top = Math.Round(workArea.Top + topMargin);
     }
 
     private void RefreshTelemetry()
@@ -373,6 +384,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     protected override void OnClosed(EventArgs e)
     {
+        Microsoft.Win32.SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
         _telemetryTimer?.Stop();
         _financeTimer?.Stop();
         _telemetryService?.Dispose();

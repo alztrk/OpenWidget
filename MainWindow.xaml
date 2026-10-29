@@ -228,10 +228,13 @@
         </ContextMenu>
     </Window.ContextMenu>
 
-    <!-- Single Unified Vertical Stack (Downward-Ordered, Fixed & Non-Movable) -->
-    <StackPanel Margin="0,0,0,24">
+    <!-- Single Unified Vertical Stack (10% Top, Right, Bottom Auto-Positioned) -->
+    <ScrollViewer Focusable="False"
+                  VerticalScrollBarVisibility="Hidden"
+                  HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="0,0,0,10">
 
-        <!-- CARD 1: SİSTEM TELEMETRİSİ -->
+            <!-- CARD 1: SİSTEM TELEMETRİSİ -->
         <Border Visibility="{Binding IsTelemetryVisible, Converter={StaticResource BoolToVis}}"
                 Background="{StaticResource GlassBgBrush}"
                 BorderBrush="{StaticResource GlassBorderBrush}"
@@ -476,4 +479,5 @@
             </StackPanel>
         </Border>
     </StackPanel>
+    </ScrollViewer>
 </Window>
