@@ -4,6 +4,7 @@
         xmlns:converters="clr-namespace:RigBadge.Converters"
         Title="RigBadge Finance"
         Width="260"
+        MinHeight="230"
         SizeToContent="Height"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -55,22 +56,26 @@
                                FontWeight="SemiBold"
                                Foreground="{StaticResource PriceBrush}"
                                HorizontalAlignment="Right" />
-                    <TextBlock x:Name="TxtChange"
-                               Text="{Binding ChangeFormatted}"
+                    <TextBlock Text="{Binding ChangeFormatted}"
                                FontSize="8.5"
                                FontWeight="SemiBold"
-                               HorizontalAlignment="Right"
-                               Foreground="{StaticResource TextSecondaryBrush}" />
+                               HorizontalAlignment="Right">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ChangeDirection}" Value="Up">
+                                        <Setter Property="Foreground" Value="{StaticResource AccentGreenBrush}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ChangeDirection}" Value="Down">
+                                        <Setter Property="Foreground" Value="{StaticResource AccentRedBrush}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                 </StackPanel>
             </Grid>
-            <DataTemplate.Triggers>
-                <DataTrigger Binding="{Binding ChangeDirection}" Value="Up">
-                    <Setter TargetName="TxtChange" Property="Foreground" Value="{StaticResource AccentGreenBrush}" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding ChangeDirection}" Value="Down">
-                    <Setter TargetName="TxtChange" Property="Foreground" Value="{StaticResource AccentRedBrush}" />
-                </DataTrigger>
-            </DataTemplate.Triggers>
         </DataTemplate>
     </Window.Resources>
 

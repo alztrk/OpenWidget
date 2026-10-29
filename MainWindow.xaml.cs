@@ -156,25 +156,33 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void InitSubWidgets()
     {
-        if (_config.TelemetryWidget.Enabled)
+        try
         {
-            _telemetryWindow = new TelemetryWindow(_config, _configPath);
-            _telemetryWindow.Show();
+            if (_config.TelemetryWidget.Enabled)
+            {
+                _telemetryWindow = new TelemetryWindow(_config, _configPath);
+                _telemetryWindow.Show();
+            }
+            if (MenuTelemetry != null)
+            {
+                MenuTelemetry.IsChecked = _config.TelemetryWidget.Enabled;
+            }
         }
-        if (MenuTelemetry != null)
-        {
-            MenuTelemetry.IsChecked = _config.TelemetryWidget.Enabled;
-        }
+        catch { }
 
-        if (_config.FinanceWidget.Enabled)
+        try
         {
-            _financeWindow = new FinanceWindow(_config, _configPath);
-            _financeWindow.Show();
+            if (_config.FinanceWidget.Enabled)
+            {
+                _financeWindow = new FinanceWindow(_config, _configPath);
+                _financeWindow.Show();
+            }
+            if (MenuFinance != null)
+            {
+                MenuFinance.IsChecked = _config.FinanceWidget.Enabled;
+            }
         }
-        if (MenuFinance != null)
-        {
-            MenuFinance.IsChecked = _config.FinanceWidget.Enabled;
-        }
+        catch { }
     }
 
     private void StartDesktopMonitor()
@@ -204,6 +212,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         var telHandle = _telemetryWindow != null ? new WindowInteropHelper(_telemetryWindow).Handle : IntPtr.Zero;
         var finHandle = _financeWindow != null ? new WindowInteropHelper(_financeWindow).Handle : IntPtr.Zero;
 
+        string cls = "";
+        if (fg != IntPtr.Zero)
+        {
+            var sb = new StringBuilder(256);
+            GetClassName(fg, sb, 256);
+            cls = sb.ToString();
+        }
+
         bool isDesktop = false;
 
         if (fg == IntPtr.Zero || fg == myHandle || fg == telHandle || fg == finHandle ||
@@ -216,10 +232,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
         else
         {
-            var sb = new StringBuilder(256);
-            GetClassName(fg, sb, 256);
-            var cls = sb.ToString();
-
             // Detect Windows desktop shell surfaces (wallpaper, taskbar, desktop view)
             if (cls == "Progman" ||
                 cls == "WorkerW" ||
@@ -261,17 +273,17 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
         else
         {
-            if (Visibility != Visibility.Collapsed)
+            if (Visibility != Visibility.Hidden)
             {
-                Visibility = Visibility.Collapsed;
+                Visibility = Visibility.Hidden;
             }
-            if (_telemetryWindow != null && _telemetryWindow.Visibility != Visibility.Collapsed)
+            if (_telemetryWindow != null && _telemetryWindow.Visibility != Visibility.Hidden)
             {
-                _telemetryWindow.Visibility = Visibility.Collapsed;
+                _telemetryWindow.Visibility = Visibility.Hidden;
             }
-            if (_financeWindow != null && _financeWindow.Visibility != Visibility.Collapsed)
+            if (_financeWindow != null && _financeWindow.Visibility != Visibility.Hidden)
             {
-                _financeWindow.Visibility = Visibility.Collapsed;
+                _financeWindow.Visibility = Visibility.Hidden;
             }
         }
     }

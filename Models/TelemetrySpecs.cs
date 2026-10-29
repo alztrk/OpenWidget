@@ -10,7 +10,10 @@ public record TelemetryItem(
     string MainText,
     string SubText,
     string BarColorKey = "AccentBrush"
-);
+)
+{
+    public double RemainingPercentage => Math.Max(0.01, 100.0 - Math.Max(0.01, Math.Min(100.0, Percentage)));
+}
 
 public class TelemetrySpecs
 {

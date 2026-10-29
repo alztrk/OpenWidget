@@ -4,6 +4,7 @@
         xmlns:converters="clr-namespace:RigBadge.Converters"
         Title="RigBadge Telemetry"
         Width="260"
+        MinHeight="170"
         SizeToContent="Height"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -68,24 +69,15 @@
                 <!-- Mini Progress Track -->
                 <Grid Height="3.5" Margin="20,1,0,0">
                     <Border Background="{StaticResource TrackBgBrush}" CornerRadius="1.75" />
-                    <ProgressBar Value="{Binding Percentage}"
-                                 Minimum="0"
-                                 Maximum="100"
-                                 BorderThickness="0"
-                                 Background="Transparent"
-                                 Foreground="{Binding BarColorKey, Converter={StaticResource BrushConverter}}">
-                        <ProgressBar.Template>
-                            <ControlTemplate TargetType="ProgressBar">
-                                <Grid x:Name="TemplateRoot">
-                                    <Border Background="Transparent" CornerRadius="1.75" />
-                                    <Border x:Name="PART_Indicator"
-                                            Background="{TemplateBinding Foreground}"
-                                            CornerRadius="1.75"
-                                            HorizontalAlignment="Left" />
-                                </Grid>
-                            </ControlTemplate>
-                        </ProgressBar.Template>
-                    </ProgressBar>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{Binding Percentage, StringFormat='{}{0}*'}" />
+                            <ColumnDefinition Width="{Binding RemainingPercentage, StringFormat='{}{0}*'}" />
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0"
+                                Background="{Binding BarColorKey, Converter={StaticResource BrushConverter}}"
+                                CornerRadius="1.75" />
+                    </Grid>
                 </Grid>
             </StackPanel>
         </DataTemplate>
