@@ -77,112 +77,102 @@
         </ContextMenu>
     </Window.ContextMenu>
 
-    <!-- Solid Matte Black HUD Panel -->
-    <Border Margin="8">
-        <Border.Effect>
-            <DropShadowEffect BlurRadius="24"
-                              Color="#000000"
-                              Opacity="0.8"
-                              ShadowDepth="4" />
-        </Border.Effect>
+    <!-- Clean Solid Matte HUD Panel (Zero Extra Background, Margins or Shadows) -->
+    <Border Background="{StaticResource GlassBgBrush}"
+            BorderBrush="{StaticResource GlassBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="10"
+            Padding="12,11">
+        <StackPanel>
 
-        <!-- Pure Flat Matte Obsidian Shell (Zero Glassmorphism) -->
-        <Border Background="{StaticResource GlassBgBrush}"
-                BorderBrush="{StaticResource GlassBorderBrush}"
-                BorderThickness="1"
-                CornerRadius="10"
-                Padding="12,11">
-            <StackPanel>
+            <!-- 1. SİSTEM -->
+            <DockPanel Margin="0,0,0,4">
+                <TextBlock Text="SİSTEM"
+                           FontSize="8.5"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource AccentBrush}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0" />
+                <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
+            </DockPanel>
+            <ItemsControl ItemsSource="{Binding Specs.CoreSystem}"
+                          ItemTemplate="{StaticResource GadgetRowTemplate}" />
 
-                <!-- 1. SİSTEM -->
-                <DockPanel Margin="0,0,0,4">
-                    <TextBlock Text="SİSTEM"
-                               FontSize="8.5"
-                               FontWeight="Bold"
-                               Foreground="{StaticResource AccentBrush}"
-                               VerticalAlignment="Center"
-                               Margin="0,0,8,0" />
-                    <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
-                </DockPanel>
-                <ItemsControl ItemsSource="{Binding Specs.CoreSystem}"
-                              ItemTemplate="{StaticResource GadgetRowTemplate}" />
+            <!-- 2. DEPOLAMA -->
+            <DockPanel Margin="0,5,0,4">
+                <TextBlock Text="DEPOLAMA"
+                           FontSize="8.5"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource AccentBrush}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0" />
+                <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
+            </DockPanel>
+            <ItemsControl ItemsSource="{Binding Specs.Storage}"
+                          ItemTemplate="{StaticResource GadgetRowTemplate}" />
 
-                <!-- 2. DEPOLAMA -->
-                <DockPanel Margin="0,5,0,4">
-                    <TextBlock Text="DEPOLAMA"
-                               FontSize="8.5"
-                               FontWeight="Bold"
-                               Foreground="{StaticResource AccentBrush}"
-                               VerticalAlignment="Center"
-                               Margin="0,0,8,0" />
-                    <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
-                </DockPanel>
-                <ItemsControl ItemsSource="{Binding Specs.Storage}"
-                              ItemTemplate="{StaticResource GadgetRowTemplate}" />
+            <!-- 3. ÇEVRE BİRİMLERİ -->
+            <DockPanel Margin="0,5,0,4">
+                <TextBlock Text="ÇEVRE BİRİMLERİ"
+                           FontSize="8.5"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource AccentBrush}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0" />
+                <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
+            </DockPanel>
+            <ItemsControl ItemsSource="{Binding Specs.Peripherals}"
+                          ItemTemplate="{StaticResource GadgetRowTemplate}" />
 
-                <!-- 3. ÇEVRE BİRİMLERİ -->
-                <DockPanel Margin="0,5,0,4">
-                    <TextBlock Text="ÇEVRE BİRİMLERİ"
-                               FontSize="8.5"
-                               FontWeight="Bold"
-                               Foreground="{StaticResource AccentBrush}"
-                               VerticalAlignment="Center"
-                               Margin="0,0,8,0" />
-                    <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
-                </DockPanel>
-                <ItemsControl ItemsSource="{Binding Specs.Peripherals}"
-                              ItemTemplate="{StaticResource GadgetRowTemplate}" />
+            <!-- 4. SOĞUTMA VE GÜÇ -->
+            <DockPanel Margin="0,5,0,4">
+                <TextBlock Text="SOĞUTMA VE GÜÇ"
+                           FontSize="8.5"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource AccentBrush}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0" />
+                <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
+            </DockPanel>
+            <ItemsControl ItemsSource="{Binding Specs.CoolingAndPower}"
+                          ItemTemplate="{StaticResource GadgetRowTemplate}" />
 
-                <!-- 4. SOĞUTMA VE GÜÇ -->
-                <DockPanel Margin="0,5,0,4">
-                    <TextBlock Text="SOĞUTMA VE GÜÇ"
-                               FontSize="8.5"
-                               FontWeight="Bold"
-                               Foreground="{StaticResource AccentBrush}"
-                               VerticalAlignment="Center"
-                               Margin="0,0,8,0" />
-                    <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
-                </DockPanel>
-                <ItemsControl ItemsSource="{Binding Specs.CoolingAndPower}"
-                              ItemTemplate="{StaticResource GadgetRowTemplate}" />
-
-                <!-- 5. TOPLAM DONANIM DEĞERİ (MATTE SUMMARY BADGE) -->
-                <Border Background="{StaticResource GlassCardBgBrush}"
-                        BorderBrush="{StaticResource GlassCardBorderBrush}"
-                        BorderThickness="1"
-                        CornerRadius="7"
-                        Margin="0,6,0,0"
-                        Padding="10,6">
-                    <DockPanel LastChildFill="True">
-                        <TextBlock Text="{Binding Specs.TotalPriceFormatted}"
-                                   DockPanel.Dock="Right"
-                                   FontSize="12.5"
-                                   FontWeight="Heavy"
-                                   Foreground="{StaticResource AccentGreenBrush}"
-                                   VerticalAlignment="Center" />
-                        <StackPanel VerticalAlignment="Center">
-                            <StackPanel Orientation="Horizontal">
-                                <Border Width="5"
-                                        Height="5"
-                                        CornerRadius="2.5"
-                                        Background="{StaticResource AccentGreenBrush}"
-                                        VerticalAlignment="Center"
-                                        Margin="0,0,5,0" />
-                                <TextBlock Text="TOPLAM DONANIM DEĞERİ"
-                                           FontSize="8"
-                                           FontWeight="Bold"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
-                                           VerticalAlignment="Center" />
-                            </StackPanel>
-                            <TextBlock Text="{Binding Specs.PriceSource, StringFormat='{}{0} Günlük'}"
-                                       FontSize="7.5"
-                                       Foreground="{StaticResource TextMutedBrush}"
-                                       Margin="10,1,0,0" />
+            <!-- 5. TOPLAM DONANIM DEĞERİ (MATTE SUMMARY BADGE) -->
+            <Border Background="{StaticResource GlassCardBgBrush}"
+                    BorderBrush="{StaticResource GlassCardBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="7"
+                    Margin="0,6,0,0"
+                    Padding="10,6">
+                <DockPanel LastChildFill="True">
+                    <TextBlock Text="{Binding Specs.TotalPriceFormatted}"
+                               DockPanel.Dock="Right"
+                               FontSize="12.5"
+                               FontWeight="Heavy"
+                               Foreground="{StaticResource AccentGreenBrush}"
+                               VerticalAlignment="Center" />
+                    <StackPanel VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="5"
+                                    Height="5"
+                                    CornerRadius="2.5"
+                                    Background="{StaticResource AccentGreenBrush}"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,5,0" />
+                            <TextBlock Text="TOPLAM DONANIM DEĞERİ"
+                                       FontSize="8"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center" />
                         </StackPanel>
-                    </DockPanel>
-                </Border>
+                        <TextBlock Text="{Binding Specs.PriceSource, StringFormat='{}{0} Günlük'}"
+                                   FontSize="7.5"
+                                   Foreground="{StaticResource TextMutedBrush}"
+                                   Margin="10,1,0,0" />
+                    </StackPanel>
+                </DockPanel>
+            </Border>
 
-            </StackPanel>
-        </Border>
+        </StackPanel>
     </Border>
 </Window>
