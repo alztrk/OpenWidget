@@ -1,10 +1,15 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Interop;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace OpenWidget.Services;
 
@@ -17,6 +22,7 @@ public class AudioSessionModel : INotifyPropertyChanged
     private float _volume;
     private bool _isMuted;
     private string _displayName = "";
+    private ImageSource? _appIcon;
 
     public int ProcessId { get; set; }
 
@@ -32,6 +38,24 @@ public class AudioSessionModel : INotifyPropertyChanged
             }
         }
     }
+
+    public ImageSource? AppIcon
+    {
+        get => _appIcon;
+        set
+        {
+            if (_appIcon != value)
+            {
+                _appIcon = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(AppIconVisibility));
+                OnPropertyChanged(nameof(FallbackIconVisibility));
+            }
+        }
+    }
+
+    public Visibility AppIconVisibility => _appIcon != null ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility FallbackIconVisibility => _appIcon != null ? Visibility.Collapsed : Visibility.Visible;
 
     public float Volume
     {
@@ -170,6 +194,59 @@ public class MasterVolumeModel : INotifyPropertyChanged
 
 public static class AudioMixerService
 {
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    private struct SHFILEINFO
+    {
+        public IntPtr hIcon;
+        public int iIcon;
+        public uint dwAttributes;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+        public string szDisplayName;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)]
+        public string szTypeName;
+    }
+
+    [DllImport("shell32.dll", CharSet = CharSet.Auto)]
+    private static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, uint uFlags);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool DestroyIcon(IntPtr hIcon);
+
+    private const uint SHGFI_ICON = 0x000000100;
+    private const uint SHGFI_SMALLICON = 0x000000001;
+
+    private static readonly ConcurrentDictionary<string, ImageSource> _iconCache = new(StringComparer.OrdinalIgnoreCase);
+
+    public static ImageSource? GetProcessIcon(string exePath)
+    {
+        if (string.IsNullOrWhiteSpace(exePath) || !File.Exists(exePath)) return null;
+
+        if (_iconCache.TryGetValue(exePath, out var cached))
+        {
+            return cached;
+        }
+
+        try
+        {
+            var shinfo = new SHFILEINFO();
+            IntPtr res = SHGetFileInfo(exePath, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_SMALLICON);
+            if (res != IntPtr.Zero && shinfo.hIcon != IntPtr.Zero)
+            {
+                var bmp = Imaging.CreateBitmapSourceFromHIcon(
+                    shinfo.hIcon,
+                    Int32Rect.Empty,
+                    BitmapSizeOptions.FromEmptyOptions());
+                bmp.Freeze();
+                DestroyIcon(shinfo.hIcon);
+                _iconCache[exePath] = bmp;
+                return bmp;
+            }
+        }
+        catch { }
+
+        return null;
+    }
+
     private static readonly Guid IID_IAudioEndpointVolume = new("5CDF2C82-841E-4546-9722-0CF74078229A");
     private static readonly Guid IID_IAudioSessionManager2 = new("77AA99A0-1BD6-484F-8BC7-2C654C9A9B6F");
     private static readonly Guid IID_IPropertyStore = new("886d8eeb-8cf2-4446-8d02-cdba1dbdcf99");
@@ -253,6 +330,7 @@ public static class AudioMixerService
                                         int procId = (int)pid;
 
                                         string name = "";
+                                        string exePath = "";
                                         if (ctl2.IsSystemSoundsSession() == 0 || procId == 0)
                                         {
                                             name = "Sistem Sesleri";
@@ -265,6 +343,7 @@ public static class AudioMixerService
                                             try
                                             {
                                                 var proc = Process.GetProcessById(procId);
+                                                exePath = proc.MainModule?.FileName ?? "";
                                                 name = !string.IsNullOrWhiteSpace(proc.MainWindowTitle)
                                                     ? proc.MainWindowTitle
                                                     : proc.ProcessName;
@@ -294,7 +373,8 @@ public static class AudioMixerService
                                         var item = new AudioSessionModel
                                         {
                                             ProcessId = procId,
-                                            DisplayName = name
+                                            DisplayName = name,
+                                            AppIcon = !string.IsNullOrEmpty(exePath) ? GetProcessIcon(exePath) : null
                                         };
 
                                         if (sessionCtrl is ISimpleAudioVolume simpleVol)

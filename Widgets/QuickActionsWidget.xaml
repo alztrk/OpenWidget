@@ -120,77 +120,84 @@
     </UserControl.Resources>
 
     <Grid>
-        <UniformGrid Columns="5">
-            <!-- Görev Yöneticisi -->
+        <!-- 2x2 Quick Actions Buttons Grid -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Row 0, Col 0: Görev Yöneticisi -->
             <Button x:Name="BtnTaskMgr"
+                    Grid.Row="0" Grid.Column="0"
                     Style="{StaticResource ToolbarBtnStyle}"
-                    Margin="0,0,2,0"
+                    Margin="0,0,3,4"
                     ToolTip="Görev Yöneticisi (Ctrl+Shift+Esc)"
                     Click="BtnTaskMgr_Click">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Path Data="{StaticResource GeoTaskmgr}"
                           Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                          Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
-                    <TextBlock x:Name="TxtTaskMgr" Text="Görev Yön." FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+                          Stretch="Uniform" Width="12.5" Height="12.5" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <TextBlock x:Name="TxtTaskMgr" Text="Görev Yöneticisi" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
 
-            <!-- Ses Karıştırıcısı -->
+            <!-- Row 0, Col 1: Ses Karıştırıcısı -->
             <Button x:Name="BtnVolume"
+                    Grid.Row="0" Grid.Column="1"
                     Style="{StaticResource ToolbarBtnStyle}"
-                    Margin="2,0,2,0"
+                    Margin="3,0,0,4"
                     ToolTip="Ses Düzeyi Karıştırıcısı"
                     Click="BtnVolume_Click">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Path Data="{StaticResource GeoSpeaker}"
                           Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                          Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
-                    <TextBlock x:Name="TxtVolume" Text="Ses" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+                          Stretch="Uniform" Width="12.5" Height="12.5" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <TextBlock x:Name="TxtVolume" Text="Ses Karıştırıcı" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
 
-            <!-- Hızlı Notlar -->
+            <!-- Row 1, Col 0: Hızlı Notlar -->
             <Button x:Name="BtnNotes"
+                    Grid.Row="1" Grid.Column="0"
                     Style="{StaticResource ToolbarBtnStyle}"
-                    Margin="2,0,2,0"
+                    Margin="0,0,3,0"
                     ToolTip="Masaüstü Hızlı Not Defteri"
                     Click="BtnNotes_Click">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Path Data="{StaticResource GeoNotes}"
                           Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                          Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
-                    <TextBlock x:Name="TxtNotes" Text="Notlar" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+                          Stretch="Uniform" Width="12.5" Height="12.5" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <TextBlock x:Name="TxtNotes" Text="Hızlı Notlar" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
 
-            <!-- Terminal -->
+            <!-- Row 1, Col 1: Terminal -->
             <Button x:Name="BtnTerminal"
+                    Grid.Row="1" Grid.Column="1"
                     Style="{StaticResource ToolbarBtnStyle}"
-                    Margin="2,0,2,0"
+                    Margin="3,0,0,0"
                     ToolTip="Windows Terminal / PowerShell"
                     Click="BtnTerminal_Click">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Path Data="{StaticResource GeoTerminal}"
                           Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                          Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
+                          Stretch="Uniform" Width="12.5" Height="12.5" VerticalAlignment="Center" Margin="0,0,6,0" />
                     <TextBlock x:Name="TxtTerminal" Text="Terminal" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
 
-            <!-- Bellek Temizle -->
+            <!-- Bellek Temizle (Preserved for compatibility, collapsed) -->
             <Button x:Name="BtnCleanRam"
-                    Style="{StaticResource ToolbarBtnStyle}"
-                    Margin="2,0,0,0"
-                    ToolTip="Çalışma Kümesini ve Belleği Temizle"
+                    Visibility="Collapsed"
                     Click="BtnCleanRam_Click">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Path Data="{StaticResource GeoClean}"
-                          Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                          Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
-                    <TextBlock x:Name="TxtCleanRam" Text="Bellek Boşalt" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
-                </StackPanel>
+                <TextBlock x:Name="TxtCleanRam" Text="Bellek Boşalt" />
             </Button>
-        </UniformGrid>
+        </Grid>
 
         <!-- Upward Sound Mixer Dropdown Popup -->
         <Popup x:Name="PopupVolumeMixer"
@@ -233,20 +240,6 @@
                                        Foreground="{StaticResource TextPrimaryBrush}"
                                        VerticalAlignment="Center" />
                         </StackPanel>
-
-                        <Button x:Name="BtnClassicMixer"
-                                DockPanel.Dock="Right"
-                                HorizontalAlignment="Right"
-                                Style="{StaticResource MixerMiniBtnStyle}"
-                                ToolTip="Klasik Windows Ses Karıştırıcısını Aç"
-                                Click="BtnClassicMixer_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <Path Data="{StaticResource GeoExternalLink}"
-                                      Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                      Stretch="Uniform" Width="10" Height="10" Margin="0,0,4,0" VerticalAlignment="Center" />
-                                <TextBlock Text="Klasik" FontSize="10" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
                     </DockPanel>
 
                     <!-- Master Output Device (Kulaklık / Hoparlör) -->
@@ -353,13 +346,29 @@
                                                 Margin="0,0,0,5">
                                             <StackPanel>
                                                 <DockPanel Margin="0,0,0,5">
-                                                    <TextBlock Text="{Binding DisplayName}"
-                                                               FontSize="11"
-                                                               FontWeight="Medium"
-                                                               Foreground="{StaticResource TextPrimaryBrush}"
-                                                               TextTrimming="CharacterEllipsis"
-                                                               MaxWidth="210"
-                                                               VerticalAlignment="Center" />
+                                                    <!-- App Icon + Display Name -->
+                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                        <Grid Width="16" Height="16" Margin="0,0,6,0" VerticalAlignment="Center">
+                                                            <Image Source="{Binding AppIcon}"
+                                                                   Width="16" Height="16"
+                                                                   Stretch="Uniform"
+                                                                   RenderOptions.BitmapScalingMode="HighQuality"
+                                                                   Visibility="{Binding AppIconVisibility}" />
+                                                            <Path Data="{StaticResource GeoSpeaker}"
+                                                                  Fill="{StaticResource AccentBrush}"
+                                                                  Stretch="Uniform" Width="12" Height="12"
+                                                                  VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                                  Visibility="{Binding FallbackIconVisibility}" />
+                                                        </Grid>
+
+                                                        <TextBlock Text="{Binding DisplayName}"
+                                                                   FontSize="11"
+                                                                   FontWeight="Medium"
+                                                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   MaxWidth="185"
+                                                                   VerticalAlignment="Center" />
+                                                    </StackPanel>
 
                                                     <TextBlock Text="{Binding VolumePercentText}"
                                                                DockPanel.Dock="Right"

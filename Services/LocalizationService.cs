@@ -38,9 +38,9 @@ public static class LocalizationService
         ["Status"] = ("Sistem Durumu", "System Status"),
 
         // Toolbar Buttons
-        ["TaskMgr"] = ("Görev Yön.", "Task Mgr"),
-        ["Volume"] = ("Ses", "Volume"),
-        ["Notes"] = ("Notlar", "Notes"),
+        ["TaskMgr"] = ("Görev Yöneticisi", "Task Manager"),
+        ["Volume"] = ("Ses Karıştırıcı", "Volume Mixer"),
+        ["Notes"] = ("Hızlı Notlar", "Quick Notes"),
         ["Terminal"] = ("Terminal", "Terminal"),
         ["CleanRam"] = ("Bellek Boşalt", "Clean RAM"),
         ["Cleaned"] = ("Temizlendi!", "Cleaned!"),

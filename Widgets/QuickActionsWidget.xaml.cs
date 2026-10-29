@@ -151,19 +151,6 @@ public partial class QuickActionsWidget : UserControl
         }
     }
 
-    private void BtnClassicMixer_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = "sndvol.exe",
-                UseShellExecute = true
-            });
-        }
-        catch { }
-    }
-
     #region Scratchpad Notes
 
     private void BtnNotes_Click(object sender, RoutedEventArgs e)
