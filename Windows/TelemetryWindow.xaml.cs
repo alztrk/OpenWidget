@@ -127,7 +127,7 @@ public partial class TelemetryWindow : Window, INotifyPropertyChanged
 
     private void MenuResetPos_Click(object sender, RoutedEventArgs e)
     {
-        _config.TelemetryWidget.OffsetX = 415;
+        _config.TelemetryWidget.OffsetX = 395;
         _config.TelemetryWidget.OffsetY = 20;
         _config.Save(_configPath);
         PositionWidget();

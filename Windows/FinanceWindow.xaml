@@ -4,7 +4,7 @@
         xmlns:converters="clr-namespace:RigBadge.Converters"
         Title="RigBadge Finance"
         Width="260"
-        MinHeight="230"
+        MinHeight="140"
         SizeToContent="Height"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -20,11 +20,11 @@
         <converters:IconKeyToGeometryConverter x:Key="IconConverter" />
         <converters:StringToVisibilityConverter x:Key="StringToVis" />
 
-        <!-- Finance Row Template -->
+        <!-- Compact Finance Row Template -->
         <DataTemplate x:Key="FinanceRowTemplate">
-            <Grid Margin="0,3,0,4">
+            <Grid Margin="0,0.5,0,2.5">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="18" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
@@ -34,15 +34,15 @@
                       Data="{Binding IconKey, Converter={StaticResource IconConverter}}"
                       Fill="{StaticResource TextMutedBrush}"
                       Stretch="Uniform"
-                      Width="13"
-                      Height="13"
+                      Width="11.5"
+                      Height="11.5"
                       VerticalAlignment="Center"
                       HorizontalAlignment="Left" />
 
                 <!-- Label -->
                 <TextBlock Grid.Column="1"
                            Text="{Binding Label}"
-                           FontSize="11.5"
+                           FontSize="10.5"
                            FontWeight="SemiBold"
                            Foreground="{StaticResource TextPrimaryBrush}"
                            VerticalAlignment="Center"
@@ -52,14 +52,15 @@
                 <!-- Price and Daily Change -->
                 <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
                     <TextBlock Text="{Binding ValueFormatted}"
-                               FontSize="11.5"
+                               FontSize="10.5"
                                FontWeight="SemiBold"
                                Foreground="{StaticResource PriceBrush}"
                                HorizontalAlignment="Right" />
                     <TextBlock Text="{Binding ChangeFormatted}"
-                               FontSize="8.5"
+                               FontSize="7.5"
                                FontWeight="SemiBold"
-                               HorizontalAlignment="Right">
+                               HorizontalAlignment="Right"
+                               Margin="0,-1,0,0">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
                                 <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
@@ -92,31 +93,31 @@
     <Border Background="{StaticResource GlassBgBrush}"
             BorderBrush="{StaticResource GlassBorderBrush}"
             BorderThickness="1"
-            CornerRadius="10"
-            Padding="12,11">
+            CornerRadius="8"
+            Padding="10,7">
         <StackPanel>
 
             <!-- 1. DÖVİZ KURLARI (USD & EUR) -->
-            <DockPanel Margin="0,0,0,4">
+            <DockPanel Margin="0,0,0,3">
                 <TextBlock Text="DÖVİZ"
-                           FontSize="9"
+                           FontSize="8.5"
                            FontWeight="Bold"
                            Foreground="{StaticResource AccentBrush}"
                            VerticalAlignment="Center"
-                           Margin="0,0,8,0" />
+                           Margin="0,0,6,0" />
                 <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
             </DockPanel>
             <ItemsControl ItemsSource="{Binding Specs.Currencies}"
                           ItemTemplate="{StaticResource FinanceRowTemplate}" />
 
             <!-- 2. ALTIN FİYATLARI (GRAM, ÇEYREK, TAM) -->
-            <DockPanel Margin="0,5,0,4">
+            <DockPanel Margin="0,4,0,3">
                 <TextBlock Text="ALTIN"
-                           FontSize="9"
+                           FontSize="8.5"
                            FontWeight="Bold"
                            Foreground="{StaticResource AccentBrush}"
                            VerticalAlignment="Center"
-                           Margin="0,0,8,0" />
+                           Margin="0,0,6,0" />
                 <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
             </DockPanel>
             <ItemsControl ItemsSource="{Binding Specs.Gold}"
@@ -126,23 +127,23 @@
             <Border Background="{StaticResource GlassCardBgBrush}"
                     BorderBrush="{StaticResource GlassCardBorderBrush}"
                     BorderThickness="1"
-                    CornerRadius="6"
-                    Margin="0,6,0,0"
-                    Padding="8,4">
+                    CornerRadius="5"
+                    Margin="0,3,0,0"
+                    Padding="6,2.5">
                 <DockPanel>
-                    <Border Width="4"
-                            Height="4"
-                            CornerRadius="2"
+                    <Border Width="3.5"
+                            Height="3.5"
+                            CornerRadius="1.75"
                             Background="{StaticResource AccentGreenBrush}"
                             VerticalAlignment="Center"
-                            Margin="0,0,5,0" />
+                            Margin="0,0,4,0" />
                     <TextBlock Text="Piyasa Verileri"
-                               FontSize="8"
+                               FontSize="7.5"
                                FontWeight="Bold"
                                Foreground="{StaticResource TextSecondaryBrush}"
                                VerticalAlignment="Center" />
                     <TextBlock Text="{Binding Specs.LastUpdatedText}"
-                               FontSize="8"
+                               FontSize="7.5"
                                Foreground="{StaticResource TextMutedBrush}"
                                HorizontalAlignment="Right"
                                VerticalAlignment="Center" />

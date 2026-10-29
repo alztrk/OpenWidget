@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:converters="clr-namespace:RigBadge.Converters"
         Title="RigBadge"
-        Width="380"
+        Width="360"
         SizeToContent="Height"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -21,63 +21,68 @@
 
         <!-- Minimalist Matte Black Row Template -->
         <DataTemplate x:Key="GadgetRowTemplate">
-            <Grid Margin="0,2,0,4">
+            <Grid Margin="0,0.5,0,2.5">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="24" />
+                    <ColumnDefinition Width="20" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Icon (Enlarged Refined Modern Vector) -->
+                <!-- Icon -->
                 <Path Grid.Column="0"
                       Data="{Binding IconKey, Converter={StaticResource IconConverter}}"
                       Fill="{StaticResource TextMutedBrush}"
                       Stretch="Uniform"
-                      Width="15"
-                      Height="15"
+                      Width="13"
+                      Height="13"
                       VerticalAlignment="Center"
                       HorizontalAlignment="Left" />
 
-                <!-- Names, Subtitles & Product Link -->
-                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,10,0">
+                <!-- Names, Subtitles & Product Link (Compact 2-Line Layout) -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
                     <TextBlock Text="{Binding Value}"
-                               FontSize="12"
+                               FontSize="11"
                                FontWeight="SemiBold"
                                Foreground="{StaticResource TextPrimaryBrush}"
                                TextTrimming="CharacterEllipsis" />
-                    <TextBlock Text="{Binding SubValue}"
-                               FontSize="9.5"
-                               Foreground="{StaticResource TextMutedBrush}"
-                               TextTrimming="CharacterEllipsis"
-                               Visibility="{Binding SubValue, Converter={StaticResource StringToVis}}" />
-                    <!-- Clickable Product Link -->
-                    <TextBlock Text="{Binding LinkDisplay}"
-                               FontSize="9"
-                               Foreground="{StaticResource AccentBrush}"
-                               Cursor="Hand"
-                               TextTrimming="CharacterEllipsis"
-                               Tag="{Binding Url}"
-                               PreviewMouseLeftButtonDown="Link_PreviewMouseLeftButtonDown"
-                               MouseLeftButtonUp="Link_MouseLeftButtonUp"
-                               Visibility="{Binding Url, Converter={StaticResource StringToVis}}">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Opacity" Value="0.75" />
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Opacity" Value="1.0" />
-                                        <Setter Property="TextDecorations" Value="Underline" />
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+                    <DockPanel Margin="0,0.5,0,0">
+                        <TextBlock Text="{Binding LinkDisplay}"
+                                   DockPanel.Dock="Right"
+                                   FontSize="8"
+                                   Foreground="{StaticResource AccentBrush}"
+                                   Cursor="Hand"
+                                   TextTrimming="CharacterEllipsis"
+                                   Margin="4,0,0,0"
+                                   VerticalAlignment="Center"
+                                   Tag="{Binding Url}"
+                                   PreviewMouseLeftButtonDown="Link_PreviewMouseLeftButtonDown"
+                                   MouseLeftButtonUp="Link_MouseLeftButtonUp"
+                                   Visibility="{Binding Url, Converter={StaticResource StringToVis}}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Opacity" Value="0.75" />
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Opacity" Value="1.0" />
+                                            <Setter Property="TextDecorations" Value="Underline" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <TextBlock Text="{Binding SubValue}"
+                                   FontSize="8.5"
+                                   Foreground="{StaticResource TextMutedBrush}"
+                                   TextTrimming="CharacterEllipsis"
+                                   VerticalAlignment="Center"
+                                   Visibility="{Binding SubValue, Converter={StaticResource StringToVis}}" />
+                    </DockPanel>
                 </StackPanel>
 
                 <!-- Market Price -->
                 <TextBlock Grid.Column="2"
                            Text="{Binding PriceFormatted}"
-                           FontSize="12"
+                           FontSize="11"
                            FontWeight="SemiBold"
                            Foreground="{StaticResource PriceBrush}"
                            VerticalAlignment="Center"
@@ -88,7 +93,6 @@
 
     <Window.ContextMenu>
         <ContextMenu>
-            <MenuItem x:Name="MenuOnlyDesktop" Header="🖥️ Sadece Masaüstünde Göster" IsCheckable="True" Click="MenuOnlyDesktop_Click" />
             <MenuItem x:Name="MenuTelemetry" Header="📊 Performans ve Disk Widget'ı" IsCheckable="True" Click="MenuTelemetry_Click" />
             <MenuItem x:Name="MenuFinance" Header="💰 Döviz ve Altın Widget'ı" IsCheckable="True" Click="MenuFinance_Click" />
             <MenuItem x:Name="MenuAutoStart" Header="🚀 Windows ile Birlikte Başlat" IsCheckable="True" Click="MenuAutoStart_Click" />
@@ -102,74 +106,74 @@
         </ContextMenu>
     </Window.ContextMenu>
 
-    <!-- Clean Solid Matte HUD Panel (Zero Extra Background, Margins or Shadows) -->
+    <!-- Clean Solid Matte HUD Panel -->
     <Border Background="{StaticResource GlassBgBrush}"
             BorderBrush="{StaticResource GlassBorderBrush}"
             BorderThickness="1"
-            CornerRadius="10"
-            Padding="13,12">
+            CornerRadius="8"
+            Padding="10,8">
         <StackPanel>
 
             <!-- 1. SİSTEM -->
-            <DockPanel Margin="0,0,0,5">
+            <DockPanel Margin="0,0,0,3">
                 <TextBlock Text="SİSTEM"
-                           FontSize="9.5"
+                           FontSize="8.5"
                            FontWeight="Bold"
                            Foreground="{StaticResource AccentBrush}"
                            VerticalAlignment="Center"
-                           Margin="0,0,8,0" />
+                           Margin="0,0,6,0" />
                 <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
             </DockPanel>
             <ItemsControl ItemsSource="{Binding Specs.CoreSystem}"
                           ItemTemplate="{StaticResource GadgetRowTemplate}" />
 
             <!-- 2. DEPOLAMA -->
-            <DockPanel Margin="0,6,0,5">
+            <DockPanel Margin="0,4,0,3">
                 <TextBlock Text="DEPOLAMA"
-                           FontSize="9.5"
+                           FontSize="8.5"
                            FontWeight="Bold"
                            Foreground="{StaticResource AccentBrush}"
                            VerticalAlignment="Center"
-                           Margin="0,0,8,0" />
+                           Margin="0,0,6,0" />
                 <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
             </DockPanel>
             <ItemsControl ItemsSource="{Binding Specs.Storage}"
                           ItemTemplate="{StaticResource GadgetRowTemplate}" />
 
             <!-- 3. ÇEVRE BİRİMLERİ -->
-            <DockPanel Margin="0,6,0,5">
+            <DockPanel Margin="0,4,0,3">
                 <TextBlock Text="ÇEVRE BİRİMLERİ"
-                           FontSize="9.5"
+                           FontSize="8.5"
                            FontWeight="Bold"
                            Foreground="{StaticResource AccentBrush}"
                            VerticalAlignment="Center"
-                           Margin="0,0,8,0" />
+                           Margin="0,0,6,0" />
                 <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
             </DockPanel>
             <ItemsControl ItemsSource="{Binding Specs.Peripherals}"
                           ItemTemplate="{StaticResource GadgetRowTemplate}" />
 
             <!-- 4. KASA, SOĞUTMA VE GÜÇ -->
-            <DockPanel Margin="0,6,0,5">
+            <DockPanel Margin="0,4,0,3">
                 <TextBlock Text="KASA, SOĞUTMA VE GÜÇ"
-                           FontSize="9.5"
+                           FontSize="8.5"
                            FontWeight="Bold"
                            Foreground="{StaticResource AccentBrush}"
                            VerticalAlignment="Center"
-                           Margin="0,0,8,0" />
+                           Margin="0,0,6,0" />
                 <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
             </DockPanel>
             <ItemsControl ItemsSource="{Binding Specs.CoolingAndPower}"
                           ItemTemplate="{StaticResource GadgetRowTemplate}" />
 
             <!-- 5. AKSESUAR VE EKİPMAN -->
-            <DockPanel Margin="0,6,0,5">
+            <DockPanel Margin="0,4,0,3">
                 <TextBlock Text="AKSESUAR VE EKİPMAN"
-                           FontSize="9.5"
+                           FontSize="8.5"
                            FontWeight="Bold"
                            Foreground="{StaticResource AccentBrush}"
                            VerticalAlignment="Center"
-                           Margin="0,0,8,0" />
+                           Margin="0,0,6,0" />
                 <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
             </DockPanel>
             <ItemsControl ItemsSource="{Binding Specs.Accessories}"
@@ -179,11 +183,11 @@
             <Border Background="{StaticResource GlassCardBgBrush}"
                     BorderBrush="{StaticResource GlassCardBorderBrush}"
                     BorderThickness="1"
-                    CornerRadius="7"
-                    Margin="0,8,0,0"
-                    Padding="12,8">
+                    CornerRadius="6"
+                    Margin="0,4,0,0"
+                    Padding="8,4">
                 <TextBlock Text="{Binding Specs.TotalPriceFormatted}"
-                           FontSize="16"
+                           FontSize="13.5"
                            FontWeight="Heavy"
                            Foreground="{StaticResource AccentGreenBrush}"
                            HorizontalAlignment="Center"

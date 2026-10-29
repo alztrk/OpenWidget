@@ -134,8 +134,8 @@ public partial class FinanceWindow : Window, INotifyPropertyChanged
 
     private void MenuResetPos_Click(object sender, RoutedEventArgs e)
     {
-        _config.FinanceWidget.OffsetX = 415;
-        _config.FinanceWidget.OffsetY = 275;
+        _config.FinanceWidget.OffsetX = 395;
+        _config.FinanceWidget.OffsetY = 205;
         _config.Save(_configPath);
         PositionWidget();
     }

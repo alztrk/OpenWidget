@@ -4,7 +4,7 @@
         xmlns:converters="clr-namespace:RigBadge.Converters"
         Title="RigBadge Telemetry"
         Width="260"
-        MinHeight="250"
+        MinHeight="150"
         SizeToContent="Height"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -21,13 +21,13 @@
         <converters:KeyToBrushConverter x:Key="BrushConverter" />
         <converters:StringToVisibilityConverter x:Key="StringToVis" />
 
-        <!-- Telemetry Row Template -->
+        <!-- Compact Telemetry Row Template -->
         <DataTemplate x:Key="TelemetryRowTemplate">
-            <StackPanel Margin="0,3,0,6">
+            <StackPanel Margin="0,1,0,3">
                 <!-- Label & Value -->
-                <Grid Margin="0,0,0,3">
+                <Grid Margin="0,0,0,1.5">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="20" />
+                        <ColumnDefinition Width="18" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
@@ -37,38 +37,41 @@
                           Data="{Binding IconKey, Converter={StaticResource IconConverter}}"
                           Fill="{StaticResource TextMutedBrush}"
                           Stretch="Uniform"
-                          Width="13"
-                          Height="13"
+                          Width="11.5"
+                          Height="11.5"
                           VerticalAlignment="Center"
                           HorizontalAlignment="Left" />
 
-                    <!-- Name & Subtext -->
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,6,0">
+                    <!-- Name & Subtext in compact single row -->
+                    <DockPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,6,0">
+                        <TextBlock Text="{Binding SubText}"
+                                   DockPanel.Dock="Right"
+                                   FontSize="8"
+                                   Foreground="{StaticResource TextMutedBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="4,0,0,0"
+                                   TextTrimming="CharacterEllipsis" />
                         <TextBlock Text="{Binding Label}"
-                                   FontSize="11.5"
+                                   FontSize="10.5"
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource TextPrimaryBrush}"
+                                   VerticalAlignment="Center"
                                    TextTrimming="CharacterEllipsis" />
-                        <TextBlock Text="{Binding SubText}"
-                                   FontSize="9"
-                                   Foreground="{StaticResource TextMutedBrush}"
-                                   TextTrimming="CharacterEllipsis"
-                                   Visibility="{Binding SubText, Converter={StaticResource StringToVis}}" />
-                    </StackPanel>
+                    </DockPanel>
 
                     <!-- Percentage / Main Stat -->
                     <TextBlock Grid.Column="2"
                                Text="{Binding MainText}"
-                               FontSize="11.5"
-                               FontWeight="Bold"
-                               Foreground="{StaticResource AccentBrush}"
+                               FontSize="10.5"
+                               FontWeight="SemiBold"
+                               Foreground="{Binding BarColorKey, Converter={StaticResource BrushConverter}}"
                                VerticalAlignment="Center"
                                HorizontalAlignment="Right" />
                 </Grid>
 
                 <!-- Mini Progress Track -->
-                <Grid Height="3.5" Margin="20,1,0,0">
-                    <Border Background="{StaticResource TrackBgBrush}" CornerRadius="1.75" />
+                <Grid Height="3" Margin="18,0,0,0">
+                    <Border Background="{StaticResource TrackBgBrush}" CornerRadius="1.5" />
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="{Binding Percentage, StringFormat='{}{0}*'}" />
@@ -76,7 +79,7 @@
                         </Grid.ColumnDefinitions>
                         <Border Grid.Column="0"
                                 Background="{Binding BarColorKey, Converter={StaticResource BrushConverter}}"
-                                CornerRadius="1.75" />
+                                CornerRadius="1.5" />
                     </Grid>
                 </Grid>
             </StackPanel>
@@ -96,31 +99,31 @@
     <Border Background="{StaticResource GlassBgBrush}"
             BorderBrush="{StaticResource GlassBorderBrush}"
             BorderThickness="1"
-            CornerRadius="10"
-            Padding="12,11">
+            CornerRadius="8"
+            Padding="10,7">
         <StackPanel>
 
-            <!-- 1. PERFORMANS (CPU & RAM) -->
-            <DockPanel Margin="0,0,0,4">
+            <!-- 1. PERFORMANS (CPU, RAM, GPU, VRAM) -->
+            <DockPanel Margin="0,0,0,3">
                 <TextBlock Text="PERFORMANS"
-                           FontSize="9"
+                           FontSize="8.5"
                            FontWeight="Bold"
                            Foreground="{StaticResource AccentBrush}"
                            VerticalAlignment="Center"
-                           Margin="0,0,8,0" />
+                           Margin="0,0,6,0" />
                 <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
             </DockPanel>
             <ItemsControl ItemsSource="{Binding Specs.Performance}"
                           ItemTemplate="{StaticResource TelemetryRowTemplate}" />
 
             <!-- 2. DEPOLAMA DOLULUK (C & D) -->
-            <DockPanel Margin="0,5,0,4">
+            <DockPanel Margin="0,4,0,3">
                 <TextBlock Text="DİSK DOLULUK"
-                           FontSize="9"
+                           FontSize="8.5"
                            FontWeight="Bold"
                            Foreground="{StaticResource AccentBrush}"
                            VerticalAlignment="Center"
-                           Margin="0,0,8,0" />
+                           Margin="0,0,6,0" />
                 <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
             </DockPanel>
             <ItemsControl ItemsSource="{Binding Specs.Storage}"

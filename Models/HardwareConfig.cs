@@ -38,7 +38,7 @@ public class WidgetConfig
     public double Height { get; set; } = 780;
     public bool AlwaysOnTop { get; set; } = false;
     public bool IsLocked { get; set; } = false;
-    public bool OnlyShowOnDesktop { get; set; } = true;
+    public bool OnlyShowOnDesktop { get; set; } = false;
 }
 
 public class TelemetryWidgetConfig
@@ -53,7 +53,7 @@ public class FinanceWidgetConfig
 {
     public bool Enabled { get; set; } = true;
     public double OffsetX { get; set; } = 415;
-    public double OffsetY { get; set; } = 340;
+    public double OffsetY { get; set; } = 205;
     public double Width { get; set; } = 260;
 }
 

@@ -31,12 +31,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     [DllImport("user32.dll", EntryPoint = "SetWindowLongPtr", SetLastError = true)]
     private static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
 
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetForegroundWindow();
-
-    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-    private static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
-
     [DllImport("psapi.dll")]
     private static extern int EmptyWorkingSet(IntPtr hwProc);
 
@@ -45,7 +39,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private string _configPath = string.Empty;
     private string _pricesPath = string.Empty;
     private PriceService? _priceService;
-    private DispatcherTimer? _desktopDetectTimer;
     private TelemetryWindow? _telemetryWindow;
     private FinanceWindow? _financeWindow;
 
@@ -122,11 +115,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             MenuAlwaysOnTop.IsChecked = Topmost;
         }
-
-        if (MenuOnlyDesktop != null)
-        {
-            MenuOnlyDesktop.IsChecked = _config.Widget.OnlyShowOnDesktop;
-        }
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -143,13 +131,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             MenuAutoStart.IsChecked = AutoStartService.IsAutoStartEnabled();
         }
 
-        if (MenuOnlyDesktop != null)
-        {
-            MenuOnlyDesktop.IsChecked = _config.Widget.OnlyShowOnDesktop;
-        }
-
         InitSubWidgets();
-        StartDesktopMonitor();
 
         await RefreshHardwareSpecsAsync();
     }
@@ -183,109 +165,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             }
         }
         catch { }
-    }
-
-    private void StartDesktopMonitor()
-    {
-        _desktopDetectTimer = new DispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(200)
-        };
-        _desktopDetectTimer.Tick += (s, e) => CheckDesktopVisibility();
-        _desktopDetectTimer.Start();
-    }
-
-    private void CheckDesktopVisibility()
-    {
-        if (!_config.Widget.OnlyShowOnDesktop)
-        {
-            if (Visibility != Visibility.Visible) Visibility = Visibility.Visible;
-            if (_telemetryWindow != null && _config.TelemetryWidget.Enabled && _telemetryWindow.Visibility != Visibility.Visible)
-                _telemetryWindow.Visibility = Visibility.Visible;
-            if (_financeWindow != null && _config.FinanceWidget.Enabled && _financeWindow.Visibility != Visibility.Visible)
-                _financeWindow.Visibility = Visibility.Visible;
-            return;
-        }
-
-        var fg = GetForegroundWindow();
-        var myHandle = new WindowInteropHelper(this).Handle;
-        var telHandle = _telemetryWindow != null ? new WindowInteropHelper(_telemetryWindow).Handle : IntPtr.Zero;
-        var finHandle = _financeWindow != null ? new WindowInteropHelper(_financeWindow).Handle : IntPtr.Zero;
-
-        string cls = "";
-        if (fg != IntPtr.Zero)
-        {
-            var sb = new StringBuilder(256);
-            GetClassName(fg, sb, 256);
-            cls = sb.ToString();
-        }
-
-        bool isDesktop = false;
-
-        if (fg == IntPtr.Zero || fg == myHandle || fg == telHandle || fg == finHandle ||
-            IsMouseOver ||
-            (_telemetryWindow != null && _telemetryWindow.IsMouseOver) ||
-            (_financeWindow != null && _financeWindow.IsMouseOver) ||
-            (ContextMenu != null && ContextMenu.IsOpen))
-        {
-            isDesktop = true;
-        }
-        else
-        {
-            // Detect Windows desktop shell surfaces (wallpaper, taskbar, desktop view)
-            if (cls == "Progman" ||
-                cls == "WorkerW" ||
-                cls == "Shell_TrayWnd" ||
-                cls == "Shell_SecondaryTrayWnd" ||
-                cls == "SysListView32" ||
-                cls == "DesktopWindowXamlSource")
-            {
-                isDesktop = true;
-            }
-            else if (cls == "#32768" ||
-                     cls == "Xaml_WindowedPopupClass" ||
-                     cls == "TopLevelWindowForOverflowXamlIsland" ||
-                     cls == "Popup" ||
-                     cls.StartsWith("HwndWrapper[RigBadge"))
-            {
-                // When a context menu or popup is active, maintain visibility if we were already on desktop
-                if (Visibility == Visibility.Visible)
-                {
-                    isDesktop = true;
-                }
-            }
-        }
-
-        if (isDesktop)
-        {
-            if (Visibility != Visibility.Visible)
-            {
-                Visibility = Visibility.Visible;
-            }
-            if (_telemetryWindow != null && _config.TelemetryWidget.Enabled && _telemetryWindow.Visibility != Visibility.Visible)
-            {
-                _telemetryWindow.Visibility = Visibility.Visible;
-            }
-            if (_financeWindow != null && _config.FinanceWidget.Enabled && _financeWindow.Visibility != Visibility.Visible)
-            {
-                _financeWindow.Visibility = Visibility.Visible;
-            }
-        }
-        else
-        {
-            if (Visibility != Visibility.Hidden)
-            {
-                Visibility = Visibility.Hidden;
-            }
-            if (_telemetryWindow != null && _telemetryWindow.Visibility != Visibility.Hidden)
-            {
-                _telemetryWindow.Visibility = Visibility.Hidden;
-            }
-            if (_financeWindow != null && _financeWindow.Visibility != Visibility.Hidden)
-            {
-                _financeWindow.Visibility = Visibility.Hidden;
-            }
-        }
     }
 
     private void PositionWidget()
@@ -382,15 +261,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             _financeWindow?.Close();
             _financeWindow = null;
-        }
-    }
-
-    private void MenuOnlyDesktop_Click(object sender, RoutedEventArgs e)
-    {
-        _config.Widget.OnlyShowOnDesktop = !_config.Widget.OnlyShowOnDesktop;
-        if (MenuOnlyDesktop != null)
-        {
-            MenuOnlyDesktop.IsChecked = _config.Widget.OnlyShowOnDesktop;
         }
     }
 
