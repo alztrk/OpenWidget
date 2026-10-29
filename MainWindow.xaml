@@ -207,7 +207,8 @@
             <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
             <Setter Property="BorderBrush" Value="#18FFFFFF" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="4,4" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="4,0" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="Template">
@@ -261,16 +262,11 @@
 
             <!-- Status Header Bar (Clean Minimal Strip) -->
             <DockPanel Margin="0,0,0,12">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Ellipse Width="6" Height="6"
-                             Fill="{StaticResource AccentGreenBrush}"
-                             VerticalAlignment="Center"
-                             Margin="0,0,8,0" />
-                    <TextBlock Text="{Binding Finance.WeatherText}"
-                               FontSize="11"
-                               Foreground="{StaticResource TextSecondaryBrush}"
-                               VerticalAlignment="Center" />
-                </StackPanel>
+                <TextBlock Text="{Binding Finance.WeatherText}"
+                           DockPanel.Dock="Left"
+                           FontSize="11"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           VerticalAlignment="Center" />
 
                 <TextBlock Text="{Binding Telemetry.UptimeText, StringFormat='Açık: {0}'}"
                            DockPanel.Dock="Right"
@@ -310,19 +306,20 @@
 
             <!-- 3. Donanım Bölümü -->
             <StackPanel Margin="0,0,0,12">
-                <DockPanel Margin="4,0,4,6">
+                <Grid Margin="4,0,4,6">
                     <TextBlock Text="Donanım"
+                               HorizontalAlignment="Left"
                                FontSize="11"
                                FontWeight="SemiBold"
                                Foreground="{StaticResource TextSecondaryBrush}"
                                VerticalAlignment="Center" />
                     <TextBlock Text="{Binding Specs.TotalPriceFormatted}"
+                               HorizontalAlignment="Right"
                                FontSize="12"
                                FontWeight="SemiBold"
                                Foreground="{StaticResource AccentGreenBrush}"
-                               DockPanel.Dock="Right"
                                VerticalAlignment="Center" />
-                </DockPanel>
+                </Grid>
 
                 <ItemsControl ItemsSource="{Binding Specs.CoreSystem}"
                               ItemTemplate="{StaticResource GadgetRowTemplate}" />
@@ -337,7 +334,7 @@
             </StackPanel>
 
             <!-- 4. Hızlı Kısayollar (Dock) -->
-            <UniformGrid Columns="4" Margin="0,4,0,0">
+            <UniformGrid Columns="4" Margin="0,8,0,0">
                 <!-- Görev Yöneticisi -->
                 <Button Style="{StaticResource ToolbarBtnStyle}"
                         Margin="0,0,3,0"
@@ -346,8 +343,8 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Path Data="{StaticResource GeoTaskmgr}"
                               Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                              Stretch="Uniform" Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,4,0" />
-                        <TextBlock Text="Görev Yön." FontSize="10.5" FontWeight="Medium" VerticalAlignment="Center" />
+                              Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
+                        <TextBlock Text="Görev Yön." FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
 
@@ -359,8 +356,8 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Path Data="{StaticResource GeoSpeaker}"
                               Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                              Stretch="Uniform" Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,4,0" />
-                        <TextBlock Text="Ses" FontSize="10.5" FontWeight="Medium" VerticalAlignment="Center" />
+                              Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
+                        <TextBlock Text="Ses" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
 
@@ -372,8 +369,8 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Path Data="{StaticResource GeoTerminal}"
                               Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                              Stretch="Uniform" Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,4,0" />
-                        <TextBlock Text="Terminal" FontSize="10.5" FontWeight="Medium" VerticalAlignment="Center" />
+                              Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
+                        <TextBlock Text="Terminal" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
 
@@ -386,8 +383,8 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Path Data="{StaticResource GeoClean}"
                               Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                              Stretch="Uniform" Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,4,0" />
-                        <TextBlock x:Name="TxtCleanRam" Text="Bellek Boşalt" FontSize="10.5" FontWeight="Medium" VerticalAlignment="Center" />
+                              Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
+                        <TextBlock x:Name="TxtCleanRam" Text="Bellek Boşalt" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </UniformGrid>
