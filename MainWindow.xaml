@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:converters="clr-namespace:RigBadge.Converters"
         Title="RigBadge Desktop HUD"
-        Width="690"
+        Width="380"
         SizeToContent="Height"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -115,13 +115,13 @@
                     <DockPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
                         <TextBlock Text="{Binding SubText}"
                                    DockPanel.Dock="Right"
-                                   FontSize="9"
+                                   FontSize="9.5"
                                    Foreground="{StaticResource TextMutedBrush}"
                                    VerticalAlignment="Center"
                                    Margin="6,0,0,0"
                                    TextTrimming="CharacterEllipsis" />
                         <TextBlock Text="{Binding Label}"
-                                   FontSize="11.5"
+                                   FontSize="12"
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource TextPrimaryBrush}"
                                    VerticalAlignment="Center"
@@ -131,7 +131,7 @@
                     <!-- Main Stat / Percentage -->
                     <TextBlock Grid.Column="2"
                                Text="{Binding MainText}"
-                               FontSize="11.5"
+                               FontSize="12"
                                FontWeight="Bold"
                                Foreground="{Binding BarColorKey, Converter={StaticResource BrushConverter}}"
                                VerticalAlignment="Center"
@@ -176,7 +176,7 @@
                 <!-- Label -->
                 <TextBlock Grid.Column="1"
                            Text="{Binding Label}"
-                           FontSize="11.5"
+                           FontSize="12"
                            FontWeight="SemiBold"
                            Foreground="{StaticResource TextPrimaryBrush}"
                            VerticalAlignment="Center"
@@ -186,12 +186,12 @@
                 <!-- Price and Daily Change -->
                 <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
                     <TextBlock Text="{Binding ValueFormatted}"
-                               FontSize="11.5"
+                               FontSize="12"
                                FontWeight="SemiBold"
                                Foreground="{StaticResource PriceBrush}"
                                HorizontalAlignment="Right" />
                     <TextBlock Text="{Binding ChangeFormatted}"
-                               FontSize="9"
+                               FontSize="9.5"
                                FontWeight="SemiBold"
                                HorizontalAlignment="Right">
                         <TextBlock.Style>
@@ -228,176 +228,177 @@
         </ContextMenu>
     </Window.ContextMenu>
 
-    <!-- Single Unified Desktop Grid (Fixed & Non-Movable) -->
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="{Binding LeftColumnWidth}" />
-            <ColumnDefinition Width="{Binding MiddleGapWidth}" />
-            <ColumnDefinition Width="390" />
-        </Grid.ColumnDefinitions>
+    <!-- Single Unified Vertical Stack (Downward-Ordered, Fixed & Non-Movable) -->
+    <StackPanel>
 
-        <!-- COLUMN 0: Sub-Cards (Telemetry & Finance) -->
-        <Grid Grid.Column="0" VerticalAlignment="Top">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="10" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-
-            <!-- Card 1: Sistem Telemetrisi -->
-            <Border Grid.Row="0"
-                    Visibility="{Binding IsTelemetryVisible, Converter={StaticResource BoolToVis}}"
-                    Background="{StaticResource GlassBgBrush}"
-                    BorderBrush="{StaticResource GlassBorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="12,10">
-                <StackPanel>
-                    <!-- Header -->
-                    <DockPanel Margin="0,0,0,5">
-                        <Path Data="{StaticResource GeoPerformance}"
-                              Fill="{StaticResource AccentBrush}"
-                              Stretch="Uniform"
-                              Width="12"
-                              Height="12"
-                              VerticalAlignment="Center"
-                              Margin="0,0,6,0" />
-                        <TextBlock Text="SİSTEM TELEMETRİSİ"
-                                   FontSize="10"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource AccentBrush}"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,8,0" />
-                        <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
-                    </DockPanel>
-
-                    <!-- Performans (CPU, RAM, GPU, VRAM) -->
-                    <DockPanel Margin="0,2,0,3">
-                        <TextBlock Text="PERFORMANS"
-                                   FontSize="9.5"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,6,0" />
-                        <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
-                    </DockPanel>
-                    <ItemsControl ItemsSource="{Binding Telemetry.Performance}"
-                                  ItemTemplate="{StaticResource TelemetryRowTemplate}" />
-
-                    <!-- Depolama (C: & D: Diski) -->
-                    <DockPanel Margin="0,4,0,3">
-                        <TextBlock Text="DİSK DOLULUK"
-                                   FontSize="9.5"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,6,0" />
-                        <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
-                    </DockPanel>
-                    <ItemsControl ItemsSource="{Binding Telemetry.Storage}"
-                                  ItemTemplate="{StaticResource TelemetryRowTemplate}" />
-                </StackPanel>
-            </Border>
-
-            <!-- Card 2: Canlı Piyasa / Finans -->
-            <Border Grid.Row="2"
-                    Visibility="{Binding IsFinanceVisible, Converter={StaticResource BoolToVis}}"
-                    Background="{StaticResource GlassBgBrush}"
-                    BorderBrush="{StaticResource GlassBorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="12,10">
-                <StackPanel>
-                    <!-- Header -->
-                    <DockPanel Margin="0,0,0,5">
-                        <Path Data="{StaticResource GeoDollar}"
-                              Fill="{StaticResource AccentBrush}"
-                              Stretch="Uniform"
-                              Width="12"
-                              Height="12"
-                              VerticalAlignment="Center"
-                              Margin="0,0,6,0" />
-                        <TextBlock Text="CANLI PİYASA"
-                                   FontSize="10"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource AccentBrush}"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,8,0" />
-                        <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
-                    </DockPanel>
-
-                    <!-- Döviz Kurları -->
-                    <DockPanel Margin="0,2,0,3">
-                        <TextBlock Text="DÖVİZ"
-                                   FontSize="9.5"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,6,0" />
-                        <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
-                    </DockPanel>
-                    <ItemsControl ItemsSource="{Binding Finance.Currencies}"
-                                  ItemTemplate="{StaticResource FinanceRowTemplate}" />
-
-                    <!-- Altın Fiyatları -->
-                    <DockPanel Margin="0,4,0,3">
-                        <TextBlock Text="ALTIN"
-                                   FontSize="9.5"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,6,0" />
-                        <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
-                    </DockPanel>
-                    <ItemsControl ItemsSource="{Binding Finance.Gold}"
-                                  ItemTemplate="{StaticResource FinanceRowTemplate}" />
-
-                    <!-- Footer Badge -->
-                    <Border Background="{StaticResource GlassCardBgBrush}"
-                            BorderBrush="{StaticResource GlassCardBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="5"
-                            Margin="0,4,0,0"
-                            Padding="8,3.5">
-                        <DockPanel>
-                            <Border Width="4"
-                                    Height="4"
-                                    CornerRadius="2"
-                                    Background="{StaticResource AccentGreenBrush}"
-                                    VerticalAlignment="Center"
-                                    Margin="0,0,6,0" />
-                            <TextBlock Text="Truncgil Finans"
-                                       FontSize="8.5"
-                                       FontWeight="Bold"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                       VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding Finance.LastUpdatedText}"
-                                       FontSize="8.5"
-                                       Foreground="{StaticResource TextMutedBrush}"
-                                       HorizontalAlignment="Right"
-                                       VerticalAlignment="Center" />
-                        </DockPanel>
-                    </Border>
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <!-- COLUMN 2: Hardware Specs Card -->
-        <Border Grid.Column="2"
-                VerticalAlignment="Top"
+        <!-- CARD 1: SİSTEM TELEMETRİSİ -->
+        <Border Visibility="{Binding IsTelemetryVisible, Converter={StaticResource BoolToVis}}"
                 Background="{StaticResource GlassBgBrush}"
+                BorderBrush="{StaticResource GlassBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12,10"
+                Margin="0,0,0,10">
+            <StackPanel>
+                <!-- Card Header -->
+                <DockPanel Margin="0,0,0,5">
+                    <Path Data="{StaticResource GeoPerformance}"
+                          Fill="{StaticResource AccentBrush}"
+                          Stretch="Uniform"
+                          Width="13"
+                          Height="13"
+                          VerticalAlignment="Center"
+                          Margin="0,0,6,0" />
+                    <TextBlock Text="SİSTEM TELEMETRİSİ"
+                               FontSize="10"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource AccentBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0" />
+                    <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
+                </DockPanel>
+
+                <!-- Performans (CPU, RAM, GPU, VRAM) -->
+                <DockPanel Margin="0,2,0,3">
+                    <TextBlock Text="PERFORMANS"
+                               FontSize="9.5"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,6,0" />
+                    <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
+                </DockPanel>
+                <ItemsControl ItemsSource="{Binding Telemetry.Performance}"
+                              ItemTemplate="{StaticResource TelemetryRowTemplate}" />
+
+                <!-- Depolama (C: & D: Diski) -->
+                <DockPanel Margin="0,4,0,3">
+                    <TextBlock Text="DİSK DOLULUK"
+                               FontSize="9.5"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,6,0" />
+                    <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
+                </DockPanel>
+                <ItemsControl ItemsSource="{Binding Telemetry.Storage}"
+                              ItemTemplate="{StaticResource TelemetryRowTemplate}" />
+            </StackPanel>
+        </Border>
+
+        <!-- CARD 2: CANLI PİYASA (DÖVİZ & ALTIN) -->
+        <Border Visibility="{Binding IsFinanceVisible, Converter={StaticResource BoolToVis}}"
+                Background="{StaticResource GlassBgBrush}"
+                BorderBrush="{StaticResource GlassBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12,10"
+                Margin="0,0,0,10">
+            <StackPanel>
+                <!-- Card Header -->
+                <DockPanel Margin="0,0,0,5">
+                    <Path Data="{StaticResource GeoDollar}"
+                          Fill="{StaticResource AccentBrush}"
+                          Stretch="Uniform"
+                          Width="13"
+                          Height="13"
+                          VerticalAlignment="Center"
+                          Margin="0,0,6,0" />
+                    <TextBlock Text="CANLI PİYASA"
+                               FontSize="10"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource AccentBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0" />
+                    <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
+                </DockPanel>
+
+                <!-- Döviz Kurları -->
+                <DockPanel Margin="0,2,0,3">
+                    <TextBlock Text="DÖVİZ"
+                               FontSize="9.5"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,6,0" />
+                    <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
+                </DockPanel>
+                <ItemsControl ItemsSource="{Binding Finance.Currencies}"
+                              ItemTemplate="{StaticResource FinanceRowTemplate}" />
+
+                <!-- Altın Fiyatları -->
+                <DockPanel Margin="0,4,0,3">
+                    <TextBlock Text="ALTIN"
+                               FontSize="9.5"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,6,0" />
+                    <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
+                </DockPanel>
+                <ItemsControl ItemsSource="{Binding Finance.Gold}"
+                              ItemTemplate="{StaticResource FinanceRowTemplate}" />
+
+                <!-- Footer Badge -->
+                <Border Background="{StaticResource GlassCardBgBrush}"
+                        BorderBrush="{StaticResource GlassCardBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="5"
+                        Margin="0,4,0,0"
+                        Padding="8,3.5">
+                    <DockPanel>
+                        <Border Width="4"
+                                Height="4"
+                                CornerRadius="2"
+                                Background="{StaticResource AccentGreenBrush}"
+                                VerticalAlignment="Center"
+                                Margin="0,0,6,0" />
+                        <TextBlock Text="Truncgil Finans"
+                                   FontSize="9"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding Finance.LastUpdatedText}"
+                                   FontSize="9"
+                                   Foreground="{StaticResource TextMutedBrush}"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Center" />
+                    </DockPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <!-- CARD 3: DONANIM VE BİLEŞENLER -->
+        <Border Background="{StaticResource GlassBgBrush}"
                 BorderBrush="{StaticResource GlassBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="8"
                 Padding="12,10">
             <StackPanel>
+                <!-- Card Header -->
+                <DockPanel Margin="0,0,0,5">
+                    <Path Data="{StaticResource GeoCpu}"
+                          Fill="{StaticResource AccentBrush}"
+                          Stretch="Uniform"
+                          Width="13"
+                          Height="13"
+                          VerticalAlignment="Center"
+                          Margin="0,0,6,0" />
+                    <TextBlock Text="DONANIM BİLEŞENLERİ"
+                               FontSize="10"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource AccentBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0" />
+                    <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
+                </DockPanel>
 
                 <!-- 1. SİSTEM -->
-                <DockPanel Margin="0,0,0,4">
+                <DockPanel Margin="0,2,0,3">
                     <TextBlock Text="SİSTEM"
                                FontSize="9.5"
                                FontWeight="Bold"
-                               Foreground="{StaticResource AccentBrush}"
+                               Foreground="{StaticResource TextSecondaryBrush}"
                                VerticalAlignment="Center"
                                Margin="0,0,6,0" />
                     <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
@@ -406,11 +407,11 @@
                               ItemTemplate="{StaticResource GadgetRowTemplate}" />
 
                 <!-- 2. DEPOLAMA -->
-                <DockPanel Margin="0,4,0,4">
+                <DockPanel Margin="0,4,0,3">
                     <TextBlock Text="DEPOLAMA"
                                FontSize="9.5"
                                FontWeight="Bold"
-                               Foreground="{StaticResource AccentBrush}"
+                               Foreground="{StaticResource TextSecondaryBrush}"
                                VerticalAlignment="Center"
                                Margin="0,0,6,0" />
                     <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
@@ -419,11 +420,11 @@
                               ItemTemplate="{StaticResource GadgetRowTemplate}" />
 
                 <!-- 3. ÇEVRE BİRİMLERİ -->
-                <DockPanel Margin="0,4,0,4">
+                <DockPanel Margin="0,4,0,3">
                     <TextBlock Text="ÇEVRE BİRİMLERİ"
                                FontSize="9.5"
                                FontWeight="Bold"
-                               Foreground="{StaticResource AccentBrush}"
+                               Foreground="{StaticResource TextSecondaryBrush}"
                                VerticalAlignment="Center"
                                Margin="0,0,6,0" />
                     <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
@@ -432,11 +433,11 @@
                               ItemTemplate="{StaticResource GadgetRowTemplate}" />
 
                 <!-- 4. KASA, SOĞUTMA VE GÜÇ -->
-                <DockPanel Margin="0,4,0,4">
+                <DockPanel Margin="0,4,0,3">
                     <TextBlock Text="KASA, SOĞUTMA VE GÜÇ"
                                FontSize="9.5"
                                FontWeight="Bold"
-                               Foreground="{StaticResource AccentBrush}"
+                               Foreground="{StaticResource TextSecondaryBrush}"
                                VerticalAlignment="Center"
                                Margin="0,0,6,0" />
                     <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
@@ -445,11 +446,11 @@
                               ItemTemplate="{StaticResource GadgetRowTemplate}" />
 
                 <!-- 5. AKSESUAR VE EKİPMAN -->
-                <DockPanel Margin="0,4,0,4">
+                <DockPanel Margin="0,4,0,3">
                     <TextBlock Text="AKSESUAR VE EKİPMAN"
                                FontSize="9.5"
                                FontWeight="Bold"
-                               Foreground="{StaticResource AccentBrush}"
+                               Foreground="{StaticResource TextSecondaryBrush}"
                                VerticalAlignment="Center"
                                Margin="0,0,6,0" />
                     <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
@@ -474,5 +475,5 @@
 
             </StackPanel>
         </Border>
-    </Grid>
+    </StackPanel>
 </Window>

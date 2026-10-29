@@ -83,12 +83,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     public bool IsTelemetryVisible => _config.TelemetryWidget.Enabled;
     public bool IsFinanceVisible => _config.FinanceWidget.Enabled;
 
-    public GridLength LeftColumnWidth =>
-        (IsTelemetryVisible || IsFinanceVisible) ? new GridLength(290) : new GridLength(0);
-
-    public GridLength MiddleGapWidth =>
-        (IsTelemetryVisible || IsFinanceVisible) ? new GridLength(10) : new GridLength(0);
-
     public MainWindow()
     {
         InitializeComponent();
@@ -146,8 +140,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         _config = HardwareConfig.Load(_configPath);
 
-        double totalWidth = (IsTelemetryVisible || IsFinanceVisible) ? 690 : 390;
-        Width = totalWidth;
+        Width = 380;
 
         if (_config.Widget.Opacity > 0.1 && _config.Widget.Opacity <= 1.0) Opacity = _config.Widget.Opacity;
         Topmost = _config.Widget.AlwaysOnTop;
@@ -199,11 +192,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     public void PositionWidget()
     {
-        double totalWidth = (IsTelemetryVisible || IsFinanceVisible) ? 690 : 390;
-        Width = totalWidth;
+        Width = 380;
 
         var workArea = SystemParameters.WorkArea;
-        var targetLeft = workArea.Right - totalWidth - _config.Widget.OffsetX;
+        var targetLeft = workArea.Right - Width - _config.Widget.OffsetX;
         var targetTop = workArea.Top + _config.Widget.OffsetY;
 
         Left = Math.Max(workArea.Left, targetLeft);
@@ -289,9 +281,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsTelemetryVisible)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsFinanceVisible)));
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LeftColumnWidth)));
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MiddleGapWidth)));
-        PositionWidget();
     }
 
     private void MenuAutoStart_Click(object sender, RoutedEventArgs e)
