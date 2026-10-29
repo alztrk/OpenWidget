@@ -38,7 +38,7 @@ public class WidgetConfig
     public double? CustomTop { get; set; }
     public double Width { get; set; } = 360;
     public double Height { get; set; } = 780;
-    public bool AlwaysOnTop { get; set; } = true;
+    public bool AlwaysOnTop { get; set; } = false;
     public bool PinToDesktop { get; set; } = false;
     public bool AutoGameMode { get; set; } = true;
     public bool IsLocked { get; set; } = false;

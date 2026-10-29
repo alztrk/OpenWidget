@@ -12,7 +12,7 @@
         ResizeMode="NoResize"
         ShowInTaskbar="False"
         ShowActivated="False"
-        Topmost="True"
+        Topmost="False"
         FontFamily="Roboto, Segoe UI Variable Text, Segoe UI, sans-serif"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
@@ -137,35 +137,44 @@
             CornerRadius="14"
             Padding="14,12"
             Cursor="SizeAll"
-            MouseLeftButtonDown="MasterBorder_MouseLeftButtonDown">
+            MouseLeftButtonDown="MasterBorder_MouseLeftButtonDown"
+            PreviewMouseWheel="MasterBorder_PreviewMouseWheel">
         <Grid>
             <!-- 1. FULL EXPANDED VIEW -->
-            <StackPanel x:Name="FullContentPanel" Visibility="{Binding IsFullViewVisible, Converter={StaticResource BoolToVis}}">
-                <!-- 1. Header (Time, Game Mode & Uptime) -->
-                <widgets:HeaderWidget Visibility="{Binding IsHeaderVisible, Converter={StaticResource BoolToVis}}" />
+            <DockPanel x:Name="FullContentPanel" Visibility="{Binding IsFullViewVisible, Converter={StaticResource BoolToVis}}">
+                <!-- 1. Header (Time, Game Mode & Uptime) pinned at the top -->
+                <widgets:HeaderWidget DockPanel.Dock="Top" Visibility="{Binding IsHeaderVisible, Converter={StaticResource BoolToVis}}" Margin="0,0,0,8" />
 
-                <!-- 2. Weather Details Card -->
-                <widgets:WeatherWidget Visibility="{Binding IsWeatherVisible, Converter={StaticResource BoolToVis}}" />
+                <!-- Scrollable Body with smooth modern scrollbar -->
+                <ScrollViewer x:Name="MainScrollViewer"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Focusable="False">
+                    <StackPanel Margin="0,0,2,0">
+                        <!-- 2. Weather Details Card -->
+                        <widgets:WeatherWidget Visibility="{Binding IsWeatherVisible, Converter={StaticResource BoolToVis}}" />
 
-                <!-- 3. System Telemetry -->
-                <widgets:TelemetryWidget Visibility="{Binding IsTelemetryVisible, Converter={StaticResource BoolToVis}}" />
+                        <!-- 3. System Telemetry -->
+                        <widgets:TelemetryWidget Visibility="{Binding IsTelemetryVisible, Converter={StaticResource BoolToVis}}" />
 
-                <!-- 4. Market Finance -->
-                <widgets:FinanceWidget Visibility="{Binding IsFinanceVisible, Converter={StaticResource BoolToVis}}" />
+                        <!-- 4. Market Finance -->
+                        <widgets:FinanceWidget Visibility="{Binding IsFinanceVisible, Converter={StaticResource BoolToVis}}" />
 
-                <!-- 5. Media Controller -->
-                <widgets:MediaWidget x:Name="MediaControlWidget" Visibility="{Binding IsMediaVisible, Converter={StaticResource BoolToVis}}" />
+                        <!-- 5. Media Controller -->
+                        <widgets:MediaWidget x:Name="MediaControlWidget" Visibility="{Binding IsMediaVisible, Converter={StaticResource BoolToVis}}" />
 
-                <!-- 6. Clipboard History -->
-                <widgets:ClipboardWidget x:Name="ClipboardControlWidget" Visibility="{Binding IsClipboardVisible, Converter={StaticResource BoolToVis}}" />
+                        <!-- 6. Clipboard History -->
+                        <widgets:ClipboardWidget x:Name="ClipboardControlWidget" Visibility="{Binding IsClipboardVisible, Converter={StaticResource BoolToVis}}" />
 
-                <!-- 7. Hardware Components -->
-                <widgets:HardwareWidget Visibility="{Binding IsHardwareVisible, Converter={StaticResource BoolToVis}}" />
+                        <!-- 7. Hardware Components -->
+                        <widgets:HardwareWidget Visibility="{Binding IsHardwareVisible, Converter={StaticResource BoolToVis}}" />
 
-                <!-- 8. Quick Actions Toolbar -->
-                <widgets:QuickActionsWidget Visibility="{Binding IsQuickActionsVisible, Converter={StaticResource BoolToVis}}"
-                                            RamCleaned="QuickActionsWidget_RamCleaned" />
-            </StackPanel>
+                        <!-- 8. Quick Actions Toolbar -->
+                        <widgets:QuickActionsWidget Visibility="{Binding IsQuickActionsVisible, Converter={StaticResource BoolToVis}}"
+                                                    RamCleaned="QuickActionsWidget_RamCleaned" />
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
 
             <!-- 2. COMPACT MINI HUD BAR -->
             <DockPanel x:Name="CompactHudPanel" Visibility="{Binding IsCompactViewVisible, Converter={StaticResource BoolToVis}}" Height="24">

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Threading;
 using OpenWidget.Models;
 using OpenWidget.Services;
@@ -438,7 +439,20 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         var workArea = SystemParameters.WorkArea;
         Width = 360;
+
+        // Dynamic MaxHeight calculation based on current display resolution
+        double topMargin = workArea.Height * 0.025;
+        double maxAllowedHeight = Math.Max(380, workArea.Height - (topMargin * 2));
+        MaxHeight = maxAllowedHeight;
+
+        if (MainScrollViewer != null)
+        {
+            // Reserve space for MasterBorder vertical padding (24px) + pinned HeaderWidget (~38px)
+            MainScrollViewer.MaxHeight = Math.Max(200, maxAllowedHeight - 65);
+        }
+
         double h = ActualHeight > 0 ? ActualHeight : 450;
+        h = Math.Min(h, maxAllowedHeight);
 
         if (_config.Widget.CustomLeft.HasValue && _config.Widget.CustomTop.HasValue)
         {
@@ -452,10 +466,31 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             // Auto-calculate 2.5% margins based on current resolution
             double rightMargin = workArea.Width * 0.025;
-            double topMargin = workArea.Height * 0.025;
 
             Left = Math.Round(workArea.Right - Width - rightMargin);
             Top = Math.Round(workArea.Top + topMargin);
+        }
+    }
+
+    private void MasterBorder_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+    {
+        if (e.OriginalSource is DependencyObject dep)
+        {
+            var parent = dep;
+            while (parent != null && parent != MasterBorder)
+            {
+                if (parent is System.Windows.Controls.Primitives.RangeBase || parent is System.Windows.Controls.ComboBox)
+                {
+                    return;
+                }
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+        }
+
+        if (MainScrollViewer != null && MainScrollViewer.ComputedVerticalScrollBarVisibility == Visibility.Visible)
+        {
+            MainScrollViewer.ScrollToVerticalOffset(MainScrollViewer.VerticalOffset - (e.Delta * 0.4));
+            e.Handled = true;
         }
     }
 
@@ -750,6 +785,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void MenuAlwaysOnTop_Click(object sender, RoutedEventArgs e)
     {
         Topmost = !Topmost;
+        _config.Widget.AlwaysOnTop = Topmost;
+        _config.Save(_configPath);
         if (MenuAlwaysOnTop != null)
         {
             MenuAlwaysOnTop.IsChecked = Topmost;

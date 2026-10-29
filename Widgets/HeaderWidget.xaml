@@ -1,7 +1,7 @@
 <UserControl x:Class="OpenWidget.Widgets.HeaderWidget"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             Margin="0,0,0,12"
+             Margin="0,0,0,8"
              Loaded="UserControl_Loaded">
 
     <UserControl.Resources>

@@ -27,7 +27,7 @@
     "CustomTop": 35,
     "Width": 360,
     "Height": 780,
-    "AlwaysOnTop": true,
+    "AlwaysOnTop": false,
     "PinToDesktop": false,
     "AutoGameMode": true,
     "IsLocked": true,

@@ -1,7 +1,7 @@
 <UserControl x:Class="OpenWidget.Widgets.MediaWidget"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             Margin="0,0,0,12">
+             Margin="0,0,0,10">
 
     <UserControl.Resources>
         <Style x:Key="MediaControlBtn" TargetType="Button">
