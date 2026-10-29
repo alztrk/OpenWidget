@@ -53,7 +53,7 @@ public class FinanceWidgetConfig
 {
     public bool Enabled { get; set; } = true;
     public double OffsetX { get; set; } = 415;
-    public double OffsetY { get; set; } = 275;
+    public double OffsetY { get; set; } = 340;
     public double Width { get; set; } = 260;
 }
 

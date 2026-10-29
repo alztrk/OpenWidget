@@ -139,4 +139,11 @@ public partial class TelemetryWindow : Window, INotifyPropertyChanged
         _config.Save(_configPath);
         Close();
     }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        _timer?.Stop();
+        _service.Dispose();
+        base.OnClosed(e);
+    }
 }

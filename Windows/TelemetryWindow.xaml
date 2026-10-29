@@ -4,7 +4,7 @@
         xmlns:converters="clr-namespace:RigBadge.Converters"
         Title="RigBadge Telemetry"
         Width="260"
-        MinHeight="170"
+        MinHeight="250"
         SizeToContent="Height"
         WindowStyle="None"
         AllowsTransparency="True"
