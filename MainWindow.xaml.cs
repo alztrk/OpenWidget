@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -11,7 +10,6 @@ using System.Windows.Interop;
 using System.Windows.Threading;
 using RigBadge.Models;
 using RigBadge.Services;
-using RigBadge.Windows;
 
 namespace RigBadge;
 
@@ -36,11 +34,19 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private HardwareConfig _config = new();
     private HardwareSpecs _specs = new();
+    private TelemetrySpecs _telemetry = new();
+    private FinanceSpecs _finance = new();
+
     private string _configPath = string.Empty;
     private string _pricesPath = string.Empty;
+    private string _financeCachePath = string.Empty;
+
     private PriceService? _priceService;
-    private TelemetryWindow? _telemetryWindow;
-    private FinanceWindow? _financeWindow;
+    private SystemTelemetryService? _telemetryService;
+    private MarketFinanceService? _financeService;
+
+    private DispatcherTimer? _telemetryTimer;
+    private DispatcherTimer? _financeTimer;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -53,6 +59,35 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Specs)));
         }
     }
+
+    public TelemetrySpecs Telemetry
+    {
+        get => _telemetry;
+        set
+        {
+            _telemetry = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Telemetry)));
+        }
+    }
+
+    public FinanceSpecs Finance
+    {
+        get => _finance;
+        set
+        {
+            _finance = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Finance)));
+        }
+    }
+
+    public bool IsTelemetryVisible => _config.TelemetryWidget.Enabled;
+    public bool IsFinanceVisible => _config.FinanceWidget.Enabled;
+
+    public GridLength LeftColumnWidth =>
+        (IsTelemetryVisible || IsFinanceVisible) ? new GridLength(290) : new GridLength(0);
+
+    public GridLength MiddleGapWidth =>
+        (IsTelemetryVisible || IsFinanceVisible) ? new GridLength(10) : new GridLength(0);
 
     public MainWindow()
     {
@@ -100,20 +135,34 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             if (File.Exists(cwdPrices)) _pricesPath = cwdPrices;
         }
 
+        _financeCachePath = Path.Combine(baseDir, "finance-cache.json");
+
         _priceService = new PriceService(_pricesPath);
+        _telemetryService = new SystemTelemetryService();
+        _financeService = new MarketFinanceService(_financeCachePath);
     }
 
     private void LoadConfig()
     {
         _config = HardwareConfig.Load(_configPath);
 
-        if (_config.Widget.Width >= 200) Width = _config.Widget.Width;
+        double totalWidth = (IsTelemetryVisible || IsFinanceVisible) ? 690 : 390;
+        Width = totalWidth;
+
         if (_config.Widget.Opacity > 0.1 && _config.Widget.Opacity <= 1.0) Opacity = _config.Widget.Opacity;
         Topmost = _config.Widget.AlwaysOnTop;
 
         if (MenuAlwaysOnTop != null)
         {
             MenuAlwaysOnTop.IsChecked = Topmost;
+        }
+        if (MenuTelemetry != null)
+        {
+            MenuTelemetry.IsChecked = _config.TelemetryWidget.Enabled;
+        }
+        if (MenuFinance != null)
+        {
+            MenuFinance.IsChecked = _config.FinanceWidget.Enabled;
         }
     }
 
@@ -131,50 +180,58 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             MenuAutoStart.IsChecked = AutoStartService.IsAutoStartEnabled();
         }
 
-        InitSubWidgets();
+        // 1. Initial Telemetry & Timer (2s)
+        RefreshTelemetry();
+        _telemetryTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+        _telemetryTimer.Tick += (s, args) => RefreshTelemetry();
+        _telemetryTimer.Start();
 
+        // 2. Initial Finance & Timer (60s)
+        RefreshFinanceFromCache();
+        _financeTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(60) };
+        _financeTimer.Tick += async (s, args) => await RefreshFinanceLiveAsync();
+        _financeTimer.Start();
+        _ = RefreshFinanceLiveAsync();
+
+        // 3. Hardware Specs
         await RefreshHardwareSpecsAsync();
     }
 
-    private void InitSubWidgets()
+    public void PositionWidget()
     {
-        try
-        {
-            if (_config.TelemetryWidget.Enabled)
-            {
-                _telemetryWindow = new TelemetryWindow(_config, _configPath);
-                _telemetryWindow.Show();
-            }
-            if (MenuTelemetry != null)
-            {
-                MenuTelemetry.IsChecked = _config.TelemetryWidget.Enabled;
-            }
-        }
-        catch { }
+        double totalWidth = (IsTelemetryVisible || IsFinanceVisible) ? 690 : 390;
+        Width = totalWidth;
 
-        try
-        {
-            if (_config.FinanceWidget.Enabled)
-            {
-                _financeWindow = new FinanceWindow(_config, _configPath);
-                _financeWindow.Show();
-            }
-            if (MenuFinance != null)
-            {
-                MenuFinance.IsChecked = _config.FinanceWidget.Enabled;
-            }
-        }
-        catch { }
-    }
-
-    private void PositionWidget()
-    {
         var workArea = SystemParameters.WorkArea;
-        var targetLeft = workArea.Right - Width - _config.Widget.OffsetX;
+        var targetLeft = workArea.Right - totalWidth - _config.Widget.OffsetX;
         var targetTop = workArea.Top + _config.Widget.OffsetY;
 
         Left = Math.Max(workArea.Left, targetLeft);
         Top = Math.Max(workArea.Top, targetTop);
+    }
+
+    private void RefreshTelemetry()
+    {
+        if (_telemetryService != null)
+        {
+            Telemetry = _telemetryService.GetTelemetrySpecs();
+        }
+    }
+
+    private void RefreshFinanceFromCache()
+    {
+        if (_financeService != null)
+        {
+            Finance = _financeService.GetCurrentSpecs();
+        }
+    }
+
+    private async Task RefreshFinanceLiveAsync()
+    {
+        if (_financeService != null)
+        {
+            Finance = await _financeService.FetchLatestAsync();
+        }
     }
 
     private async Task RefreshHardwareSpecsAsync()
@@ -184,7 +241,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             _priceService ??= new PriceService(_pricesPath);
             _priceService.CheckAndApplyDailyUpdate();
 
-            // Fetch live Izoly prices in background
             await _priceService.UpdateIzolyPricesAsync();
 
             var scanner = new HardwareScanner(_config, _priceService);
@@ -211,39 +267,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         catch { }
     }
 
-    private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        if (e.ButtonState == MouseButtonState.Pressed)
-        {
-            try
-            {
-                DragMove();
-
-                var workArea = SystemParameters.WorkArea;
-                _config.Widget.OffsetX = Math.Max(0, workArea.Right - Left - Width);
-                _config.Widget.OffsetY = Math.Max(0, Top - workArea.Top);
-                _config.Save(_configPath);
-            }
-            catch { }
-        }
-    }
-
     private void MenuTelemetry_Click(object sender, RoutedEventArgs e)
     {
         _config.TelemetryWidget.Enabled = !_config.TelemetryWidget.Enabled;
         _config.Save(_configPath);
         if (MenuTelemetry != null) MenuTelemetry.IsChecked = _config.TelemetryWidget.Enabled;
 
-        if (_config.TelemetryWidget.Enabled)
-        {
-            _telemetryWindow ??= new TelemetryWindow(_config, _configPath);
-            _telemetryWindow.Show();
-        }
-        else
-        {
-            _telemetryWindow?.Close();
-            _telemetryWindow = null;
-        }
+        NotifyLayoutChanged();
     }
 
     private void MenuFinance_Click(object sender, RoutedEventArgs e)
@@ -252,16 +282,16 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         _config.Save(_configPath);
         if (MenuFinance != null) MenuFinance.IsChecked = _config.FinanceWidget.Enabled;
 
-        if (_config.FinanceWidget.Enabled)
-        {
-            _financeWindow ??= new FinanceWindow(_config, _configPath);
-            _financeWindow.Show();
-        }
-        else
-        {
-            _financeWindow?.Close();
-            _financeWindow = null;
-        }
+        NotifyLayoutChanged();
+    }
+
+    private void NotifyLayoutChanged()
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsTelemetryVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsFinanceVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LeftColumnWidth)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MiddleGapWidth)));
+        PositionWidget();
     }
 
     private void MenuAutoStart_Click(object sender, RoutedEventArgs e)
@@ -286,6 +316,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private async void MenuRefresh_Click(object sender, RoutedEventArgs e)
     {
         LoadConfig();
+        RefreshTelemetry();
+        _ = RefreshFinanceLiveAsync();
         _priceService = new PriceService(_pricesPath);
         await RefreshHardwareSpecsAsync();
     }
@@ -347,8 +379,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void MenuExit_Click(object sender, RoutedEventArgs e)
     {
-        _telemetryWindow?.Close();
-        _financeWindow?.Close();
         Close();
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        _telemetryTimer?.Stop();
+        _financeTimer?.Stop();
+        _telemetryService?.Dispose();
+        base.OnClosed(e);
     }
 }
