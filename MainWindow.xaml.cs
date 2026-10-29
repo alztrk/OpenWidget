@@ -21,6 +21,32 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private const int WS_EX_NOACTIVATE = 0x08000000;
     private const int WM_NCLBUTTONDOWN = 0xA1;
     private const int HT_CAPTION = 0x2;
+    private const int WM_MOVING = 0x0216;
+    private const uint MONITOR_DEFAULTTONEAREST = 2;
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RECT
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MONITORINFO
+    {
+        public int cbSize;
+        public RECT rcMonitor;
+        public RECT rcWork;
+        public int dwFlags;
+    }
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern IntPtr FindWindow(string? lpClassName, string? lpWindowName);
@@ -122,6 +148,59 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             SetWindowLongPtr(handle, GWL_HWNDPARENT, progman);
         }
+
+        // Attach Win32 Hook to prevent window from crossing screen boundaries
+        var source = HwndSource.FromHwnd(handle);
+        source?.AddHook(WndProc);
+    }
+
+    private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        if (msg == WM_MOVING)
+        {
+            var rect = Marshal.PtrToStructure<RECT>(lParam);
+            var monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+            if (monitor != IntPtr.Zero)
+            {
+                var mi = new MONITORINFO { cbSize = Marshal.SizeOf(typeof(MONITORINFO)) };
+                if (GetMonitorInfo(monitor, ref mi))
+                {
+                    var work = mi.rcWork;
+                    int width = rect.Right - rect.Left;
+                    int height = rect.Bottom - rect.Top;
+                    const int snapDistance = 12;
+
+                    // Clamp & Snap Horizontal (Left / Right)
+                    if (rect.Left < work.Left || Math.Abs(rect.Left - work.Left) <= snapDistance)
+                    {
+                        rect.Left = work.Left;
+                        rect.Right = work.Left + width;
+                    }
+                    else if (rect.Right > work.Right || Math.Abs(rect.Right - work.Right) <= snapDistance)
+                    {
+                        rect.Right = work.Right;
+                        rect.Left = work.Right - width;
+                    }
+
+                    // Clamp & Snap Vertical (Top / Bottom)
+                    if (rect.Top < work.Top || Math.Abs(rect.Top - work.Top) <= snapDistance)
+                    {
+                        rect.Top = work.Top;
+                        rect.Bottom = work.Top + height;
+                    }
+                    else if (rect.Bottom > work.Bottom || Math.Abs(rect.Bottom - work.Bottom) <= snapDistance)
+                    {
+                        rect.Bottom = work.Bottom;
+                        rect.Top = work.Bottom - height;
+                    }
+
+                    Marshal.StructureToPtr(rect, lParam, true);
+                    handled = true;
+                }
+            }
+        }
+
+        return IntPtr.Zero;
     }
 
     private void ResolvePaths()
@@ -215,11 +294,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         var workArea = SystemParameters.WorkArea;
         Width = 360;
+        double h = ActualHeight > 0 ? ActualHeight : 450;
 
         if (_config.Widget.CustomLeft.HasValue && _config.Widget.CustomTop.HasValue)
         {
-            double maxLeft = Math.Max(0, workArea.Right - Width);
-            double maxTop = Math.Max(0, workArea.Bottom - 100);
+            double maxLeft = Math.Max(workArea.Left, workArea.Right - Width);
+            double maxTop = Math.Max(workArea.Top, workArea.Bottom - h);
 
             Left = Math.Clamp(_config.Widget.CustomLeft.Value, workArea.Left, maxLeft);
             Top = Math.Clamp(_config.Widget.CustomTop.Value, workArea.Top, maxTop);
@@ -251,6 +331,16 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void SaveCurrentPosition()
     {
+        var workArea = SystemParameters.WorkArea;
+        double w = ActualWidth > 0 ? ActualWidth : Width;
+        double h = ActualHeight > 0 ? ActualHeight : 450;
+
+        double maxLeft = Math.Max(workArea.Left, workArea.Right - w);
+        double maxTop = Math.Max(workArea.Top, workArea.Bottom - h);
+
+        Left = Math.Clamp(Left, workArea.Left, maxLeft);
+        Top = Math.Clamp(Top, workArea.Top, maxTop);
+
         _config.Widget.CustomLeft = Math.Round(Left);
         _config.Widget.CustomTop = Math.Round(Top);
         _config.Save(_configPath);
