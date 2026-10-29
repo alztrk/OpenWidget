@@ -89,6 +89,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private MarketFinanceService? _financeService;
     private WeatherService? _weatherService;
     private MediaSessionService? _mediaService;
+    private readonly ClipboardService _clipboardService = new();
 
     private DispatcherTimer? _telemetryTimer;
     private DispatcherTimer? _financeTimer;
@@ -97,6 +98,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private int _gamingThrottleCounter = 0;
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public ClipboardService Clipboard => _clipboardService;
+    public System.Collections.ObjectModel.ObservableCollection<ClipboardItem> ClipboardItems => _clipboardService.Items;
+    public WeatherDetailsModel Weather => _weatherService?.GetDetails() ?? new WeatherDetailsModel();
+    public string CompactWeatherText => _weatherService != null ? $"{_weatherService.GetDetails().City} {_weatherService.GetDetails().TempFormatted}" : "İstanbul 17°";
 
     public HardwareSpecs Specs
     {
@@ -132,6 +138,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     }
 
     public bool IsHeaderVisible => _config.Widgets.ShowHeader;
+    public bool IsWeatherVisible => _config.Widgets.ShowWeather;
+    public bool IsClipboardVisible => _config.Widgets.ShowClipboard;
     public bool IsTelemetryVisible => _config.Widgets.ShowTelemetry;
     public bool IsFinanceVisible => _config.Widgets.ShowFinance;
     public bool IsMediaVisible => _config.Widgets.ShowMedia;
@@ -205,6 +213,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
+        if (msg == ClipboardService.WM_CLIPBOARDUPDATE)
+        {
+            _clipboardService.HandleClipboardUpdate();
+            handled = true;
+            return IntPtr.Zero;
+        }
+
         if (msg == WM_MOVING)
         {
             var rect = Marshal.PtrToStructure<RECT>(lParam);
@@ -277,6 +292,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         _telemetryService = new SystemTelemetryService();
         _financeService = new MarketFinanceService(_financeCachePath);
         _weatherService = new WeatherService(_weatherCachePath, _config.Widget.City);
+        _weatherService.WeatherUpdated += (details) =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Weather)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CompactWeatherText)));
+            });
+        };
     }
 
     private void LoadConfig()
@@ -326,6 +349,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void UpdateContextMenuTexts()
     {
         if (MenuHeader != null) MenuHeader.Header = LocalizationService.Get("MenuHeader");
+        if (MenuWeather != null) MenuWeather.Header = LocalizationService.Get("MenuWeather");
+        if (MenuClipboard != null) MenuClipboard.Header = LocalizationService.Get("MenuClipboard");
         if (MenuTelemetry != null) MenuTelemetry.Header = LocalizationService.Get("MenuTelemetry");
         if (MenuFinance != null) MenuFinance.Header = LocalizationService.Get("MenuFinance");
         if (MenuMedia != null) MenuMedia.Header = LocalizationService.Get("MenuMedia");
@@ -347,6 +372,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void SyncMenuCheckboxes()
     {
         if (MenuHeader != null) MenuHeader.IsChecked = _config.Widgets.ShowHeader;
+        if (MenuWeather != null) MenuWeather.IsChecked = _config.Widgets.ShowWeather;
+        if (MenuClipboard != null) MenuClipboard.IsChecked = _config.Widgets.ShowClipboard;
         if (MenuTelemetry != null) MenuTelemetry.IsChecked = _config.Widgets.ShowTelemetry;
         if (MenuFinance != null) MenuFinance.IsChecked = _config.Widgets.ShowFinance;
         if (MenuMedia != null) MenuMedia.IsChecked = _config.Widgets.ShowMedia;
@@ -397,6 +424,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             _mediaService = new MediaSessionService();
             await _mediaService.InitializeAsync();
             MediaControlWidget.AttachService(_mediaService);
+        }
+        catch { }
+
+        // 5. Windows Clipboard Service
+        try
+        {
+            var handle = new WindowInteropHelper(this).Handle;
+            _clipboardService.Initialize(handle);
         }
         catch { }
     }
@@ -627,6 +662,18 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         SaveAndNotifyLayout(nameof(IsHeaderVisible), MenuHeader, _config.Widgets.ShowHeader);
     }
 
+    private void MenuWeather_Click(object sender, RoutedEventArgs e)
+    {
+        _config.Widgets.ShowWeather = !_config.Widgets.ShowWeather;
+        SaveAndNotifyLayout(nameof(IsWeatherVisible), MenuWeather, _config.Widgets.ShowWeather);
+    }
+
+    private void MenuClipboard_Click(object sender, RoutedEventArgs e)
+    {
+        _config.Widgets.ShowClipboard = !_config.Widgets.ShowClipboard;
+        SaveAndNotifyLayout(nameof(IsClipboardVisible), MenuClipboard, _config.Widgets.ShowClipboard);
+    }
+
     private void MenuTelemetry_Click(object sender, RoutedEventArgs e)
     {
         _config.Widgets.ShowTelemetry = !_config.Widgets.ShowTelemetry;
@@ -742,11 +789,15 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         SyncMenuCheckboxes();
 
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsHeaderVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsWeatherVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsClipboardVisible)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsTelemetryVisible)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsFinanceVisible)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsMediaVisible)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsHardwareVisible)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsQuickActionsVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Weather)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CompactWeatherText)));
 
         RefreshTelemetry();
         _ = RefreshFinanceLiveAsync();
@@ -807,6 +858,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         _financeTimer?.Stop();
         _telemetryService?.Dispose();
         _mediaService?.Dispose();
+        try { _clipboardService.Cleanup(new WindowInteropHelper(this).Handle); } catch { }
         base.OnClosed(e);
     }
 }

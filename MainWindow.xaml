@@ -28,9 +28,19 @@
 
     <Window.ContextMenu>
         <ContextMenu Style="{StaticResource ModernContextMenuStyle}">
-            <MenuItem x:Name="MenuHeader" Header="Hava Durumu &amp; Süre" IsCheckable="True" Click="MenuHeader_Click">
+            <MenuItem x:Name="MenuHeader" Header="Saat &amp; Sistem Durumu" IsCheckable="True" Click="MenuHeader_Click">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource GeoPerformance}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem x:Name="MenuWeather" Header="Hava Durumu Detayları" IsCheckable="True" Click="MenuWeather_Click">
                 <MenuItem.Icon>
                     <Path Data="{StaticResource GeoWeather}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem x:Name="MenuClipboard" Header="Pano Geçmişi" IsCheckable="True" Click="MenuClipboard_Click">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource GeoClipboard}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem x:Name="MenuTelemetry" Header="Sistem Telemetrisi" IsCheckable="True" Click="MenuTelemetry_Click">
@@ -131,22 +141,28 @@
         <Grid>
             <!-- 1. FULL EXPANDED VIEW -->
             <StackPanel x:Name="FullContentPanel" Visibility="{Binding IsFullViewVisible, Converter={StaticResource BoolToVis}}">
-                <!-- 1. Header (Weather & Uptime) -->
+                <!-- 1. Header (Time, Game Mode & Uptime) -->
                 <widgets:HeaderWidget Visibility="{Binding IsHeaderVisible, Converter={StaticResource BoolToVis}}" />
 
-                <!-- 2. System Telemetry -->
+                <!-- 2. Weather Details Card -->
+                <widgets:WeatherWidget Visibility="{Binding IsWeatherVisible, Converter={StaticResource BoolToVis}}" />
+
+                <!-- 3. System Telemetry -->
                 <widgets:TelemetryWidget Visibility="{Binding IsTelemetryVisible, Converter={StaticResource BoolToVis}}" />
 
-                <!-- 3. Market Finance -->
+                <!-- 4. Market Finance -->
                 <widgets:FinanceWidget Visibility="{Binding IsFinanceVisible, Converter={StaticResource BoolToVis}}" />
 
-                <!-- 4. Media Controller -->
+                <!-- 5. Media Controller -->
                 <widgets:MediaWidget x:Name="MediaControlWidget" Visibility="{Binding IsMediaVisible, Converter={StaticResource BoolToVis}}" />
 
-                <!-- 5. Hardware Components -->
+                <!-- 6. Clipboard History -->
+                <widgets:ClipboardWidget x:Name="ClipboardControlWidget" Visibility="{Binding IsClipboardVisible, Converter={StaticResource BoolToVis}}" />
+
+                <!-- 7. Hardware Components -->
                 <widgets:HardwareWidget Visibility="{Binding IsHardwareVisible, Converter={StaticResource BoolToVis}}" />
 
-                <!-- 6. Quick Actions Toolbar -->
+                <!-- 8. Quick Actions Toolbar -->
                 <widgets:QuickActionsWidget Visibility="{Binding IsQuickActionsVisible, Converter={StaticResource BoolToVis}}"
                                             RamCleaned="QuickActionsWidget_RamCleaned" />
             </StackPanel>

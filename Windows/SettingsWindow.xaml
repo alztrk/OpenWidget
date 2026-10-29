@@ -638,8 +638,16 @@
                     <StackPanel>
                         <CheckBox x:Name="ChkHeader" Style="{StaticResource ModernToggleSwitch}">
                             <StackPanel>
-                                <TextBlock Text="Hava Durumu &amp; Açık Kalma Süresi" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
-                                <TextBlock Text="Konum bazlı anlık hava ve sistem açık kalma süresi" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                                <TextBlock Text="Saat &amp; Sistem Durumu Çubuğu" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Text="Canlı saat, tarih, oyun modu ve açık kalma süresi çubuğu" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </CheckBox>
+                        <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
+
+                        <CheckBox x:Name="ChkWeather" Style="{StaticResource ModernToggleSwitch}">
+                            <StackPanel>
+                                <TextBlock Text="Detaylı Hava Durumu Kartı" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Text="Anlık sıcaklık, hissedilen, nem, rüzgar ve 3 günlük tahmin" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
                             </StackPanel>
                         </CheckBox>
                         <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
@@ -664,6 +672,14 @@
                             <StackPanel>
                                 <TextBlock Text="Medya Oynatıcı (Now Playing)" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                                 <TextBlock Text="Spotify, YouTube ve tarayıcı ses oturumu kontrolleri" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </CheckBox>
+                        <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
+
+                        <CheckBox x:Name="ChkClipboard" Style="{StaticResource ModernToggleSwitch}">
+                            <StackPanel>
+                                <TextBlock Text="Windows Pano Geçmişi Kartı" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Text="Son kopyalanan metinleri listeleyen ve tek tıkla geri yükleyen pano kartı" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
                             </StackPanel>
                         </CheckBox>
                         <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />

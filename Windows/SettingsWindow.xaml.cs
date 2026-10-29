@@ -73,6 +73,8 @@ public partial class SettingsWindow : Window
 
         // Widgets
         ChkHeader.IsChecked = _config.Widgets.ShowHeader;
+        ChkWeather.IsChecked = _config.Widgets.ShowWeather;
+        ChkClipboard.IsChecked = _config.Widgets.ShowClipboard;
         ChkTelemetry.IsChecked = _config.Widgets.ShowTelemetry;
         ChkFinance.IsChecked = _config.Widgets.ShowFinance;
         ChkMedia.IsChecked = _config.Widgets.ShowMedia;
@@ -278,6 +280,8 @@ public partial class SettingsWindow : Window
 
         // 6. Widgets
         _config.Widgets.ShowHeader = ChkHeader.IsChecked == true;
+        _config.Widgets.ShowWeather = ChkWeather.IsChecked == true;
+        _config.Widgets.ShowClipboard = ChkClipboard.IsChecked == true;
         _config.Widgets.ShowTelemetry = ChkTelemetry.IsChecked == true;
         _config.Widgets.ShowFinance = ChkFinance.IsChecked == true;
         _config.Widgets.ShowMedia = ChkMedia.IsChecked == true;

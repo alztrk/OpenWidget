@@ -9,12 +9,27 @@
     </UserControl.Resources>
 
     <DockPanel>
-        <TextBlock Text="{Binding Finance.WeatherText}"
-                   DockPanel.Dock="Left"
-                   FontSize="11"
-                   Foreground="{StaticResource TextSecondaryBrush}"
-                   VerticalAlignment="Center" />
+        <!-- Time and Date on Left -->
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+            <TextBlock x:Name="TxtClock"
+                       Text="00:00"
+                       FontSize="12"
+                       FontWeight="SemiBold"
+                       Foreground="{StaticResource TextPrimaryBrush}"
+                       VerticalAlignment="Center" />
+            <TextBlock Text="•"
+                       FontSize="10"
+                       Foreground="{StaticResource TextMutedBrush}"
+                       Margin="5,0"
+                       VerticalAlignment="Center" />
+            <TextBlock x:Name="TxtDate"
+                       Text=""
+                       FontSize="11"
+                       Foreground="{StaticResource TextSecondaryBrush}"
+                       VerticalAlignment="Center" />
+        </StackPanel>
 
+        <!-- Status Badges & Uptime on Right -->
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
             <!-- Game Mode Idle Badge -->
             <Border Background="#2034D399"

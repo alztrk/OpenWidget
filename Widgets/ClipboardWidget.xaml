@@ -1,0 +1,171 @@
+<UserControl x:Class="OpenWidget.Widgets.ClipboardWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:OpenWidget.Converters"
+             Margin="0,0,0,14"
+             Loaded="UserControl_Loaded">
+
+    <UserControl.Resources>
+        <converters:IconKeyToGeometryConverter x:Key="IconConverter" />
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </UserControl.Resources>
+
+    <StackPanel>
+        <!-- Header Row -->
+        <Grid Margin="4,0,4,6">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Path Data="{StaticResource GeoClipboard}"
+                      Fill="{StaticResource TextMutedBrush}"
+                      Stretch="Uniform"
+                      Width="11" Height="11"
+                      Margin="0,0,6,0"
+                      VerticalAlignment="Center" />
+                <TextBlock x:Name="TxtTitle"
+                           Text="Pano Geçmişi"
+                           FontSize="11"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <!-- Clear Button -->
+                <Button x:Name="BtnClear"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Padding="3"
+                        Margin="0,0,6,0"
+                        Click="BtnClear_Click"
+                        ToolTip="Pano geçmişini temizle">
+                    <Path Data="{StaticResource GeoTrash}"
+                          Fill="{StaticResource TextMutedBrush}"
+                          Stretch="Uniform"
+                          Width="10" Height="10" />
+                </Button>
+
+                <!-- Count Badge -->
+                <Border Background="#12FFFFFF" CornerRadius="4" Padding="5,1">
+                    <TextBlock x:Name="TxtItemCount"
+                               Text="{Binding ClipboardItems.Count, StringFormat='{}{0} öğe'}"
+                               FontSize="10"
+                               FontWeight="Medium"
+                               Foreground="{StaticResource TextSecondaryBrush}" />
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <!-- Main Card Surface -->
+        <Border Background="{StaticResource SectionBgBrush}"
+                BorderBrush="{StaticResource SectionBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="6,5">
+            <StackPanel>
+                <!-- Empty State -->
+                <TextBlock x:Name="TxtEmptyState"
+                           Text="Kopyalanan metinler burada listelenecek"
+                           FontSize="11"
+                           Foreground="{StaticResource TextMutedBrush}"
+                           HorizontalAlignment="Center"
+                           Margin="0,10"
+                           Visibility="Collapsed" />
+
+                <!-- Items List -->
+                <ItemsControl x:Name="ListClipboard" ItemsSource="{Binding ClipboardItems}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="Transparent"
+                                    CornerRadius="5"
+                                    Padding="7,4.5"
+                                    Margin="0,1"
+                                    Cursor="Hand"
+                                    MouseLeftButtonDown="Item_MouseLeftButtonDown"
+                                    ToolTip="Panoya kopyalamak için tıklayın">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#14FFFFFF" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Copy Icon -->
+                                    <Path Grid.Column="0"
+                                          Data="{StaticResource GeoCopy}"
+                                          Fill="{StaticResource TextMutedBrush}"
+                                          Stretch="Uniform"
+                                          Width="10" Height="10"
+                                          Margin="0,0,8,0"
+                                          VerticalAlignment="Center" />
+
+                                    <!-- Content Preview -->
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding PreviewText}"
+                                               FontSize="11.5"
+                                               FontWeight="Normal"
+                                               Foreground="{StaticResource TextPrimaryBrush}"
+                                               VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" />
+
+                                    <!-- Right Feedback / Timestamp -->
+                                    <Grid Grid.Column="2" VerticalAlignment="Center" Margin="6,0,0,0">
+                                        <!-- Timestamp -->
+                                        <TextBlock Text="{Binding FormattedTime}"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource TextMutedBrush}"
+                                                   VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsJustCopied}" Value="True">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+
+                                        <!-- Copied Notification Badge -->
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <StackPanel.Style>
+                                                <Style TargetType="StackPanel">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsJustCopied}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </StackPanel.Style>
+                                            <Path Data="{StaticResource GeoCheck}"
+                                                  Fill="{StaticResource AccentGreenBrush}"
+                                                  Stretch="Uniform"
+                                                  Width="9" Height="9"
+                                                  Margin="0,0,3,0"
+                                                  VerticalAlignment="Center" />
+                                            <TextBlock Text="Kopyalandı"
+                                                       FontSize="10"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource AccentGreenBrush}"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

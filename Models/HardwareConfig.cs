@@ -52,6 +52,8 @@ public class WidgetConfig
 public class WidgetSelectionConfig
 {
     public bool ShowHeader { get; set; } = true;
+    public bool ShowWeather { get; set; } = true;
+    public bool ShowClipboard { get; set; } = true;
     public bool ShowTelemetry { get; set; } = true;
     public bool ShowFinance { get; set; } = true;
     public bool ShowHardware { get; set; } = true;
