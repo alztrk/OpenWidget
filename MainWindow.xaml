@@ -59,6 +59,7 @@
 
     <Window.ContextMenu>
         <ContextMenu>
+            <MenuItem x:Name="MenuAlwaysOnTop" Header="📌 Her Zaman Üstte" IsCheckable="True" Click="MenuAlwaysOnTop_Click" />
             <MenuItem Header="🔄 Bilgileri Yenile" Click="MenuRefresh_Click" />
             <MenuItem Header="⚙️ Ayar Dosyasını Aç (config.json)" Click="MenuEditConfig_Click" />
             <Separator Background="{StaticResource DividerBrush}" />

@@ -15,8 +15,12 @@ namespace RigBadge;
 public partial class MainWindow : Window, INotifyPropertyChanged
 {
     private const int GWL_EXSTYLE = -20;
+    private const int GWL_HWNDPARENT = -8;
     private const int WS_EX_TOOLWINDOW = 0x00000080;
     private const int WS_EX_NOACTIVATE = 0x08000000;
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern IntPtr FindWindow(string? lpClassName, string? lpWindowName);
 
     [DllImport("user32.dll", EntryPoint = "GetWindowLongPtr", SetLastError = true)]
     private static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
@@ -59,6 +63,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         var exStyle = (long)GetWindowLongPtr(handle, GWL_EXSTYLE);
         exStyle |= WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
         SetWindowLongPtr(handle, GWL_EXSTYLE, (IntPtr)exStyle);
+
+        // Make window owned by Windows Desktop Shell (Progman)
+        // Owned windows always stay rendered ABOVE their owner, preventing the wallpaper from covering the gadget.
+        var progman = FindWindow("Progman", null);
+        if (progman != IntPtr.Zero)
+        {
+            SetWindowLongPtr(handle, GWL_HWNDPARENT, progman);
+        }
     }
 
     private void ResolveConfigPath()
@@ -88,6 +100,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         if (_config.Widget.Width >= 200) Width = _config.Widget.Width;
         if (_config.Widget.Opacity > 0.1 && _config.Widget.Opacity <= 1.0) Opacity = _config.Widget.Opacity;
         Topmost = _config.Widget.AlwaysOnTop;
+
+        if (MenuAlwaysOnTop != null)
+        {
+            MenuAlwaysOnTop.IsChecked = Topmost;
+        }
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -129,6 +146,15 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 DragMove();
             }
             catch { }
+        }
+    }
+
+    private void MenuAlwaysOnTop_Click(object sender, RoutedEventArgs e)
+    {
+        Topmost = !Topmost;
+        if (MenuAlwaysOnTop != null)
+        {
+            MenuAlwaysOnTop.IsChecked = Topmost;
         }
     }
 
