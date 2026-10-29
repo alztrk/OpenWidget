@@ -34,10 +34,12 @@ public class WidgetConfig
     public double Opacity { get; set; } = 1.0;
     public double OffsetX { get; set; } = 28;
     public double OffsetY { get; set; } = 28;
+    public double? CustomLeft { get; set; }
+    public double? CustomTop { get; set; }
     public double Width { get; set; } = 360;
     public double Height { get; set; } = 780;
     public bool AlwaysOnTop { get; set; } = false;
-    public bool IsLocked { get; set; } = true;
+    public bool IsLocked { get; set; } = false;
     public bool OnlyShowOnDesktop { get; set; } = false;
 }
 

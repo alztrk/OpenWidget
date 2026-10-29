@@ -19,6 +19,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private const int GWL_HWNDPARENT = -8;
     private const int WS_EX_TOOLWINDOW = 0x00000080;
     private const int WS_EX_NOACTIVATE = 0x08000000;
+    private const int WM_NCLBUTTONDOWN = 0xA1;
+    private const int HT_CAPTION = 0x2;
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern IntPtr FindWindow(string? lpClassName, string? lpWindowName);
@@ -28,6 +30,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     [DllImport("user32.dll", EntryPoint = "SetWindowLongPtr", SetLastError = true)]
     private static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+
+    [DllImport("user32.dll")]
+    private static extern bool ReleaseCapture();
+
+    [DllImport("user32.dll")]
+    private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
 
     [DllImport("psapi.dll")]
     private static extern int EmptyWorkingSet(IntPtr hwProc);
@@ -206,15 +214,54 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     public void PositionWidget()
     {
         var workArea = SystemParameters.WorkArea;
-
-        // Auto-calculate 2.5% margins based on current resolution
-        double rightMargin = workArea.Width * 0.025;
-        double topMargin = workArea.Height * 0.025;
-
         Width = 360;
 
-        Left = Math.Round(workArea.Right - Width - rightMargin);
-        Top = Math.Round(workArea.Top + topMargin);
+        if (_config.Widget.CustomLeft.HasValue && _config.Widget.CustomTop.HasValue)
+        {
+            double maxLeft = Math.Max(0, workArea.Right - Width);
+            double maxTop = Math.Max(0, workArea.Bottom - 100);
+
+            Left = Math.Clamp(_config.Widget.CustomLeft.Value, workArea.Left, maxLeft);
+            Top = Math.Clamp(_config.Widget.CustomTop.Value, workArea.Top, maxTop);
+        }
+        else
+        {
+            // Auto-calculate 2.5% margins based on current resolution
+            double rightMargin = workArea.Width * 0.025;
+            double topMargin = workArea.Height * 0.025;
+
+            Left = Math.Round(workArea.Right - Width - rightMargin);
+            Top = Math.Round(workArea.Top + topMargin);
+        }
+    }
+
+    private void MasterBorder_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+        {
+            var handle = new WindowInteropHelper(this).Handle;
+            if (handle != IntPtr.Zero)
+            {
+                ReleaseCapture();
+                SendMessage(handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0);
+                SaveCurrentPosition();
+            }
+        }
+    }
+
+    private void SaveCurrentPosition()
+    {
+        _config.Widget.CustomLeft = Math.Round(Left);
+        _config.Widget.CustomTop = Math.Round(Top);
+        _config.Save(_configPath);
+    }
+
+    private void MenuResetPosition_Click(object sender, RoutedEventArgs e)
+    {
+        _config.Widget.CustomLeft = null;
+        _config.Widget.CustomTop = null;
+        _config.Save(_configPath);
+        PositionWidget();
     }
 
     private void RefreshTelemetry()

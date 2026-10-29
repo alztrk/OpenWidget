@@ -39,6 +39,7 @@
             <MenuItem x:Name="MenuAlwaysOnTop" Header="📌 Her Zaman Üstte" IsCheckable="True" Click="MenuAlwaysOnTop_Click" />
             <Separator Background="{StaticResource DividerBrush}" />
             <MenuItem Header="🔄 Yenile" Click="MenuRefresh_Click" />
+            <MenuItem Header="🎯 Konumu Varsayılana Sıfırla" Click="MenuResetPosition_Click" />
             <MenuItem Header="⚙️ Ayarlar (hardware-config.json)" Click="MenuEditConfig_Click" />
             <MenuItem Header="💰 Fiyatlar (hardware-prices.json)" Click="MenuEditPrices_Click" />
             <Separator Background="{StaticResource DividerBrush}" />
@@ -51,7 +52,9 @@
             BorderBrush="{StaticResource MasterHudBorderBrush}"
             BorderThickness="1"
             CornerRadius="14"
-            Padding="14,12">
+            Padding="14,12"
+            Cursor="SizeAll"
+            MouseLeftButtonDown="MasterBorder_MouseLeftButtonDown">
         <StackPanel>
             <!-- 1. Header (Weather & Uptime) -->
             <widgets:HeaderWidget Visibility="{Binding IsHeaderVisible, Converter={StaticResource BoolToVis}}" />
