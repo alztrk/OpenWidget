@@ -20,8 +20,8 @@
   },
   "widget": {
     "opacity": 1.0,
-    "offsetX": 128,
-    "offsetY": 70,
+    "offsetX": 64,
+    "offsetY": 35,
     "width": 380,
     "alwaysOnTop": false,
     "isLocked": true,
