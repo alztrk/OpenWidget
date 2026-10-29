@@ -1,17 +1,17 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Pure Flat Matte Obsidian Black (Zero Glassmorphism) -->
-    <Color x:Key="GlassBgColor">#0A0C10</Color>
+    <!-- Pure Dense Solid Matte Obsidian (Zero Translucency) -->
+    <Color x:Key="GlassBgColor">#060709</Color>
     <SolidColorBrush x:Key="GlassBgBrush" Color="{StaticResource GlassBgColor}" />
 
-    <Color x:Key="GlassBorderColor">#181C23</Color>
+    <Color x:Key="GlassBorderColor">#15181F</Color>
     <SolidColorBrush x:Key="GlassBorderBrush" Color="{StaticResource GlassBorderColor}" />
 
-    <Color x:Key="GlassCardBgColor">#06080B</Color>
+    <Color x:Key="GlassCardBgColor">#020304</Color>
     <SolidColorBrush x:Key="GlassCardBgBrush" Color="{StaticResource GlassCardBgColor}" />
 
-    <Color x:Key="GlassCardBorderColor">#13171F</Color>
+    <Color x:Key="GlassCardBorderColor">#0F1218</Color>
     <SolidColorBrush x:Key="GlassCardBorderBrush" Color="{StaticResource GlassCardBorderColor}" />
 
     <Color x:Key="AccentColor">#539BF5</Color>

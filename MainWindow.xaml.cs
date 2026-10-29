@@ -3,10 +3,12 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Threading;
 using RigBadge.Models;
 using RigBadge.Services;
 
@@ -28,11 +30,21 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     [DllImport("user32.dll", EntryPoint = "SetWindowLongPtr", SetLastError = true)]
     private static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
 
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetForegroundWindow();
+
+    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+    private static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+    [DllImport("psapi.dll")]
+    private static extern int EmptyWorkingSet(IntPtr hwProc);
+
     private HardwareConfig _config = new();
     private HardwareSpecs _specs = new();
     private string _configPath = string.Empty;
     private string _pricesPath = string.Empty;
     private PriceService? _priceService;
+    private DispatcherTimer? _desktopDetectTimer;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -107,6 +119,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             MenuAlwaysOnTop.IsChecked = Topmost;
         }
+
+        if (MenuOnlyDesktop != null)
+        {
+            MenuOnlyDesktop.IsChecked = _config.Widget.OnlyShowOnDesktop;
+        }
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -123,7 +140,75 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             MenuAutoStart.IsChecked = AutoStartService.IsAutoStartEnabled();
         }
 
+        if (MenuOnlyDesktop != null)
+        {
+            MenuOnlyDesktop.IsChecked = _config.Widget.OnlyShowOnDesktop;
+        }
+
+        StartDesktopMonitor();
+
         await RefreshHardwareSpecsAsync();
+    }
+
+    private void StartDesktopMonitor()
+    {
+        _desktopDetectTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(200)
+        };
+        _desktopDetectTimer.Tick += (s, e) => CheckDesktopVisibility();
+        _desktopDetectTimer.Start();
+    }
+
+    private void CheckDesktopVisibility()
+    {
+        if (!_config.Widget.OnlyShowOnDesktop)
+        {
+            if (Visibility != Visibility.Visible) Visibility = Visibility.Visible;
+            return;
+        }
+
+        var fg = GetForegroundWindow();
+        var myHandle = new WindowInteropHelper(this).Handle;
+
+        bool isDesktop = false;
+
+        if (fg == IntPtr.Zero || fg == myHandle || IsMouseOver || (ContextMenu != null && ContextMenu.IsOpen))
+        {
+            isDesktop = true;
+        }
+        else
+        {
+            var sb = new StringBuilder(256);
+            GetClassName(fg, sb, 256);
+            var cls = sb.ToString();
+
+            // Detect Windows desktop shell surfaces (wallpaper, taskbar, desktop view)
+            if (cls == "Progman" ||
+                cls == "WorkerW" ||
+                cls == "Shell_TrayWnd" ||
+                cls == "Shell_SecondaryTrayWnd" ||
+                cls == "SysListView32" ||
+                cls == "DesktopWindowXamlSource")
+            {
+                isDesktop = true;
+            }
+        }
+
+        if (isDesktop)
+        {
+            if (Visibility != Visibility.Visible)
+            {
+                Visibility = Visibility.Visible;
+            }
+        }
+        else
+        {
+            if (Visibility != Visibility.Collapsed)
+            {
+                Visibility = Visibility.Collapsed;
+            }
+        }
     }
 
     private void PositionWidget()
@@ -149,11 +234,25 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             var scanner = new HardwareScanner(_config, _priceService);
             var result = await Task.Run(() => scanner.Scan());
             Specs = result;
+
+            TrimMemory();
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Hardware scan error: {ex.Message}");
         }
+    }
+
+    private static void TrimMemory()
+    {
+        try
+        {
+            GC.Collect(2, GCCollectionMode.Forced, true, true);
+            GC.WaitForPendingFinalizers();
+            GC.Collect(2, GCCollectionMode.Forced, true, true);
+            EmptyWorkingSet(Process.GetCurrentProcess().Handle);
+        }
+        catch { }
     }
 
     private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -165,6 +264,15 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 DragMove();
             }
             catch { }
+        }
+    }
+
+    private void MenuOnlyDesktop_Click(object sender, RoutedEventArgs e)
+    {
+        _config.Widget.OnlyShowOnDesktop = !_config.Widget.OnlyShowOnDesktop;
+        if (MenuOnlyDesktop != null)
+        {
+            MenuOnlyDesktop.IsChecked = _config.Widget.OnlyShowOnDesktop;
         }
     }
 
