@@ -307,4 +307,50 @@ public partial class SettingsWindow : Window
 
         AnimationHelper.AnimateWindowExit(this, MasterDialogBorder);
     }
+
+    private async void BtnCheckUpdate_Click(object sender, RoutedEventArgs e)
+    {
+        BtnCheckUpdate.IsEnabled = false;
+        TxtUpdateStatus.Text = LocalizationService.CurrentLanguage == "en"
+            ? "Checking for updates..."
+            : "Güncellemeler denetleniyor...";
+
+        var result = await UpdateCheckService.CheckForUpdatesAsync();
+
+        BtnCheckUpdate.IsEnabled = true;
+
+        if (result.IsUpdateAvailable)
+        {
+            TxtUpdateStatus.Text = LocalizationService.CurrentLanguage == "en"
+                ? $"New version available: v{result.LatestVersion}!"
+                : $"Yeni sürüm mevcut: v{result.LatestVersion}!";
+
+            BtnCheckUpdate.Content = LocalizationService.CurrentLanguage == "en" ? "Download ↗" : "İndir ↗";
+            BtnCheckUpdate.Click -= BtnCheckUpdate_Click;
+            BtnCheckUpdate.Click += (s, args) =>
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = result.ReleaseUrl,
+                        UseShellExecute = true
+                    });
+                }
+                catch { }
+            };
+        }
+        else if (result.IsSuccess)
+        {
+            TxtUpdateStatus.Text = LocalizationService.CurrentLanguage == "en"
+                ? "You have the latest version installed."
+                : "En güncel sürümü kullanıyorsunuz.";
+        }
+        else
+        {
+            TxtUpdateStatus.Text = LocalizationService.CurrentLanguage == "en"
+                ? $"Check failed: {result.ErrorMessage ?? "Offline"}"
+                : $"Bağlantı kurulamadı: {result.ErrorMessage ?? "Çevrimdışı"}";
+        }
+    }
 }

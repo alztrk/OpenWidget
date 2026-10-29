@@ -99,9 +99,9 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <!-- Copy Icon -->
+                                    <!-- Dynamic Type Icon (Text/Image/File) -->
                                     <Path Grid.Column="0"
-                                          Data="{StaticResource GeoCopy}"
+                                          Data="{Binding IconKey, Converter={StaticResource IconConverter}}"
                                           Fill="{StaticResource TextMutedBrush}"
                                           Stretch="Uniform"
                                           Width="9" Height="9"

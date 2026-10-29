@@ -43,11 +43,35 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         public int dwFlags;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct POINT
+    {
+        public int X;
+        public int Y;
+    }
+
     [DllImport("user32.dll")]
     private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
 
+    [DllImport("user32.dll")]
+    private static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
+
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
+
+    [DllImport("user32.dll")]
+    private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+
+    [DllImport("user32.dll")]
+    private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+
+    private const int WM_HOTKEY = 0x0312;
+    private const int WM_DPICHANGED = 0x02E0;
+    private const int HOTKEY_ID_TOGGLE = 9001;
+    private const uint MOD_CONTROL = 0x0002;
+    private const uint MOD_SHIFT = 0x0004;
+    private const uint MOD_NOREPEAT = 0x4000;
+    private const uint VK_W = 0x57;
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern IntPtr FindWindow(string? lpClassName, string? lpWindowName);
@@ -201,13 +225,43 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         exStyle |= WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
         SetWindowLongPtr(handle, GWL_EXSTYLE, (IntPtr)exStyle);
 
+        // Register Global Hotkey (Ctrl + Shift + W)
+        RegisterHotKey(handle, HOTKEY_ID_TOGGLE, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, VK_W);
+
         // Attach Win32 Hook to prevent window from crossing screen boundaries
         var source = HwndSource.FromHwnd(handle);
         source?.AddHook(WndProc);
     }
 
+    private void ToggleWidgetVisibility()
+    {
+        if (Visibility == Visibility.Visible)
+        {
+            Visibility = Visibility.Hidden;
+        }
+        else
+        {
+            Visibility = Visibility.Visible;
+            PositionWidget();
+        }
+    }
+
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
+        if (msg == WM_HOTKEY && wParam.ToInt32() == HOTKEY_ID_TOGGLE)
+        {
+            ToggleWidgetVisibility();
+            handled = true;
+            return IntPtr.Zero;
+        }
+
+        if (msg == WM_DPICHANGED)
+        {
+            PositionWidget();
+            handled = true;
+            return IntPtr.Zero;
+        }
+
         if (msg == ClipboardService.WM_CLIPBOARDUPDATE)
         {
             _clipboardService.HandleClipboardUpdate();
@@ -511,10 +565,47 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         Dispatcher.Invoke(PositionWidget);
     }
 
+    private Rect GetTargetWorkArea(double left, double top)
+    {
+        var pt = new POINT { X = (int)left + 30, Y = (int)top + 30 };
+        var monitor = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
+        if (monitor != IntPtr.Zero)
+        {
+            var mi = new MONITORINFO { cbSize = Marshal.SizeOf(typeof(MONITORINFO)) };
+            if (GetMonitorInfo(monitor, ref mi))
+            {
+                var work = mi.rcWork;
+                return new Rect(work.Left, work.Top, work.Right - work.Left, work.Bottom - work.Top);
+            }
+        }
+        return SystemParameters.WorkArea;
+    }
+
     public void PositionWidget()
     {
-        var workArea = SystemParameters.WorkArea;
         Width = 360;
+
+        Rect workArea;
+        if (_config.Widget.CustomLeft.HasValue && _config.Widget.CustomTop.HasValue)
+        {
+            workArea = GetTargetWorkArea(_config.Widget.CustomLeft.Value, _config.Widget.CustomTop.Value);
+        }
+        else
+        {
+            var handle = new WindowInteropHelper(this).Handle;
+            IntPtr monitor = handle != IntPtr.Zero ? MonitorFromWindow(handle, MONITOR_DEFAULTTONEAREST) : IntPtr.Zero;
+            if (monitor != IntPtr.Zero)
+            {
+                var mi = new MONITORINFO { cbSize = Marshal.SizeOf(typeof(MONITORINFO)) };
+                if (GetMonitorInfo(monitor, ref mi))
+                {
+                    var work = mi.rcWork;
+                    workArea = new Rect(work.Left, work.Top, work.Right - work.Left, work.Bottom - work.Top);
+                }
+                else workArea = SystemParameters.WorkArea;
+            }
+            else workArea = SystemParameters.WorkArea;
+        }
 
         // Dynamic MaxHeight calculation based on current display resolution
         double topMargin = workArea.Height * 0.025;
@@ -616,7 +707,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void SaveCurrentPosition()
     {
-        var workArea = SystemParameters.WorkArea;
+        var workArea = GetTargetWorkArea(Left, Top);
         double w = ActualWidth > 0 ? ActualWidth : Width;
         double h = ActualHeight > 0 ? ActualHeight : 450;
 
@@ -960,12 +1051,17 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     protected override void OnClosed(EventArgs e)
     {
+        var handle = new WindowInteropHelper(this).Handle;
+        if (handle != IntPtr.Zero)
+        {
+            try { UnregisterHotKey(handle, HOTKEY_ID_TOGGLE); } catch { }
+        }
         Microsoft.Win32.SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
         _telemetryTimer?.Stop();
         _financeTimer?.Stop();
         _telemetryService?.Dispose();
         _mediaService?.Dispose();
-        try { _clipboardService.Cleanup(new WindowInteropHelper(this).Handle); } catch { }
+        try { _clipboardService.Cleanup(handle); } catch { }
         base.OnClosed(e);
     }
 }

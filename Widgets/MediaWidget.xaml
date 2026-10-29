@@ -53,6 +53,40 @@
             CornerRadius="8"
             Padding="11,10">
         <StackPanel>
+            <!-- Multi-Session Switcher Strip (Visible when 2+ players active) -->
+            <DockPanel x:Name="PanelSessionSwitcher" Margin="0,0,0,6" Visibility="Collapsed">
+                <Button x:Name="BtnPrevSession"
+                        Style="{StaticResource MediaControlBtn}"
+                        Width="18" Height="18"
+                        ToolTip="Önceki Medya Kaynağı"
+                        Click="BtnPrevSession_Click">
+                    <Path Data="{StaticResource GeoCollapse}" Fill="{StaticResource TextMutedBrush}" Stretch="Uniform" Width="7" Height="7">
+                        <Path.RenderTransform>
+                            <RotateTransform Angle="90" CenterX="3.5" CenterY="3.5" />
+                        </Path.RenderTransform>
+                    </Path>
+                </Button>
+                <Button x:Name="BtnNextSession"
+                        DockPanel.Dock="Right"
+                        Style="{StaticResource MediaControlBtn}"
+                        Width="18" Height="18"
+                        ToolTip="Sonraki Medya Kaynağı"
+                        Click="BtnNextSession_Click">
+                    <Path Data="{StaticResource GeoCollapse}" Fill="{StaticResource TextMutedBrush}" Stretch="Uniform" Width="7" Height="7">
+                        <Path.RenderTransform>
+                            <RotateTransform Angle="-90" CenterX="3.5" CenterY="3.5" />
+                        </Path.RenderTransform>
+                    </Path>
+                </Button>
+                <TextBlock x:Name="TxtSessionSource"
+                           Text="Kaynak"
+                           FontSize="10"
+                           FontWeight="Medium"
+                           Foreground="{StaticResource AccentBrush}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+            </DockPanel>
+
             <!-- Top Row: Thumbnail + Info + Controls -->
             <Grid Margin="0,0,0,9">
                 <Grid.ColumnDefinitions>

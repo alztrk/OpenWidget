@@ -4,9 +4,11 @@ using System.IO;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using Microsoft.Win32;
 using OpenWidget.Models;
 
 namespace OpenWidget.Services;
@@ -89,6 +91,8 @@ public class SystemTelemetryService : IDisposable
     private bool _nvmlFailed;
     private IntPtr _nvmlDevice = IntPtr.Zero;
     private string _gpuName = "RTX 3060";
+    private string _cpuDisplayName = "";
+    private readonly int _cpuThreadCount = Environment.ProcessorCount;
 
     // Network stats tracking
     private long _prevBytesReceived, _prevBytesSent;
@@ -129,6 +133,40 @@ public class SystemTelemetryService : IDisposable
     {
         TryInitNvml();
         InitNetworkBaselines();
+        InitCpuInfo();
+    }
+
+    private void InitCpuInfo()
+    {
+        try
+        {
+            var raw = Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0", "ProcessorNameString", null) as string;
+            if (!string.IsNullOrWhiteSpace(raw))
+            {
+                var clean = raw.Replace("AMD ", "")
+                               .Replace("Intel(R) Core(TM) ", "")
+                               .Replace("Intel(R) ", "")
+                               .Replace("Processor", "")
+                               .Trim();
+                clean = Regex.Replace(clean, @"\s+\d+-Core", "").Trim();
+                _cpuDisplayName = clean;
+            }
+        }
+        catch { }
+    }
+
+    private static double GetCpuClockGhz()
+    {
+        try
+        {
+            var mhzObj = Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0", "~MHz", null);
+            if (mhzObj is int mhz && mhz > 0)
+            {
+                return Math.Round(mhz / 1000.0, 1);
+            }
+        }
+        catch { }
+        return 0.0;
     }
 
     private void TryInitNvml()
@@ -189,13 +227,28 @@ public class SystemTelemetryService : IDisposable
         while (_cpuHistory.Count > MaxHistoryPoints) _cpuHistory.Dequeue();
         var cpuSparkline = BuildSparklinePoints(_cpuHistory, 44, 14);
 
+        double ghz = GetCpuClockGhz();
+        string cpuSub;
+        if (!string.IsNullOrEmpty(_cpuDisplayName) && ghz > 0)
+        {
+            cpuSub = $"{_cpuDisplayName} • {ghz:F1} GHz";
+        }
+        else if (ghz > 0)
+        {
+            cpuSub = isEn ? $"{ghz:F1} GHz • {_cpuThreadCount} Threads" : $"{ghz:F1} GHz • {_cpuThreadCount} İzlek";
+        }
+        else
+        {
+            cpuSub = isEn ? $"{_cpuThreadCount} Threads" : $"{_cpuThreadCount} İzlek";
+        }
+
         specs.Performance.Add(new TelemetryItem(
             Key: "cpu",
             IconKey: "IconCpu",
             Label: LocalizationService.Get("Cpu"),
             Percentage: cpuPercent,
             MainText: $"%{cpuPercent:F0}",
-            SubText: isEn ? "8 Cores • 16 Threads" : "8 Çekirdek • 16 İzlek",
+            SubText: cpuSub,
             BarColorKey: cpuPercent > 85 ? "AccentRedBrush" : (cpuPercent > 65 ? "AccentAmberBrush" : "AccentBrush"),
             IsAlert: cpuPercent > 85,
             SparklinePoints: cpuSparkline,

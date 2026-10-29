@@ -33,6 +33,9 @@ public class MediaSessionService : IDisposable
 
     private GlobalSystemMediaTransportControlsSessionManager? _manager;
     private GlobalSystemMediaTransportControlsSession? _currentSession;
+    private IReadOnlyList<GlobalSystemMediaTransportControlsSession> _allSessions = Array.Empty<GlobalSystemMediaTransportControlsSession>();
+    private int _sessionIndex = 0;
+
     private MediaTrackInfo _currentTrack = new(false, "", "", false, "");
     private readonly System.Timers.Timer _progressTimer;
 
@@ -44,8 +47,39 @@ public class MediaSessionService : IDisposable
 
     public event Action<MediaTrackInfo>? MediaChanged;
     public event Action<TimeSpan, TimeSpan>? PositionChanged;
+    public event Action? SessionsUpdated;
 
     public MediaTrackInfo CurrentTrack => _currentTrack;
+    public int SessionCount => _allSessions?.Count ?? 0;
+    public int CurrentSessionIndex => _sessionIndex + 1;
+
+    public void SwitchToNextSession()
+    {
+        if (_manager == null) return;
+        try
+        {
+            _allSessions = _manager.GetSessions();
+            if (_allSessions.Count <= 1) return;
+
+            _sessionIndex = (_sessionIndex + 1) % _allSessions.Count;
+            AttachSession(_allSessions[_sessionIndex]);
+        }
+        catch { }
+    }
+
+    public void SwitchToPreviousSession()
+    {
+        if (_manager == null) return;
+        try
+        {
+            _allSessions = _manager.GetSessions();
+            if (_allSessions.Count <= 1) return;
+
+            _sessionIndex = (_sessionIndex - 1 + _allSessions.Count) % _allSessions.Count;
+            AttachSession(_allSessions[_sessionIndex]);
+        }
+        catch { }
+    }
 
     public TimeSpan CurrentPlaybackPosition
     {
@@ -92,32 +126,62 @@ public class MediaSessionService : IDisposable
     {
         try
         {
-            if (_currentSession != null)
+            _allSessions = _manager?.GetSessions() ?? Array.Empty<GlobalSystemMediaTransportControlsSession>();
+            var current = _manager?.GetCurrentSession();
+
+            if (current != null)
             {
-                _currentSession.MediaPropertiesChanged -= OnMediaPropertiesChanged;
-                _currentSession.PlaybackInfoChanged -= OnPlaybackInfoChanged;
-                _currentSession.TimelinePropertiesChanged -= OnTimelinePropertiesChanged;
+                for (int i = 0; i < _allSessions.Count; i++)
+                {
+                    if (_allSessions[i].SourceAppUserModelId == current.SourceAppUserModelId)
+                    {
+                        _sessionIndex = i;
+                        break;
+                    }
+                }
+                AttachSession(current);
             }
-
-            _currentSession = _manager?.GetCurrentSession();
-
-            if (_currentSession != null)
+            else if (_allSessions.Count > 0)
             {
-                _currentSession.MediaPropertiesChanged += OnMediaPropertiesChanged;
-                _currentSession.PlaybackInfoChanged += OnPlaybackInfoChanged;
-                _currentSession.TimelinePropertiesChanged += OnTimelinePropertiesChanged;
-                _ = RefreshMediaInfoAsync();
+                _sessionIndex = 0;
+                AttachSession(_allSessions[0]);
             }
             else
             {
-                _progressTimer.Stop();
-                _trackStopwatch.Stop();
-                _activeTrackKey = "";
-                _currentTrack = new MediaTrackInfo(false, "", "", false, "");
-                MediaChanged?.Invoke(_currentTrack);
+                AttachSession(null);
             }
         }
         catch { }
+    }
+
+    private void AttachSession(GlobalSystemMediaTransportControlsSession? session)
+    {
+        if (_currentSession != null)
+        {
+            _currentSession.MediaPropertiesChanged -= OnMediaPropertiesChanged;
+            _currentSession.PlaybackInfoChanged -= OnPlaybackInfoChanged;
+            _currentSession.TimelinePropertiesChanged -= OnTimelinePropertiesChanged;
+        }
+
+        _currentSession = session;
+
+        if (_currentSession != null)
+        {
+            _currentSession.MediaPropertiesChanged += OnMediaPropertiesChanged;
+            _currentSession.PlaybackInfoChanged += OnPlaybackInfoChanged;
+            _currentSession.TimelinePropertiesChanged += OnTimelinePropertiesChanged;
+            _ = RefreshMediaInfoAsync();
+        }
+        else
+        {
+            _progressTimer.Stop();
+            _trackStopwatch.Stop();
+            _activeTrackKey = "";
+            _currentTrack = new MediaTrackInfo(false, "", "", false, "");
+            MediaChanged?.Invoke(_currentTrack);
+        }
+
+        SessionsUpdated?.Invoke();
     }
 
     private void OnMediaPropertiesChanged(GlobalSystemMediaTransportControlsSession sender, MediaPropertiesChangedEventArgs args)

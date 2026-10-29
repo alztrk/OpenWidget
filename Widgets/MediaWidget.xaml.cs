@@ -39,7 +39,37 @@ public partial class MediaWidget : UserControl
         _service = service;
         _service.MediaChanged += OnMediaChanged;
         _service.PositionChanged += OnPositionChanged;
+        _service.SessionsUpdated += OnSessionsUpdated;
         UpdateTrackInfo(_service.CurrentTrack);
+        OnSessionsUpdated();
+    }
+
+    private void OnSessionsUpdated()
+    {
+        Dispatcher.Invoke(() =>
+        {
+            if (_service != null && _service.SessionCount > 1)
+            {
+                PanelSessionSwitcher.Visibility = Visibility.Visible;
+                string source = _service.CurrentTrack.SourceApp;
+                if (string.IsNullOrEmpty(source)) source = "Medya";
+                TxtSessionSource.Text = $"{source} ({_service.CurrentSessionIndex}/{_service.SessionCount})";
+            }
+            else
+            {
+                PanelSessionSwitcher.Visibility = Visibility.Collapsed;
+            }
+        });
+    }
+
+    private void BtnPrevSession_Click(object sender, RoutedEventArgs e)
+    {
+        _service?.SwitchToPreviousSession();
+    }
+
+    private void BtnNextSession_Click(object sender, RoutedEventArgs e)
+    {
+        _service?.SwitchToNextSession();
     }
 
     private void OnMediaChanged(MediaTrackInfo info)
@@ -150,6 +180,7 @@ public partial class MediaWidget : UserControl
 
         // Initialize Real Master Volume Control
         UpdateMediaVolumeUI();
+        OnSessionsUpdated();
     }
 
     private void UpdateMediaVolumeUI()
