@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 using OpenWidget.Services;
 
 namespace OpenWidget.Widgets;
@@ -16,16 +17,43 @@ public partial class QuickActionsWidget : UserControl
 
     public event EventHandler? RamCleaned;
     private DateTime _lastPopupClosedTime = DateTime.MinValue;
+    private DateTime _lastNotesPopupClosedTime = DateTime.MinValue;
+    private readonly DispatcherTimer _saveNotesTimer;
+    private bool _isLoadingNotes = false;
 
     public QuickActionsWidget()
     {
         InitializeComponent();
         LocalizationService.LanguageChanged += OnLanguageChanged;
+
+        _saveNotesTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(500)
+        };
+        _saveNotesTimer.Tick += OnSaveNotesTimerTick;
     }
 
     private void UserControl_Loaded(object sender, RoutedEventArgs e)
     {
         UpdateTexts();
+        _ = LoadNotesAsync();
+    }
+
+    private async Task LoadNotesAsync()
+    {
+        try
+        {
+            _isLoadingNotes = true;
+            var text = await ScratchpadService.LoadAsync();
+            TxtScratchpad.Text = text;
+            TxtNotesPlaceholder.Visibility = string.IsNullOrEmpty(text) ? Visibility.Visible : Visibility.Collapsed;
+            TxtCharCount.Text = $"{text.Length} karakter";
+        }
+        catch { }
+        finally
+        {
+            _isLoadingNotes = false;
+        }
     }
 
     private void OnLanguageChanged()
@@ -40,6 +68,9 @@ public partial class QuickActionsWidget : UserControl
 
         TxtVolume.Text = LocalizationService.Get("Volume");
         BtnVolume.ToolTip = LocalizationService.Get("VolumeTooltip");
+
+        TxtNotes.Text = LocalizationService.Get("Notes");
+        BtnNotes.ToolTip = LocalizationService.Get("NotesTooltip");
 
         TxtTerminal.Text = LocalizationService.Get("Terminal");
         BtnTerminal.ToolTip = LocalizationService.Get("TerminalTooltip");
@@ -65,7 +96,6 @@ public partial class QuickActionsWidget : UserControl
     {
         if (PopupVolumeMixer == null) return;
 
-        // Prevent immediate re-opening if click dismissed an open popup
         if ((DateTime.UtcNow - _lastPopupClosedTime).TotalMilliseconds < 250)
         {
             return;
@@ -77,6 +107,7 @@ public partial class QuickActionsWidget : UserControl
         }
         else
         {
+            if (PopupScratchpad != null && PopupScratchpad.IsOpen) PopupScratchpad.IsOpen = false;
             RefreshAudioMixer();
             PopupVolumeMixer.IsOpen = true;
         }
@@ -132,6 +163,76 @@ public partial class QuickActionsWidget : UserControl
         }
         catch { }
     }
+
+    #region Scratchpad Notes
+
+    private void BtnNotes_Click(object sender, RoutedEventArgs e)
+    {
+        if (PopupScratchpad == null) return;
+
+        if ((DateTime.UtcNow - _lastNotesPopupClosedTime).TotalMilliseconds < 250)
+        {
+            return;
+        }
+
+        if (PopupScratchpad.IsOpen)
+        {
+            PopupScratchpad.IsOpen = false;
+        }
+        else
+        {
+            if (PopupVolumeMixer != null && PopupVolumeMixer.IsOpen) PopupVolumeMixer.IsOpen = false;
+            PopupScratchpad.IsOpen = true;
+            Dispatcher.BeginInvoke(() => TxtScratchpad.Focus(), DispatcherPriority.Input);
+        }
+    }
+
+    private void PopupScratchpad_Closed(object sender, EventArgs e)
+    {
+        _lastNotesPopupClosedTime = DateTime.UtcNow;
+        _ = ScratchpadService.SaveAsync(TxtScratchpad.Text);
+    }
+
+    private void TxtScratchpad_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (TxtNotesPlaceholder != null)
+        {
+            TxtNotesPlaceholder.Visibility = string.IsNullOrEmpty(TxtScratchpad.Text) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        if (TxtCharCount != null)
+        {
+            TxtCharCount.Text = $"{TxtScratchpad.Text.Length} karakter";
+        }
+
+        if (!_isLoadingNotes)
+        {
+            _saveNotesTimer.Stop();
+            _saveNotesTimer.Start();
+            if (TxtSaveStatus != null)
+            {
+                TxtSaveStatus.Text = "Kaydediliyor...";
+            }
+        }
+    }
+
+    private async void OnSaveNotesTimerTick(object? sender, EventArgs e)
+    {
+        _saveNotesTimer.Stop();
+        await ScratchpadService.SaveAsync(TxtScratchpad.Text);
+        if (TxtSaveStatus != null)
+        {
+            TxtSaveStatus.Text = "Otomatik kaydedildi";
+        }
+    }
+
+    private void BtnClearNotes_Click(object sender, RoutedEventArgs e)
+    {
+        TxtScratchpad.Text = string.Empty;
+        _ = ScratchpadService.SaveAsync(string.Empty);
+    }
+
+    #endregion
 
     private void BtnTerminal_Click(object sender, RoutedEventArgs e)
     {

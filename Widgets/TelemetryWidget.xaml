@@ -58,9 +58,42 @@
                                    TextTrimming="CharacterEllipsis" />
                     </DockPanel>
 
-                    <!-- Inline Gauge + Value -->
+                    <!-- Inline Gauge + Sparkline + Value -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-                        <Grid Width="34" Height="3" VerticalAlignment="Center" Margin="0,0,6,0">
+                        <!-- Status Badge (e.g. Ping "Harika" / "İyi") -->
+                        <Border x:Name="BdStatusBadge"
+                                CornerRadius="3"
+                                Padding="4,1"
+                                Margin="0,0,6,0"
+                                VerticalAlignment="Center"
+                                Background="#18FFFFFF"
+                                Visibility="Collapsed">
+                            <TextBlock Text="{Binding StatusBadge}"
+                                       FontSize="9"
+                                       FontWeight="SemiBold"
+                                       Foreground="{Binding StatusBadgeBrush, Converter={StaticResource BrushConverter}}" />
+                        </Border>
+
+                        <!-- Sparkline Mini Chart (For CPU / GPU when available) -->
+                        <Border x:Name="BdSparkline"
+                                Width="44" Height="14"
+                                Background="#10FFFFFF"
+                                BorderBrush="{StaticResource MasterHudBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="3"
+                                Margin="0,0,6,0"
+                                VerticalAlignment="Center"
+                                Visibility="Collapsed">
+                            <Polyline Points="{Binding SparklinePoints}"
+                                      Stroke="{Binding BarColorKey, Converter={StaticResource BrushConverter}}"
+                                      StrokeThickness="1.2"
+                                      StrokeLineJoin="Round"
+                                      Stretch="Fill"
+                                      Margin="1" />
+                        </Border>
+
+                        <!-- Standard Progress Bar (When no sparkline) -->
+                        <Grid x:Name="GridProgressBar" Width="34" Height="3" VerticalAlignment="Center" Margin="0,0,6,0">
                             <Border Background="{StaticResource TrackBgBrush}" CornerRadius="1.5" />
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -72,6 +105,7 @@
                                         CornerRadius="1.5" />
                             </Grid>
                         </Grid>
+
                         <TextBlock Text="{Binding MainText}"
                                    Width="46"
                                    TextAlignment="Right"
@@ -82,6 +116,15 @@
                     </StackPanel>
                 </Grid>
             </Border>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding HasSparkline}" Value="True">
+                    <Setter TargetName="BdSparkline" Property="Visibility" Value="Visible" />
+                    <Setter TargetName="GridProgressBar" Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding HasStatusBadge}" Value="True">
+                    <Setter TargetName="BdStatusBadge" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
     </UserControl.Resources>
 

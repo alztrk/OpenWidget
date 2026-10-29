@@ -120,11 +120,11 @@
     </UserControl.Resources>
 
     <Grid>
-        <UniformGrid Columns="4">
+        <UniformGrid Columns="5">
             <!-- Görev Yöneticisi -->
             <Button x:Name="BtnTaskMgr"
                     Style="{StaticResource ToolbarBtnStyle}"
-                    Margin="0,0,3,0"
+                    Margin="0,0,2,0"
                     ToolTip="Görev Yöneticisi (Ctrl+Shift+Esc)"
                     Click="BtnTaskMgr_Click">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -138,7 +138,7 @@
             <!-- Ses Karıştırıcısı -->
             <Button x:Name="BtnVolume"
                     Style="{StaticResource ToolbarBtnStyle}"
-                    Margin="3,0,3,0"
+                    Margin="2,0,2,0"
                     ToolTip="Ses Düzeyi Karıştırıcısı"
                     Click="BtnVolume_Click">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -149,10 +149,24 @@
                 </StackPanel>
             </Button>
 
+            <!-- Hızlı Notlar -->
+            <Button x:Name="BtnNotes"
+                    Style="{StaticResource ToolbarBtnStyle}"
+                    Margin="2,0,2,0"
+                    ToolTip="Masaüstü Hızlı Not Defteri"
+                    Click="BtnNotes_Click">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Path Data="{StaticResource GeoNotes}"
+                          Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                          Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
+                    <TextBlock x:Name="TxtNotes" Text="Notlar" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+
             <!-- Terminal -->
             <Button x:Name="BtnTerminal"
                     Style="{StaticResource ToolbarBtnStyle}"
-                    Margin="3,0,3,0"
+                    Margin="2,0,2,0"
                     ToolTip="Windows Terminal / PowerShell"
                     Click="BtnTerminal_Click">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -166,7 +180,7 @@
             <!-- Bellek Temizle -->
             <Button x:Name="BtnCleanRam"
                     Style="{StaticResource ToolbarBtnStyle}"
-                    Margin="3,0,0,0"
+                    Margin="2,0,0,0"
                     ToolTip="Çalışma Kümesini ve Belleği Temizle"
                     Click="BtnCleanRam_Click">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -383,6 +397,107 @@
                             </ItemsControl>
                         </ScrollViewer>
                     </Grid>
+                </Grid>
+            </Border>
+        </Popup>
+
+        <!-- Upward Scratchpad Notes Popup -->
+        <Popup x:Name="PopupScratchpad"
+               PlacementTarget="{Binding ElementName=BtnNotes}"
+               Placement="Top"
+               VerticalOffset="-6"
+               AllowsTransparency="True"
+               StaysOpen="False"
+               PopupAnimation="Fade"
+               Closed="PopupScratchpad_Closed">
+            <Border Width="310"
+                    Height="240"
+                    Background="#F5090D16"
+                    BorderBrush="{StaticResource MasterHudBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="12,10">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" Direction="90" ShadowDepth="6" Color="#000000" Opacity="0.65" />
+                </Border.Effect>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <DockPanel Grid.Row="0" Margin="0,2,0,8">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Path Data="{StaticResource GeoNotes}"
+                                  Fill="{StaticResource AccentBrush}"
+                                  Stretch="Uniform" Width="13" Height="13"
+                                  VerticalAlignment="Center" Margin="0,0,6,0" />
+                            <TextBlock Text="Hızlı Notlar"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <!-- Clear Notes Button -->
+                        <Button x:Name="BtnClearNotes"
+                                DockPanel.Dock="Right"
+                                HorizontalAlignment="Right"
+                                Style="{StaticResource MixerMiniBtnStyle}"
+                                ToolTip="Notları Temizle"
+                                Click="BtnClearNotes_Click">
+                            <TextBlock Text="Temizle" FontSize="10" VerticalAlignment="Center" />
+                        </Button>
+                    </DockPanel>
+
+                    <!-- Text Area with Placeholder -->
+                    <Grid Grid.Row="1">
+                        <Border Background="#12FFFFFF"
+                                BorderBrush="{StaticResource MasterHudBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="7"
+                                Padding="8">
+                            <Grid>
+                                <TextBox x:Name="TxtScratchpad"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         Foreground="{StaticResource TextPrimaryBrush}"
+                                         CaretBrush="{StaticResource AccentBrush}"
+                                         FontSize="11.5"
+                                         FontFamily="Segoe UI, Consolas"
+                                         AcceptsReturn="True"
+                                         TextWrapping="Wrap"
+                                         VerticalScrollBarVisibility="Auto"
+                                         TextChanged="TxtScratchpad_TextChanged" />
+                                <TextBlock x:Name="TxtNotesPlaceholder"
+                                           Text="Masaüstü notlarınızı buraya yazın..."
+                                           Foreground="{StaticResource TextMutedBrush}"
+                                           FontSize="11.5"
+                                           IsHitTestVisible="False"
+                                           Margin="2,1,0,0"
+                                           VerticalAlignment="Top" />
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <!-- Footer: Status / Char Counter -->
+                    <DockPanel Grid.Row="2" Margin="0,6,0,0">
+                        <TextBlock x:Name="TxtSaveStatus"
+                                   Text="Otomatik kaydedildi"
+                                   FontSize="10"
+                                   Foreground="{StaticResource TextMutedBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock x:Name="TxtCharCount"
+                                   DockPanel.Dock="Right"
+                                   HorizontalAlignment="Right"
+                                   Text="0 karakter"
+                                   FontSize="10"
+                                   Foreground="{StaticResource TextMutedBrush}"
+                                   VerticalAlignment="Center" />
+                    </DockPanel>
                 </Grid>
             </Border>
         </Popup>

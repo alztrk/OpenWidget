@@ -32,86 +32,136 @@
             CornerRadius="8"
             Padding="10,8">
         <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="22" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-            <!-- Music Icon -->
-            <Path Grid.Column="0"
-                  Data="{StaticResource GeoMusic}"
-                  Fill="{StaticResource AccentBrush}"
-                  Stretch="Uniform"
-                  Width="13" Height="13"
-                  VerticalAlignment="Center"
-                  HorizontalAlignment="Left" />
+            <!-- Top Row: Thumbnail + Info + Controls -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
-            <!-- Song Info -->
-            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
-                <TextBlock x:Name="TxtTitle"
-                           Text="Medya Oynatılıyor"
-                           FontSize="11.5"
-                           FontWeight="SemiBold"
-                           Foreground="{StaticResource TextPrimaryBrush}"
-                           TextTrimming="CharacterEllipsis" />
-                <TextBlock x:Name="TxtArtist"
-                           Text="Bilinmeyen Sanatçı"
-                           FontSize="10"
-                           Foreground="{StaticResource TextSecondaryBrush}"
-                           TextTrimming="CharacterEllipsis"
-                           Margin="0,1,0,0" />
-            </StackPanel>
-
-            <!-- Media Controls -->
-            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button x:Name="BtnPrev"
-                        Style="{StaticResource MediaControlBtn}"
-                        Width="22" Height="22"
-                        ToolTip="Önceki Parça"
-                        Click="BtnPrev_Click">
-                    <Path Data="{StaticResource GeoPrevious}"
-                          Fill="{StaticResource TextSecondaryBrush}"
-                          Stretch="Uniform" Width="9" Height="9" />
-                </Button>
-
-                <Button x:Name="BtnPlayPause"
-                        Width="24" Height="24"
-                        Background="#2538BDF8"
-                        BorderBrush="#4038BDF8"
+                <!-- Thumbnail Container -->
+                <Border Grid.Column="0"
+                        Width="34" Height="34"
+                        CornerRadius="6"
+                        Background="#15FFFFFF"
+                        BorderBrush="{StaticResource MasterHudBorderBrush}"
                         BorderThickness="1"
-                        Margin="3,0"
-                        Cursor="Hand"
-                        ToolTip="Oynat / Duraklat"
-                        Click="BtnPlayPause_Click">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border x:Name="pbd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="12">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="pbd" Property="Opacity" Value="0.85" />
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Button.Template>
-                    <Path x:Name="PathPlayPause"
-                          Data="{StaticResource GeoPlay}"
-                          Fill="{StaticResource AccentBrush}"
-                          Stretch="Uniform" Width="9" Height="9" />
-                </Button>
+                        Margin="0,0,10,0"
+                        ClipToBounds="True">
+                    <Grid>
+                        <Path x:Name="PathFallbackMusic"
+                              Data="{StaticResource GeoMusic}"
+                              Fill="{StaticResource AccentBrush}"
+                              Stretch="Uniform"
+                              Width="14" Height="14"
+                              VerticalAlignment="Center"
+                              HorizontalAlignment="Center" />
+                        <Image x:Name="ImgThumbnail"
+                               Stretch="UniformToFill"
+                               Visibility="Collapsed" />
+                    </Grid>
+                </Border>
 
-                <Button x:Name="BtnNext"
-                        Style="{StaticResource MediaControlBtn}"
-                        Width="22" Height="22"
-                        ToolTip="Sonraki Parça"
-                        Click="BtnNext_Click">
-                    <Path Data="{StaticResource GeoNext}"
-                          Fill="{StaticResource TextSecondaryBrush}"
-                          Stretch="Uniform" Width="9" Height="9" />
-                </Button>
-            </StackPanel>
+                <!-- Song Info -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
+                    <TextBlock x:Name="TxtTitle"
+                               Text="Medya Oynatılıyor"
+                               FontSize="11.5"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock x:Name="TxtArtist"
+                               Text="Bilinmeyen Sanatçı"
+                               FontSize="10"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               TextTrimming="CharacterEllipsis"
+                               Margin="0,1,0,0" />
+                </StackPanel>
+
+                <!-- Media Controls -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="BtnPrev"
+                            Style="{StaticResource MediaControlBtn}"
+                            Width="22" Height="22"
+                            ToolTip="Önceki Parça"
+                            Click="BtnPrev_Click">
+                        <Path Data="{StaticResource GeoPrevious}"
+                              Fill="{StaticResource TextSecondaryBrush}"
+                              Stretch="Uniform" Width="9" Height="9" />
+                    </Button>
+
+                    <Button x:Name="BtnPlayPause"
+                            Width="24" Height="24"
+                            Background="#2538BDF8"
+                            BorderBrush="#4038BDF8"
+                            BorderThickness="1"
+                            Margin="3,0"
+                            Cursor="Hand"
+                            ToolTip="Oynat / Duraklat"
+                            Click="BtnPlayPause_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="pbd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="12">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="pbd" Property="Opacity" Value="0.85" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <Path x:Name="PathPlayPause"
+                              Data="{StaticResource GeoPlay}"
+                              Fill="{StaticResource AccentBrush}"
+                              Stretch="Uniform" Width="9" Height="9" />
+                    </Button>
+
+                    <Button x:Name="BtnNext"
+                            Style="{StaticResource MediaControlBtn}"
+                            Width="22" Height="22"
+                            ToolTip="Sonraki Parça"
+                            Click="BtnNext_Click">
+                        <Path Data="{StaticResource GeoNext}"
+                              Fill="{StaticResource TextSecondaryBrush}"
+                              Stretch="Uniform" Width="9" Height="9" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- Bottom Row: Seek Bar + Duration Display -->
+            <Grid Grid.Row="1" x:Name="SeekPanel" Margin="0,6,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Slider x:Name="SliderSeek"
+                        Grid.Column="0"
+                        Minimum="0"
+                        Maximum="100"
+                        Value="0"
+                        VerticalAlignment="Center"
+                        Height="18"
+                        Margin="0,0,8,0"
+                        PreviewMouseDown="SliderSeek_PreviewMouseDown"
+                        PreviewMouseUp="SliderSeek_PreviewMouseUp"
+                        ValueChanged="SliderSeek_ValueChanged" />
+
+                <TextBlock x:Name="TxtTime"
+                           Grid.Column="1"
+                           Text="00:00 / 00:00"
+                           FontSize="9.5"
+                           FontFamily="Consolas, Segoe UI"
+                           Foreground="{StaticResource TextMutedBrush}"
+                           VerticalAlignment="Center" />
+            </Grid>
         </Grid>
     </Border>
 </UserControl>

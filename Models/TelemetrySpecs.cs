@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Windows.Media;
 
 namespace OpenWidget.Models;
 
@@ -11,10 +12,15 @@ public record TelemetryItem(
     string MainText,
     string SubText,
     string BarColorKey = "AccentBrush",
-    bool IsAlert = false
+    bool IsAlert = false,
+    PointCollection? SparklinePoints = null,
+    bool HasSparkline = false,
+    string? StatusBadge = null,
+    string? StatusBadgeBrush = null
 )
 {
     public double RemainingPercentage => Math.Max(0.01, 100.0 - Math.Max(0.01, Math.Min(100.0, Percentage)));
+    public bool HasStatusBadge => !string.IsNullOrEmpty(StatusBadge);
 }
 
 public class TelemetrySpecs
