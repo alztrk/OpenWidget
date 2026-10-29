@@ -145,7 +145,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         _config = HardwareConfig.Load(_configPath);
 
-        Width = 380;
+        Width = 360;
 
         if (_config.Widget.Opacity > 0.1 && _config.Widget.Opacity <= 1.0) Opacity = _config.Widget.Opacity;
         Topmost = _config.Widget.AlwaysOnTop;
@@ -210,7 +210,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         double rightMargin = workArea.Width * 0.025;
         double topMargin = workArea.Height * 0.025;
 
-        Width = 380;
+        Width = 360;
 
         Left = Math.Round(workArea.Right - Width - rightMargin);
         Top = Math.Round(workArea.Top + topMargin);
