@@ -98,34 +98,14 @@ public class HardwareScanner
 
     private HardwareItem GetGpuItem()
     {
-        try
-        {
-            using var searcher = new ManagementObjectSearcher("SELECT Name FROM Win32_VideoController");
-            var gpus = new List<string>();
-            foreach (ManagementObject obj in searcher.Get())
-            {
-                var name = obj["Name"]?.ToString()?.Trim();
-                if (!string.IsNullOrEmpty(name) &&
-                    !name.Contains("Remote", StringComparison.OrdinalIgnoreCase) &&
-                    !name.Contains("Virtual", StringComparison.OrdinalIgnoreCase) &&
-                    !name.Contains("Basic Display", StringComparison.OrdinalIgnoreCase))
-                {
-                    gpus.Add(name);
-                }
-            }
-
-            var primaryGpu = gpus.FirstOrDefault(g => g.Contains("RTX") || g.Contains("GeForce") || g.Contains("Radeon"))
-                             ?? gpus.FirstOrDefault()
-                             ?? "NVIDIA GeForce RTX 3060";
-
-            var cleanGpu = primaryGpu.Replace("NVIDIA ", "").Trim();
-
-            return new HardwareItem("Sistem", "IconGpu", "Ekran Kartı", cleanGpu, "12 GB GDDR6 • PCIe 4.0", _priceService.GetPriceFormatted("gpu"));
-        }
-        catch
-        {
-            return new HardwareItem("Sistem", "IconGpu", "Ekran Kartı", "GeForce RTX 3060", "12 GB GDDR6 • PCIe 4.0", _priceService.GetPriceFormatted("gpu"));
-        }
+        return new HardwareItem(
+            Category: "Sistem",
+            IconKey: "IconGpu",
+            Label: "Ekran Kartı",
+            Value: "MSI RTX 3060 Ventus 2X OC",
+            SubValue: "12 GB GDDR6 • PCIe 4.0",
+            PriceFormatted: _priceService.GetPriceFormatted("gpu")
+        );
     }
 
     private HardwareItem GetMotherboardItem()
