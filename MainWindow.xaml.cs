@@ -193,6 +193,18 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             {
                 isDesktop = true;
             }
+            else if (cls == "#32768" ||
+                     cls == "Xaml_WindowedPopupClass" ||
+                     cls == "TopLevelWindowForOverflowXamlIsland" ||
+                     cls == "Popup" ||
+                     cls.StartsWith("HwndWrapper[RigBadge"))
+            {
+                // When a context menu or popup is active, maintain visibility if we were already on desktop
+                if (Visibility == Visibility.Visible)
+                {
+                    isDesktop = true;
+                }
+            }
         }
 
         if (isDesktop)
