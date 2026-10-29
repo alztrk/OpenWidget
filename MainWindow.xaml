@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:converters="clr-namespace:RigBadge.Converters"
         Title="RigBadge"
-        Width="350"
+        Width="380"
         SizeToContent="Height"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -23,7 +23,7 @@
         <DataTemplate x:Key="GadgetRowTemplate">
             <Grid Margin="0,2,0,3">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="18" />
+                    <ColumnDefinition Width="20" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
@@ -33,20 +33,20 @@
                       Data="{Binding IconKey, Converter={StaticResource IconConverter}}"
                       Fill="{StaticResource TextMutedBrush}"
                       Stretch="Uniform"
-                      Width="11"
-                      Height="11"
+                      Width="12.5"
+                      Height="12.5"
                       VerticalAlignment="Center"
                       HorizontalAlignment="Left" />
 
                 <!-- Names & Subtitles -->
-                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,10,0">
                     <TextBlock Text="{Binding Value}"
-                               FontSize="11"
+                               FontSize="12"
                                FontWeight="SemiBold"
                                Foreground="{StaticResource TextPrimaryBrush}"
                                TextTrimming="CharacterEllipsis" />
                     <TextBlock Text="{Binding SubValue}"
-                               FontSize="8.5"
+                               FontSize="9.5"
                                Foreground="{StaticResource TextMutedBrush}"
                                TextTrimming="CharacterEllipsis"
                                Visibility="{Binding SubValue, Converter={StaticResource StringToVis}}" />
@@ -55,7 +55,7 @@
                 <!-- Market Price -->
                 <TextBlock Grid.Column="2"
                            Text="{Binding PriceFormatted}"
-                           FontSize="10.5"
+                           FontSize="12"
                            FontWeight="SemiBold"
                            Foreground="{StaticResource PriceBrush}"
                            VerticalAlignment="Center"
@@ -82,13 +82,13 @@
             BorderBrush="{StaticResource GlassBorderBrush}"
             BorderThickness="1"
             CornerRadius="10"
-            Padding="12,11">
+            Padding="13,12">
         <StackPanel>
 
             <!-- 1. SİSTEM -->
-            <DockPanel Margin="0,0,0,4">
+            <DockPanel Margin="0,0,0,5">
                 <TextBlock Text="SİSTEM"
-                           FontSize="8.5"
+                           FontSize="9.5"
                            FontWeight="Bold"
                            Foreground="{StaticResource AccentBrush}"
                            VerticalAlignment="Center"
@@ -99,9 +99,9 @@
                           ItemTemplate="{StaticResource GadgetRowTemplate}" />
 
             <!-- 2. DEPOLAMA -->
-            <DockPanel Margin="0,5,0,4">
+            <DockPanel Margin="0,6,0,5">
                 <TextBlock Text="DEPOLAMA"
-                           FontSize="8.5"
+                           FontSize="9.5"
                            FontWeight="Bold"
                            Foreground="{StaticResource AccentBrush}"
                            VerticalAlignment="Center"
@@ -112,9 +112,9 @@
                           ItemTemplate="{StaticResource GadgetRowTemplate}" />
 
             <!-- 3. ÇEVRE BİRİMLERİ -->
-            <DockPanel Margin="0,5,0,4">
+            <DockPanel Margin="0,6,0,5">
                 <TextBlock Text="ÇEVRE BİRİMLERİ"
-                           FontSize="8.5"
+                           FontSize="9.5"
                            FontWeight="Bold"
                            Foreground="{StaticResource AccentBrush}"
                            VerticalAlignment="Center"
@@ -124,10 +124,10 @@
             <ItemsControl ItemsSource="{Binding Specs.Peripherals}"
                           ItemTemplate="{StaticResource GadgetRowTemplate}" />
 
-            <!-- 4. SOĞUTMA VE GÜÇ -->
-            <DockPanel Margin="0,5,0,4">
+            <!-- 4. KASA, SOĞUTMA VE GÜÇ -->
+            <DockPanel Margin="0,6,0,5">
                 <TextBlock Text="KASA, SOĞUTMA VE GÜÇ"
-                           FontSize="8.5"
+                           FontSize="9.5"
                            FontWeight="Bold"
                            Foreground="{StaticResource AccentBrush}"
                            VerticalAlignment="Center"
@@ -138,9 +138,9 @@
                           ItemTemplate="{StaticResource GadgetRowTemplate}" />
 
             <!-- 5. AKSESUAR VE EKİPMAN -->
-            <DockPanel Margin="0,5,0,4">
+            <DockPanel Margin="0,6,0,5">
                 <TextBlock Text="AKSESUAR VE EKİPMAN"
-                           FontSize="8.5"
+                           FontSize="9.5"
                            FontWeight="Bold"
                            Foreground="{StaticResource AccentBrush}"
                            VerticalAlignment="Center"
@@ -150,40 +150,19 @@
             <ItemsControl ItemsSource="{Binding Specs.Accessories}"
                           ItemTemplate="{StaticResource GadgetRowTemplate}" />
 
-            <!-- 6. TOPLAM DEĞER (MATTE SUMMARY BADGE) -->
+            <!-- 6. TOPLAM DEĞER (MINIMAL MATTE BADGE) -->
             <Border Background="{StaticResource GlassCardBgBrush}"
                     BorderBrush="{StaticResource GlassCardBorderBrush}"
                     BorderThickness="1"
                     CornerRadius="7"
-                    Margin="0,6,0,0"
-                    Padding="10,6">
-                <DockPanel LastChildFill="True">
-                    <TextBlock Text="{Binding Specs.TotalPriceFormatted}"
-                               DockPanel.Dock="Right"
-                               FontSize="12.5"
-                               FontWeight="Heavy"
-                               Foreground="{StaticResource AccentGreenBrush}"
-                               VerticalAlignment="Center" />
-                    <StackPanel VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal">
-                            <Border Width="5"
-                                    Height="5"
-                                    CornerRadius="2.5"
-                                    Background="{StaticResource AccentGreenBrush}"
-                                    VerticalAlignment="Center"
-                                    Margin="0,0,5,0" />
-                            <TextBlock Text="TOPLAM DONANIM DEĞERİ"
-                                       FontSize="8"
-                                       FontWeight="Bold"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                       VerticalAlignment="Center" />
-                        </StackPanel>
-                        <TextBlock Text="{Binding Specs.PriceSource, StringFormat='{}{0} Günlük'}"
-                                   FontSize="7.5"
-                                   Foreground="{StaticResource TextMutedBrush}"
-                                   Margin="10,1,0,0" />
-                    </StackPanel>
-                </DockPanel>
+                    Margin="0,8,0,0"
+                    Padding="12,8">
+                <TextBlock Text="{Binding Specs.TotalPriceFormatted}"
+                           FontSize="16"
+                           FontWeight="Heavy"
+                           Foreground="{StaticResource AccentGreenBrush}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
             </Border>
 
         </StackPanel>
