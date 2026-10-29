@@ -2,7 +2,7 @@
   "CoolingAndPower": {
     "PcCase": "MSI MAG FORGE M100R",
     "CpuCooler": "CORSAIR iCUE LINK TITAN 240 RX RGB AIO",
-    "Psu": "MSI MPG A750GF White 750W 80\u002B Gold"
+    "Psu": "MSI MPG A750GF White 750W 80+ Gold"
   },
   "Peripherals": {
     "Keyboard": "Corsair K55 RGB PRO XT",
@@ -13,8 +13,8 @@
     "Monitor": null
   },
   "Accessories": {
-    "MonitorArm": "North Bayou NB F80 (17-32\u0022 VESA)",
-    "MicArm": "Lastvoice NB39 Masa Stand\u0131",
+    "MonitorArm": "North Bayou NB F80 (17-32\" VESA)",
+    "MicArm": "Lastvoice NB39 Masa Standı",
     "Gamepad": "Xbox Wireless Controller (9. Nesil)",
     "EthernetAdapter": "Ugreen USB 3.0 Gigabit RJ45",
     "EthernetCable": "KabelDirekt 10Gbit/s (0.5m)"
@@ -23,8 +23,8 @@
     "Opacity": 1,
     "OffsetX": 64,
     "OffsetY": 35,
-    "CustomLeft": 2150,
-    "CustomTop": 35,
+    "CustomLeft": 2200,
+    "CustomTop": 0,
     "Width": 360,
     "Height": 780,
     "AlwaysOnTop": false,

@@ -22,7 +22,9 @@ public partial class MediaWidget : UserControl
 
     public MediaWidget()
     {
+        _isUpdatingVolumeInternal = true;
         InitializeComponent();
+        _isUpdatingVolumeInternal = false;
 
         _volumeSyncTimer = new DispatcherTimer
         {
@@ -160,12 +162,18 @@ public partial class MediaWidget : UserControl
             var (vol, isMuted) = AudioMixerService.GetMediaVolume(sourceApp);
 
             _isUpdatingVolumeInternal = true;
-            SliderMediaVolume.Value = vol;
-            if (TxtMediaVolumePercent != null)
+            try
             {
-                TxtMediaVolumePercent.Text = $"{(int)Math.Round(vol)}%";
+                SliderMediaVolume.Value = vol;
+                if (TxtMediaVolumePercent != null)
+                {
+                    TxtMediaVolumePercent.Text = $"{(int)Math.Round(vol)}%";
+                }
             }
-            _isUpdatingVolumeInternal = false;
+            finally
+            {
+                _isUpdatingVolumeInternal = false;
+            }
 
             UpdateMuteIcon(isMuted);
         }
@@ -235,6 +243,13 @@ public partial class MediaWidget : UserControl
     private void SliderMediaVolume_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         if (_isUpdatingVolumeInternal) return;
+        if (!IsLoaded) return;
+
+        // Ensure volume commands are only dispatched when user is actively interacting with the slider
+        if (!_isUserAdjustingVolume && !SliderMediaVolume.IsMouseOver && !SliderMediaVolume.IsKeyboardFocusWithin)
+        {
+            return;
+        }
 
         _lastUserVolumeAdjustTime = DateTime.UtcNow;
         float newVol = (float)SliderMediaVolume.Value;

@@ -570,12 +570,9 @@ public static class AudioMixerService
             {
                 var guid = Guid.Empty;
                 sav.SetMasterVolume(Math.Clamp(volume / 100f, 0f, 1f), ref guid);
-                return;
             }
         }
         catch { }
-
-        SetMasterVolume(volume);
     }
 
     public static bool ToggleMediaMute(string sourceApp)

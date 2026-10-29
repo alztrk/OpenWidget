@@ -217,7 +217,6 @@
                         Grid.Column="1"
                         Minimum="0"
                         Maximum="100"
-                        Value="70"
                         VerticalAlignment="Center"
                         Height="18"
                         Margin="0,0,8,0"
@@ -229,7 +228,7 @@
                 <!-- Volume Percentage -->
                 <TextBlock x:Name="TxtMediaVolumePercent"
                            Grid.Column="2"
-                           Text="70%"
+                           Text="--%"
                            FontSize="11.5"
                            FontWeight="SemiBold"
                            Foreground="{StaticResource TextSecondaryBrush}"
