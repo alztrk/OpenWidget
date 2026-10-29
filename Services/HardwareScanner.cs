@@ -53,7 +53,9 @@ public class HardwareScanner
             Label: "Kasa",
             Value: caseName,
             SubValue: "Temperli Cam • 4x ARGB Fan mATX",
-            PriceFormatted: _priceService.GetPriceFormatted("case")
+            PriceFormatted: _priceService.GetPriceFormatted("case"),
+            Url: "https://www.amazon.com.tr/dp/B09VCC46F7",
+            LinkDisplay: "amazon.com.tr ↗"
         ));
 
         specs.CoolingAndPower.Add(new HardwareItem(
@@ -62,7 +64,9 @@ public class HardwareScanner
             Label: "Soğutucu",
             Value: "Corsair iCUE LINK TITAN 240",
             SubValue: "CW-9061016-WW • 240mm AIO",
-            PriceFormatted: _priceService.GetPriceFormatted("cooler")
+            PriceFormatted: _priceService.GetPriceFormatted("cooler"),
+            Url: "https://www.amazon.com.tr/dp/B0DC21M89J",
+            LinkDisplay: "amazon.com.tr ↗"
         ));
 
         specs.CoolingAndPower.Add(new HardwareItem(
@@ -71,7 +75,9 @@ public class HardwareScanner
             Label: "PSU",
             Value: "MSI MPG A750GF White",
             SubValue: "750W 80+ Gold Modüler",
-            PriceFormatted: _priceService.GetPriceFormatted("psu")
+            PriceFormatted: _priceService.GetPriceFormatted("psu"),
+            Url: "https://www.amazon.com.tr/dp/B0991WL16F",
+            LinkDisplay: "amazon.com.tr ↗"
         ));
 
         // 5. Accessories
@@ -81,7 +87,9 @@ public class HardwareScanner
             Label: "Monitör Kolu",
             Value: _config.Accessories.MonitorArm,
             SubValue: "Amortisörlü VESA Kol (2-9 kg)",
-            PriceFormatted: _priceService.GetPriceFormatted("monitor_arm")
+            PriceFormatted: _priceService.GetPriceFormatted("monitor_arm"),
+            Url: "https://www.amazon.com.tr/dp/B01AI2YGK4",
+            LinkDisplay: "amazon.com.tr ↗"
         ));
 
         specs.Accessories.Add(new HardwareItem(
@@ -90,7 +98,9 @@ public class HardwareScanner
             Label: "Mikrofon Kolu",
             Value: _config.Accessories.MicArm,
             SubValue: "Mafsallı Akrobat Masa Standı",
-            PriceFormatted: _priceService.GetPriceFormatted("mic_arm")
+            PriceFormatted: _priceService.GetPriceFormatted("mic_arm"),
+            Url: "https://www.amazon.com.tr/dp/B07NSS429L",
+            LinkDisplay: "amazon.com.tr ↗"
         ));
 
         specs.Accessories.Add(new HardwareItem(
@@ -99,7 +109,9 @@ public class HardwareScanner
             Label: "Gamepad",
             Value: _config.Accessories.Gamepad,
             SubValue: "9. Nesil • Microsoft TR Garantili",
-            PriceFormatted: _priceService.GetPriceFormatted("gamepad")
+            PriceFormatted: _priceService.GetPriceFormatted("gamepad"),
+            Url: "https://www.amazon.com.tr/Xbox-Wireless-Controller-Microsoft-Garantili/dp/B0F2NC69KK",
+            LinkDisplay: "amazon.com.tr ↗"
         ));
 
         specs.Accessories.Add(new HardwareItem(
@@ -108,7 +120,9 @@ public class HardwareScanner
             Label: "Ağ Adaptörü",
             Value: _config.Accessories.EthernetAdapter,
             SubValue: "1000 Mbps USB 3.0 Gigabit",
-            PriceFormatted: _priceService.GetPriceFormatted("ethernet_adapter")
+            PriceFormatted: _priceService.GetPriceFormatted("ethernet_adapter"),
+            Url: "https://www.amazon.com.tr/dp/B00MYTSN18",
+            LinkDisplay: "amazon.com.tr ↗"
         ));
 
         specs.Accessories.Add(new HardwareItem(
@@ -117,7 +131,9 @@ public class HardwareScanner
             Label: "Ağ Kablosu",
             Value: _config.Accessories.EthernetCable,
             SubValue: "Cat 7 10Gbit/s Siyah Kablo",
-            PriceFormatted: _priceService.GetPriceFormatted("ethernet_cable")
+            PriceFormatted: _priceService.GetPriceFormatted("ethernet_cable"),
+            Url: "https://www.amazon.com.tr/dp/B018M7ST42",
+            LinkDisplay: "amazon.com.tr ↗"
         ));
 
         // Summary Values
@@ -146,11 +162,11 @@ public class HardwareScanner
                 var cores = obj["NumberOfCores"]?.ToString() ?? "8";
                 var threads = obj["NumberOfLogicalProcessors"]?.ToString() ?? "16";
 
-                return new HardwareItem("Sistem", "IconCpu", "İşlemci", cleanName, $"{cores} Çekirdek • {threads} İzlek (AM4)", _priceService.GetPriceFormatted("cpu"));
+                return new HardwareItem("Sistem", "IconCpu", "İşlemci", cleanName, $"{cores} Çekirdek • {threads} İzlek (AM4)", _priceService.GetPriceFormatted("cpu"), "https://www.amazon.com.tr/dp/B09VCHR1VH", "amazon.com.tr ↗");
             }
         }
         catch { }
-        return new HardwareItem("Sistem", "IconCpu", "İşlemci", "AMD Ryzen 7 5700X", "8 Çekirdek • 16 İzlek (AM4)", _priceService.GetPriceFormatted("cpu"));
+        return new HardwareItem("Sistem", "IconCpu", "İşlemci", "AMD Ryzen 7 5700X", "8 Çekirdek • 16 İzlek (AM4)", _priceService.GetPriceFormatted("cpu"), "https://www.amazon.com.tr/dp/B09VCHR1VH", "amazon.com.tr ↗");
     }
 
     private HardwareItem GetGpuItem()
@@ -161,7 +177,9 @@ public class HardwareScanner
             Label: "Ekran Kartı",
             Value: "MSI RTX 3060 Ventus 2X OC",
             SubValue: "12 GB GDDR6 • PCIe 4.0",
-            PriceFormatted: _priceService.GetPriceFormatted("gpu")
+            PriceFormatted: _priceService.GetPriceFormatted("gpu"),
+            Url: "https://www.amazon.com.tr/MSI-GEFORCE-VENTUS-RTX3060-1XHDMI/dp/B08WHJFYM8",
+            LinkDisplay: "amazon.com.tr ↗"
         );
     }
 
@@ -181,11 +199,11 @@ public class HardwareScanner
                 var full = string.IsNullOrEmpty(mfg) ? prod : $"{mfg} {prod}";
                 full = full.Replace(" (MS-7C95)", "").Trim();
 
-                return new HardwareItem("Sistem", "IconMotherboard", "Anakart", full, "MS-7C95 • AM4", _priceService.GetPriceFormatted("motherboard"));
+                return new HardwareItem("Sistem", "IconMotherboard", "Anakart", full, "MS-7C95 • AM4", _priceService.GetPriceFormatted("motherboard"), "https://www.amazon.com.tr/dp/B08BCZR77H", "amazon.com.tr ↗");
             }
         }
         catch { }
-        return new HardwareItem("Sistem", "IconMotherboard", "Anakart", "MSI B550M PRO-VDH WIFI", "MS-7C95 • AM4", _priceService.GetPriceFormatted("motherboard"));
+        return new HardwareItem("Sistem", "IconMotherboard", "Anakart", "MSI B550M PRO-VDH WIFI", "MS-7C95 • AM4", _priceService.GetPriceFormatted("motherboard"), "https://www.amazon.com.tr/dp/B08BCZR77H", "amazon.com.tr ↗");
     }
 
     private HardwareItem GetMemoryItem()
@@ -196,7 +214,9 @@ public class HardwareScanner
             Label: "RAM",
             Value: "48 GB (2x KF3600 + 1x Izoly)",
             SubValue: "2x 3600MHz CL18 + 1x 3200MHz",
-            PriceFormatted: _priceService.GetPriceFormatted("ram")
+            PriceFormatted: _priceService.GetPriceFormatted("ram"),
+            Url: "https://izoly.com/izoly-16gb-ddr4-3200mhz-cl22-1-2v-gaming-sogutuculu-desktop-ram/",
+            LinkDisplay: "izoly.com & amazon.com.tr ↗"
         );
     }
 
@@ -218,7 +238,9 @@ public class HardwareScanner
                         Label: "SSD",
                         Value: "Kingston NV2 (SNV2S1000G)",
                         SubValue: "1 TB PCIe 4.0 NVMe M.2",
-                        PriceFormatted: _priceService.GetPriceFormatted("ssd_nvme")
+                        PriceFormatted: _priceService.GetPriceFormatted("ssd_nvme"),
+                        Url: "https://www.amazon.com.tr/dp/B0BBWJH1HG",
+                        LinkDisplay: "amazon.com.tr ↗"
                     ));
                 }
                 else if (model.StartsWith("SSD", StringComparison.OrdinalIgnoreCase) || model.Contains("512GB", StringComparison.OrdinalIgnoreCase))
@@ -229,7 +251,9 @@ public class HardwareScanner
                         Label: "SSD",
                         Value: "Izoly S280 Gaming SSD",
                         SubValue: "512 GB SATA3 550/520",
-                        PriceFormatted: _priceService.GetPriceFormatted("ssd_sata")
+                        PriceFormatted: _priceService.GetPriceFormatted("ssd_sata"),
+                        Url: "https://izoly.com/izoly-512gb-gaming-sata3-s280-550-520mb-s-ssd/",
+                        LinkDisplay: "izoly.com ↗"
                     ));
                 }
             }
@@ -238,8 +262,8 @@ public class HardwareScanner
 
         if (items.Count == 0)
         {
-            items.Add(new HardwareItem("Depolama", "IconStorage", "SSD", "Kingston NV2 (SNV2S1000G)", "1 TB PCIe 4.0 NVMe M.2", _priceService.GetPriceFormatted("ssd_nvme")));
-            items.Add(new HardwareItem("Depolama", "IconStorage", "SSD", "Izoly S280 Gaming SSD", "512 GB SATA3 550/520", _priceService.GetPriceFormatted("ssd_sata")));
+            items.Add(new HardwareItem("Depolama", "IconStorage", "SSD", "Kingston NV2 (SNV2S1000G)", "1 TB PCIe 4.0 NVMe M.2", _priceService.GetPriceFormatted("ssd_nvme"), "https://www.amazon.com.tr/dp/B0BBWJH1HG", "amazon.com.tr ↗"));
+            items.Add(new HardwareItem("Depolama", "IconStorage", "SSD", "Izoly S280 Gaming SSD", "512 GB SATA3 550/520", _priceService.GetPriceFormatted("ssd_sata"), "https://izoly.com/izoly-512gb-gaming-sata3-s280-550-520mb-s-ssd/", "izoly.com ↗"));
         }
 
         return items;
@@ -249,7 +273,7 @@ public class HardwareScanner
     {
         if (!string.IsNullOrEmpty(_config.Peripherals.Monitor))
         {
-            return new HardwareItem("Çevre Birimleri", "IconMonitor", "Monitör", _config.Peripherals.Monitor, "27\" 180Hz 1440p QHD", _priceService.GetPriceFormatted("monitor"));
+            return new HardwareItem("Çevre Birimleri", "IconMonitor", "Monitör", _config.Peripherals.Monitor, "27\" 180Hz 1440p QHD", _priceService.GetPriceFormatted("monitor"), "https://www.amazon.com.tr/dp/B0CYZ2B3D8", "amazon.com.tr ↗");
         }
 
         try
@@ -263,43 +287,43 @@ public class HardwareScanner
                     var name = new string(chars).Trim();
                     if (!string.IsNullOrEmpty(name))
                     {
-                        return new HardwareItem("Çevre Birimleri", "IconMonitor", "Monitör", name, "27\" 180Hz 1440p QHD Curved", _priceService.GetPriceFormatted("monitor"));
+                        return new HardwareItem("Çevre Birimleri", "IconMonitor", "Monitör", name, "27\" 180Hz 1440p QHD Curved", _priceService.GetPriceFormatted("monitor"), "https://www.amazon.com.tr/dp/B0CYZ2B3D8", "amazon.com.tr ↗");
                     }
                 }
             }
         }
         catch { }
 
-        return new HardwareItem("Çevre Birimleri", "IconMonitor", "Monitör", "MSI MAG 27CQ6F", "27\" 180Hz 1440p QHD Curved", _priceService.GetPriceFormatted("monitor"));
+        return new HardwareItem("Çevre Birimleri", "IconMonitor", "Monitör", "MSI MAG 27CQ6F", "27\" 180Hz 1440p QHD Curved", _priceService.GetPriceFormatted("monitor"), "https://www.amazon.com.tr/dp/B0CYZ2B3D8", "amazon.com.tr ↗");
     }
 
     private HardwareItem GetKeyboardItem()
     {
         var name = _config.Peripherals.Keyboard ?? "Corsair K55 RGB PRO XT";
-        return new HardwareItem("Çevre Birimleri", "IconKeyboard", "Klavye", name, "Per-Key RGB Gaming", _priceService.GetPriceFormatted("keyboard"));
+        return new HardwareItem("Çevre Birimleri", "IconKeyboard", "Klavye", name, "Per-Key RGB Gaming", _priceService.GetPriceFormatted("keyboard"), "https://www.amazon.com.tr/dp/B08YC76FRP", "amazon.com.tr ↗");
     }
 
     private HardwareItem GetMouseItem()
     {
         var name = _config.Peripherals.Mouse ?? "ROG Harpe Ace Aim Lab";
-        return new HardwareItem("Çevre Birimleri", "IconMouse", "Fare", name, "Ultralight 54g Wireless", _priceService.GetPriceFormatted("mouse"));
+        return new HardwareItem("Çevre Birimleri", "IconMouse", "Fare", name, "Ultralight 54g Wireless", _priceService.GetPriceFormatted("mouse"), "https://www.amazon.com.tr/dp/B0BQ7D9B4Y", "amazon.com.tr ↗");
     }
 
     private HardwareItem GetMousepadItem()
     {
         var name = _config.Peripherals.Mousepad ?? "Wraith Spirit of Aim";
-        return new HardwareItem("Çevre Birimleri", "IconMousepad", "Mousepad", name, "Speed / White • 470x420x3mm", _priceService.GetPriceFormatted("mousepad"));
+        return new HardwareItem("Çevre Birimleri", "IconMousepad", "Mousepad", name, "Speed / White • 470x420x3mm", _priceService.GetPriceFormatted("mousepad"), "https://wraithesports.com/products/wraith-spirit-of-aim-mousepad?variant=47478471262401", "wraithesports.com ↗");
     }
 
     private HardwareItem GetHeadsetItem()
     {
         var name = _config.Peripherals.Headset ?? "Razer Kraken Kitty V2 BT";
-        return new HardwareItem("Çevre Birimleri", "IconHeadset", "Kulaklık", name, "Bluetooth 5.2 • 7.1 Surround", _priceService.GetPriceFormatted("headset"));
+        return new HardwareItem("Çevre Birimleri", "IconHeadset", "Kulaklık", name, "Bluetooth 5.2 • 7.1 Surround", _priceService.GetPriceFormatted("headset"), "https://www.amazon.com.tr/dp/B0CC9584V9", "amazon.com.tr ↗");
     }
 
     private HardwareItem GetMicrophoneItem()
     {
         var name = _config.Peripherals.Microphone ?? "Razer Seiren V3 Chroma";
-        return new HardwareItem("Çevre Birimleri", "IconMic", "Mikrofon", name, "USB Kondenser & Chroma RGB", _priceService.GetPriceFormatted("microphone"));
+        return new HardwareItem("Çevre Birimleri", "IconMic", "Mikrofon", name, "USB Kondenser & Chroma RGB", _priceService.GetPriceFormatted("microphone"), "https://www.amazon.com.tr/dp/B0CRH7Q3L1", "amazon.com.tr ↗");
     }
 }

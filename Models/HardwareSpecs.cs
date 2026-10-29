@@ -8,7 +8,9 @@ public record HardwareItem(
     string Label,
     string Value,
     string? SubValue = null,
-    string? PriceFormatted = null
+    string? PriceFormatted = null,
+    string? Url = null,
+    string? LinkDisplay = null
 );
 
 public class HardwareSpecs

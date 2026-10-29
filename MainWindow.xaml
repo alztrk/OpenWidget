@@ -21,24 +21,24 @@
 
         <!-- Minimalist Matte Black Row Template -->
         <DataTemplate x:Key="GadgetRowTemplate">
-            <Grid Margin="0,2,0,3">
+            <Grid Margin="0,2,0,4">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="24" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Icon -->
+                <!-- Icon (Enlarged Refined Modern Vector) -->
                 <Path Grid.Column="0"
                       Data="{Binding IconKey, Converter={StaticResource IconConverter}}"
                       Fill="{StaticResource TextMutedBrush}"
                       Stretch="Uniform"
-                      Width="12.5"
-                      Height="12.5"
+                      Width="15"
+                      Height="15"
                       VerticalAlignment="Center"
                       HorizontalAlignment="Left" />
 
-                <!-- Names & Subtitles -->
+                <!-- Names, Subtitles & Product Link -->
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,10,0">
                     <TextBlock Text="{Binding Value}"
                                FontSize="12"
@@ -50,6 +50,28 @@
                                Foreground="{StaticResource TextMutedBrush}"
                                TextTrimming="CharacterEllipsis"
                                Visibility="{Binding SubValue, Converter={StaticResource StringToVis}}" />
+                    <!-- Clickable Product Link -->
+                    <TextBlock Text="{Binding LinkDisplay}"
+                               FontSize="9"
+                               Foreground="{StaticResource AccentBrush}"
+                               Cursor="Hand"
+                               TextTrimming="CharacterEllipsis"
+                               Tag="{Binding Url}"
+                               PreviewMouseLeftButtonDown="Link_PreviewMouseLeftButtonDown"
+                               MouseLeftButtonUp="Link_MouseLeftButtonUp"
+                               Visibility="{Binding Url, Converter={StaticResource StringToVis}}">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Opacity" Value="0.75" />
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Opacity" Value="1.0" />
+                                        <Setter Property="TextDecorations" Value="Underline" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                 </StackPanel>
 
                 <!-- Market Price -->

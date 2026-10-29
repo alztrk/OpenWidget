@@ -227,6 +227,28 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
+    private void Link_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        e.Handled = true;
+    }
+
+    private void Link_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        e.Handled = true;
+        if (sender is FrameworkElement elem && elem.Tag is string url && !string.IsNullOrEmpty(url))
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true
+                });
+            }
+            catch { }
+        }
+    }
+
     private void MenuExit_Click(object sender, RoutedEventArgs e)
     {
         Close();
