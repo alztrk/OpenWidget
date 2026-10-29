@@ -32,12 +32,16 @@
             <MenuItem x:Name="MenuHeader" Header="🌤️ Hava Durumu &amp; Süre" IsCheckable="True" Click="MenuHeader_Click" />
             <MenuItem x:Name="MenuTelemetry" Header="📊 Sistem Telemetrisi" IsCheckable="True" Click="MenuTelemetry_Click" />
             <MenuItem x:Name="MenuFinance" Header="💰 Canlı Piyasa &amp; Kripto" IsCheckable="True" Click="MenuFinance_Click" />
+            <MenuItem x:Name="MenuMedia" Header="🎵 Medya Oynatıcı" IsCheckable="True" Click="MenuMedia_Click" />
             <MenuItem x:Name="MenuHardware" Header="🖥️ Donanım Bileşenleri" IsCheckable="True" Click="MenuHardware_Click" />
             <MenuItem x:Name="MenuQuickActions" Header="⚡ Hızlı Araçlar" IsCheckable="True" Click="MenuQuickActions_Click" />
             <Separator Background="{StaticResource DividerBrush}" />
-            <MenuItem x:Name="MenuAutoStart" Header="🚀 Windows ile Birlikte Başlat" IsCheckable="True" Click="MenuAutoStart_Click" />
+            <MenuItem x:Name="MenuCompactMode" Header="⚡ Kompakt HUD Modu" IsCheckable="True" Click="MenuCompactMode_Click" />
+            <MenuItem x:Name="MenuLockPosition" Header="🔒 Konumu Kilitle" IsCheckable="True" Click="MenuLockPosition_Click" />
+            <MenuItem x:Name="MenuPinToDesktop" Header="🖼️ Masaüstüne Sabitle (En Arkada)" IsCheckable="True" Click="MenuPinToDesktop_Click" />
             <MenuItem x:Name="MenuAlwaysOnTop" Header="📌 Her Zaman Üstte" IsCheckable="True" Click="MenuAlwaysOnTop_Click" />
             <MenuItem x:Name="MenuGameMode" Header="🎮 Oyun Modu (Otomatik Rölanti)" IsCheckable="True" Click="MenuGameMode_Click" />
+            <MenuItem x:Name="MenuAutoStart" Header="🚀 Windows ile Birlikte Başlat" IsCheckable="True" Click="MenuAutoStart_Click" />
             <Separator Background="{StaticResource DividerBrush}" />
             <MenuItem x:Name="MenuSettings" Header="⚙️ Ayarlar" Click="MenuSettings_Click" FontWeight="SemiBold" />
             <MenuItem x:Name="MenuRefresh" Header="🔄 Yenile" Click="MenuRefresh_Click" />
@@ -49,29 +53,73 @@
     </Window.ContextMenu>
 
     <!-- Frosted Acrylic Master Surface -->
-    <Border Background="{StaticResource MasterHudBgBrush}"
+    <Border x:Name="MasterBorder"
+            Background="{StaticResource MasterHudBgBrush}"
             BorderBrush="{StaticResource MasterHudBorderBrush}"
             BorderThickness="1"
             CornerRadius="14"
             Padding="14,12"
             Cursor="SizeAll"
             MouseLeftButtonDown="MasterBorder_MouseLeftButtonDown">
-        <StackPanel>
-            <!-- 1. Header (Weather & Uptime) -->
-            <widgets:HeaderWidget Visibility="{Binding IsHeaderVisible, Converter={StaticResource BoolToVis}}" />
+        <Grid>
+            <!-- 1. FULL EXPANDED VIEW -->
+            <StackPanel x:Name="FullContentPanel" Visibility="{Binding IsFullViewVisible, Converter={StaticResource BoolToVis}}">
+                <!-- 1. Header (Weather & Uptime) -->
+                <widgets:HeaderWidget Visibility="{Binding IsHeaderVisible, Converter={StaticResource BoolToVis}}" />
 
-            <!-- 2. System Telemetry -->
-            <widgets:TelemetryWidget Visibility="{Binding IsTelemetryVisible, Converter={StaticResource BoolToVis}}" />
+                <!-- 2. System Telemetry -->
+                <widgets:TelemetryWidget Visibility="{Binding IsTelemetryVisible, Converter={StaticResource BoolToVis}}" />
 
-            <!-- 3. Market Finance -->
-            <widgets:FinanceWidget Visibility="{Binding IsFinanceVisible, Converter={StaticResource BoolToVis}}" />
+                <!-- 3. Market Finance -->
+                <widgets:FinanceWidget Visibility="{Binding IsFinanceVisible, Converter={StaticResource BoolToVis}}" />
 
-            <!-- 4. Hardware Components -->
-            <widgets:HardwareWidget Visibility="{Binding IsHardwareVisible, Converter={StaticResource BoolToVis}}" />
+                <!-- 4. Media Controller -->
+                <widgets:MediaWidget x:Name="MediaControlWidget" Visibility="{Binding IsMediaVisible, Converter={StaticResource BoolToVis}}" />
 
-            <!-- 5. Quick Actions Toolbar -->
-            <widgets:QuickActionsWidget Visibility="{Binding IsQuickActionsVisible, Converter={StaticResource BoolToVis}}"
-                                        RamCleaned="QuickActionsWidget_RamCleaned" />
-        </StackPanel>
+                <!-- 5. Hardware Components -->
+                <widgets:HardwareWidget Visibility="{Binding IsHardwareVisible, Converter={StaticResource BoolToVis}}" />
+
+                <!-- 6. Quick Actions Toolbar -->
+                <widgets:QuickActionsWidget Visibility="{Binding IsQuickActionsVisible, Converter={StaticResource BoolToVis}}"
+                                            RamCleaned="QuickActionsWidget_RamCleaned" />
+            </StackPanel>
+
+            <!-- 2. COMPACT MINI HUD BAR -->
+            <DockPanel x:Name="CompactHudPanel" Visibility="{Binding IsCompactViewVisible, Converter={StaticResource BoolToVis}}" Height="24">
+                <!-- Weather on Left -->
+                <TextBlock Text="{Binding Finance.WeatherText}"
+                           FontSize="11"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           VerticalAlignment="Center"
+                           DockPanel.Dock="Left"
+                           Margin="0,0,8,0" />
+
+                <!-- Expand Toggle Button on Right -->
+                <Button DockPanel.Dock="Right"
+                        Width="22" Height="22"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Click="BtnToggleCompact_Click"
+                        ToolTip="Genişlet (Çift Tıklama)">
+                    <Path Data="{StaticResource GeoCollapse}"
+                          Fill="{StaticResource TextSecondaryBrush}"
+                          Stretch="Uniform" Width="9" Height="9" />
+                </Button>
+
+                <!-- Mini Telemetry Badges (CPU • GPU • RAM) -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0">
+                    <Border Background="#1A38BDF8" CornerRadius="4" Padding="5,1.5" Margin="2,0">
+                        <TextBlock Text="{Binding CompactCpuText}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" />
+                    </Border>
+                    <Border Background="#1A34D399" CornerRadius="4" Padding="5,1.5" Margin="2,0">
+                        <TextBlock Text="{Binding CompactGpuText}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource AccentGreenBrush}" />
+                    </Border>
+                    <Border Background="#1AFBBF24" CornerRadius="4" Padding="5,1.5" Margin="2,0">
+                        <TextBlock Text="{Binding CompactRamText}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource AccentAmberBrush}" />
+                    </Border>
+                </StackPanel>
+            </DockPanel>
+        </Grid>
     </Border>
 </Window>

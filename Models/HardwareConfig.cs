@@ -39,8 +39,10 @@ public class WidgetConfig
     public double Width { get; set; } = 360;
     public double Height { get; set; } = 780;
     public bool AlwaysOnTop { get; set; } = false;
+    public bool PinToDesktop { get; set; } = false;
     public bool AutoGameMode { get; set; } = true;
     public bool IsLocked { get; set; } = false;
+    public bool IsCompact { get; set; } = false;
     public bool OnlyShowOnDesktop { get; set; } = false;
     public string Language { get; set; } = "tr";
     public string City { get; set; } = "auto";
@@ -53,6 +55,7 @@ public class WidgetSelectionConfig
     public bool ShowTelemetry { get; set; } = true;
     public bool ShowFinance { get; set; } = true;
     public bool ShowHardware { get; set; } = true;
+    public bool ShowMedia { get; set; } = true;
     public bool ShowQuickActions { get; set; } = true;
 }
 

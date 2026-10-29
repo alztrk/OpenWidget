@@ -196,6 +196,7 @@
                     <CheckBox x:Name="ChkHeader" Content="Hava Durumu &amp; Açık Kalma Süresi" Style="{StaticResource ModernCheckBox}" />
                     <CheckBox x:Name="ChkTelemetry" Content="Sistem Telemetrisi (CPU / GPU / RAM / Disk)" Style="{StaticResource ModernCheckBox}" />
                     <CheckBox x:Name="ChkFinance" Content="Canlı Piyasa &amp; Kripto (USD, EUR, Altın, BTC, ETH)" Style="{StaticResource ModernCheckBox}" />
+                    <CheckBox x:Name="ChkMedia" Content="Medya Oynatıcı (Spotify / Tarayıcı)" Style="{StaticResource ModernCheckBox}" />
                     <CheckBox x:Name="ChkHardware" Content="Donanım Özellikleri &amp; Fiyat Listesi" Style="{StaticResource ModernCheckBox}" />
                     <CheckBox x:Name="ChkQuickActions" Content="Hızlı Araç Çubuğu (Kısayollar)" Style="{StaticResource ModernCheckBox}" />
                 </StackPanel>
@@ -205,8 +206,11 @@
             <Border Background="#12FFFFFF" BorderBrush="#14FFFFFF" BorderThickness="1" CornerRadius="8" Padding="14,12" Margin="0,0,0,16">
                 <StackPanel>
                     <TextBlock x:Name="LblPerformanceHeader" Text="Sistem &amp; Performans" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,8" />
-                    <CheckBox x:Name="ChkAutoStart" Content="Windows ile birlikte otomatik başlat" Style="{StaticResource ModernCheckBox}" />
+                    <CheckBox x:Name="ChkCompactMode" Content="Kompakt HUD Modu (Yalnızca Üst Şerit)" Style="{StaticResource ModernCheckBox}" />
+                    <CheckBox x:Name="ChkLockPosition" Content="Widget Konumunu Kilitle (Sürüklemeyi Engelle)" Style="{StaticResource ModernCheckBox}" />
+                    <CheckBox x:Name="ChkPinToDesktop" Content="Masaüstü Arkasına Sabitle (En Altta)" Style="{StaticResource ModernCheckBox}" />
                     <CheckBox x:Name="ChkAlwaysOnTop" Content="Pencereyi her zaman en üstte tut" Style="{StaticResource ModernCheckBox}" />
+                    <CheckBox x:Name="ChkAutoStart" Content="Windows ile birlikte otomatik başlat" Style="{StaticResource ModernCheckBox}" />
                     <CheckBox x:Name="ChkGameMode" Content="Oyun Modu (Tam ekran oyunlarda rölantiye al)" Style="{StaticResource ModernCheckBox}" />
                 </StackPanel>
             </Border>

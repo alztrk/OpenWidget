@@ -60,10 +60,14 @@ public partial class SettingsWindow : Window
         ChkHeader.IsChecked = _config.Widgets.ShowHeader;
         ChkTelemetry.IsChecked = _config.Widgets.ShowTelemetry;
         ChkFinance.IsChecked = _config.Widgets.ShowFinance;
+        ChkMedia.IsChecked = _config.Widgets.ShowMedia;
         ChkHardware.IsChecked = _config.Widgets.ShowHardware;
         ChkQuickActions.IsChecked = _config.Widgets.ShowQuickActions;
 
         // Performance & Options
+        ChkCompactMode.IsChecked = _config.Widget.IsCompact;
+        ChkLockPosition.IsChecked = _config.Widget.IsLocked;
+        ChkPinToDesktop.IsChecked = _config.Widget.PinToDesktop;
         ChkAutoStart.IsChecked = AutoStartService.IsAutoStartEnabled();
         ChkAlwaysOnTop.IsChecked = _config.Widget.AlwaysOnTop;
         ChkGameMode.IsChecked = _config.Widget.AutoGameMode;
@@ -83,10 +87,14 @@ public partial class SettingsWindow : Window
         ChkHeader.Content = LocalizationService.Get("ShowHeaderLabel");
         ChkTelemetry.Content = LocalizationService.Get("ShowTelemetryLabel");
         ChkFinance.Content = LocalizationService.Get("ShowFinanceLabel");
+        ChkMedia.Content = LocalizationService.Get("ShowMediaLabel");
         ChkHardware.Content = LocalizationService.Get("ShowHardwareLabel");
         ChkQuickActions.Content = LocalizationService.Get("ShowQuickActionsLabel");
 
         LblPerformanceHeader.Text = LocalizationService.Get("PerformanceGroupLabel");
+        ChkCompactMode.Content = LocalizationService.Get("CompactModeSettingLabel");
+        ChkLockPosition.Content = LocalizationService.Get("LockPositionSettingLabel");
+        ChkPinToDesktop.Content = LocalizationService.Get("PinToDesktopSettingLabel");
         ChkAutoStart.Content = LocalizationService.Get("AutoStartSettingLabel");
         ChkAlwaysOnTop.Content = LocalizationService.Get("AlwaysOnTopSettingLabel");
         ChkGameMode.Content = LocalizationService.Get("GameModeSettingLabel");
@@ -121,8 +129,12 @@ public partial class SettingsWindow : Window
         ChkHeader.IsChecked = true;
         ChkTelemetry.IsChecked = true;
         ChkFinance.IsChecked = true;
+        ChkMedia.IsChecked = true;
         ChkHardware.IsChecked = true;
         ChkQuickActions.IsChecked = true;
+        ChkCompactMode.IsChecked = false;
+        ChkLockPosition.IsChecked = false;
+        ChkPinToDesktop.IsChecked = false;
         ChkAutoStart.IsChecked = true;
         ChkAlwaysOnTop.IsChecked = false;
         ChkGameMode.IsChecked = true;
@@ -159,11 +171,15 @@ public partial class SettingsWindow : Window
         _config.Widgets.ShowHeader = ChkHeader.IsChecked == true;
         _config.Widgets.ShowTelemetry = ChkTelemetry.IsChecked == true;
         _config.Widgets.ShowFinance = ChkFinance.IsChecked == true;
+        _config.Widgets.ShowMedia = ChkMedia.IsChecked == true;
         _config.Widgets.ShowHardware = ChkHardware.IsChecked == true;
         _config.Widgets.ShowQuickActions = ChkQuickActions.IsChecked == true;
 
         // 6. Options
-        _config.Widget.AlwaysOnTop = ChkAlwaysOnTop.IsChecked == true;
+        _config.Widget.IsCompact = ChkCompactMode.IsChecked == true;
+        _config.Widget.IsLocked = ChkLockPosition.IsChecked == true;
+        _config.Widget.PinToDesktop = ChkPinToDesktop.IsChecked == true;
+        _config.Widget.AlwaysOnTop = ChkPinToDesktop.IsChecked == true ? false : (ChkAlwaysOnTop.IsChecked == true);
         _config.Widget.AutoGameMode = ChkGameMode.IsChecked == true;
 
         var autoStart = ChkAutoStart.IsChecked == true;

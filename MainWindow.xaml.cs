@@ -63,6 +63,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     [DllImport("user32.dll")]
     private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
 
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
+    private static readonly IntPtr HWND_BOTTOM = new IntPtr(1);
+    private const uint SWP_NOSIZE = 0x0001;
+    private const uint SWP_NOMOVE = 0x0002;
+    private const uint SWP_NOACTIVATE = 0x0010;
+
     [DllImport("psapi.dll")]
     private static extern int EmptyWorkingSet(IntPtr hwProc);
 
@@ -80,6 +88,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private SystemTelemetryService? _telemetryService;
     private MarketFinanceService? _financeService;
     private WeatherService? _weatherService;
+    private MediaSessionService? _mediaService;
 
     private DispatcherTimer? _telemetryTimer;
     private DispatcherTimer? _financeTimer;
@@ -106,6 +115,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             _telemetry = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Telemetry)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CompactCpuText)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CompactGpuText)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CompactRamText)));
         }
     }
 
@@ -122,8 +134,31 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     public bool IsHeaderVisible => _config.Widgets.ShowHeader;
     public bool IsTelemetryVisible => _config.Widgets.ShowTelemetry;
     public bool IsFinanceVisible => _config.Widgets.ShowFinance;
+    public bool IsMediaVisible => _config.Widgets.ShowMedia;
     public bool IsHardwareVisible => _config.Widgets.ShowHardware;
     public bool IsQuickActionsVisible => _config.Widgets.ShowQuickActions;
+
+    public bool IsCompactViewVisible => _config.Widget.IsCompact;
+    public bool IsFullViewVisible => !_config.Widget.IsCompact;
+
+    public string CompactCpuText => GetCompactTelemetryText("cpu", "CPU");
+    public string CompactGpuText => GetCompactTelemetryText("gpu", "GPU");
+    public string CompactRamText => GetCompactTelemetryText("ram", "RAM");
+
+    private string GetCompactTelemetryText(string key, string fallbackLabel)
+    {
+        if (_telemetry?.Performance != null)
+        {
+            foreach (var item in _telemetry.Performance)
+            {
+                if (string.Equals(item.Key, key, StringComparison.OrdinalIgnoreCase))
+                {
+                    return $"{fallbackLabel} {item.MainText}";
+                }
+            }
+        }
+        return $"{fallbackLabel} --";
+    }
 
     public MainWindow()
     {
@@ -257,8 +292,35 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         LocalizationService.CurrentLanguage = _config.Widget.Language;
         _weatherService?.UpdateCity(_config.Widget.City);
 
+        ApplyLockState();
+        ApplyDesktopPinning();
+        NotifyCompactState();
+
         UpdateContextMenuTexts();
         SyncMenuCheckboxes();
+    }
+
+    private void ApplyLockState()
+    {
+        if (MasterBorder != null)
+        {
+            MasterBorder.Cursor = _config.Widget.IsLocked ? System.Windows.Input.Cursors.Arrow : System.Windows.Input.Cursors.SizeAll;
+        }
+    }
+
+    private void ApplyDesktopPinning()
+    {
+        var handle = new WindowInteropHelper(this).Handle;
+        if (handle != IntPtr.Zero && _config.Widget.PinToDesktop)
+        {
+            SetWindowPos(handle, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+        }
+    }
+
+    private void NotifyCompactState()
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsCompactViewVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsFullViewVisible)));
     }
 
     private void UpdateContextMenuTexts()
@@ -267,8 +329,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         if (MenuHeader != null) MenuHeader.Header = LocalizationService.Get("MenuHeader");
         if (MenuTelemetry != null) MenuTelemetry.Header = LocalizationService.Get("MenuTelemetry");
         if (MenuFinance != null) MenuFinance.Header = LocalizationService.Get("MenuFinance");
+        if (MenuMedia != null) MenuMedia.Header = LocalizationService.Get("MenuMedia");
         if (MenuHardware != null) MenuHardware.Header = LocalizationService.Get("MenuHardware");
         if (MenuQuickActions != null) MenuQuickActions.Header = LocalizationService.Get("MenuQuickActions");
+        if (MenuCompactMode != null) MenuCompactMode.Header = LocalizationService.Get("MenuCompactMode");
+        if (MenuLockPosition != null) MenuLockPosition.Header = LocalizationService.Get("MenuLockPosition");
+        if (MenuPinToDesktop != null) MenuPinToDesktop.Header = LocalizationService.Get("MenuPinToDesktop");
         if (MenuAutoStart != null) MenuAutoStart.Header = LocalizationService.Get("MenuAutoStart");
         if (MenuAlwaysOnTop != null) MenuAlwaysOnTop.Header = LocalizationService.Get("MenuAlwaysOnTop");
         if (MenuGameMode != null) MenuGameMode.Header = LocalizationService.Get("MenuGameMode");
@@ -284,8 +350,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         if (MenuHeader != null) MenuHeader.IsChecked = _config.Widgets.ShowHeader;
         if (MenuTelemetry != null) MenuTelemetry.IsChecked = _config.Widgets.ShowTelemetry;
         if (MenuFinance != null) MenuFinance.IsChecked = _config.Widgets.ShowFinance;
+        if (MenuMedia != null) MenuMedia.IsChecked = _config.Widgets.ShowMedia;
         if (MenuHardware != null) MenuHardware.IsChecked = _config.Widgets.ShowHardware;
         if (MenuQuickActions != null) MenuQuickActions.IsChecked = _config.Widgets.ShowQuickActions;
+        if (MenuCompactMode != null) MenuCompactMode.IsChecked = _config.Widget.IsCompact;
+        if (MenuLockPosition != null) MenuLockPosition.IsChecked = _config.Widget.IsLocked;
+        if (MenuPinToDesktop != null) MenuPinToDesktop.IsChecked = _config.Widget.PinToDesktop;
         if (MenuAlwaysOnTop != null) MenuAlwaysOnTop.IsChecked = Topmost;
         if (MenuGameMode != null) MenuGameMode.IsChecked = _config.Widget.AutoGameMode;
     }
@@ -321,6 +391,15 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         // 3. Hardware Specs
         await RefreshHardwareSpecsAsync();
+
+        // 4. Media Controller Service
+        try
+        {
+            _mediaService = new MediaSessionService();
+            await _mediaService.InitializeAsync();
+            MediaControlWidget.AttachService(_mediaService);
+        }
+        catch { }
     }
 
     private void OnDisplaySettingsChanged(object? sender, EventArgs e)
@@ -355,6 +434,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void MasterBorder_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
+        if (e.ClickCount == 2)
+        {
+            ToggleCompactMode();
+            return;
+        }
+
+        if (_config.Widget.IsLocked) return;
+
         if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
         {
             var handle = new WindowInteropHelper(this).Handle;
@@ -365,6 +452,19 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 SaveCurrentPosition();
             }
         }
+    }
+
+    private void BtnToggleCompact_Click(object sender, RoutedEventArgs e)
+    {
+        ToggleCompactMode();
+    }
+
+    private void ToggleCompactMode()
+    {
+        _config.Widget.IsCompact = !_config.Widget.IsCompact;
+        _config.Save(_configPath);
+        SyncMenuCheckboxes();
+        NotifyCompactState();
     }
 
     private void SaveCurrentPosition()
@@ -531,6 +631,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         SaveAndNotifyLayout(nameof(IsFinanceVisible), MenuFinance, _config.Widgets.ShowFinance);
     }
 
+    private void MenuMedia_Click(object sender, RoutedEventArgs e)
+    {
+        _config.Widgets.ShowMedia = !_config.Widgets.ShowMedia;
+        SaveAndNotifyLayout(nameof(IsMediaVisible), MenuMedia, _config.Widgets.ShowMedia);
+    }
+
     private void MenuHardware_Click(object sender, RoutedEventArgs e)
     {
         _config.Widgets.ShowHardware = !_config.Widgets.ShowHardware;
@@ -541,6 +647,32 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         _config.Widgets.ShowQuickActions = !_config.Widgets.ShowQuickActions;
         SaveAndNotifyLayout(nameof(IsQuickActionsVisible), MenuQuickActions, _config.Widgets.ShowQuickActions);
+    }
+
+    private void MenuCompactMode_Click(object sender, RoutedEventArgs e)
+    {
+        ToggleCompactMode();
+    }
+
+    private void MenuLockPosition_Click(object sender, RoutedEventArgs e)
+    {
+        _config.Widget.IsLocked = !_config.Widget.IsLocked;
+        _config.Save(_configPath);
+        ApplyLockState();
+        SyncMenuCheckboxes();
+    }
+
+    private void MenuPinToDesktop_Click(object sender, RoutedEventArgs e)
+    {
+        _config.Widget.PinToDesktop = !_config.Widget.PinToDesktop;
+        if (_config.Widget.PinToDesktop)
+        {
+            _config.Widget.AlwaysOnTop = false;
+            Topmost = false;
+        }
+        _config.Save(_configPath);
+        ApplyDesktopPinning();
+        SyncMenuCheckboxes();
     }
 
     private void SaveAndNotifyLayout(string propertyName, MenuItem? menuItem, bool isChecked)
@@ -594,12 +726,17 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         LocalizationService.CurrentLanguage = _config.Widget.Language;
         _weatherService?.UpdateCity(_config.Widget.City);
 
+        ApplyLockState();
+        ApplyDesktopPinning();
+        NotifyCompactState();
+
         UpdateContextMenuTexts();
         SyncMenuCheckboxes();
 
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsHeaderVisible)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsTelemetryVisible)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsFinanceVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsMediaVisible)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsHardwareVisible)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsQuickActionsVisible)));
 
@@ -661,6 +798,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         _telemetryTimer?.Stop();
         _financeTimer?.Stop();
         _telemetryService?.Dispose();
+        _mediaService?.Dispose();
         base.OnClosed(e);
     }
 }
