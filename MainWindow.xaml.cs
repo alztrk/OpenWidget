@@ -199,13 +199,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         exStyle |= WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
         SetWindowLongPtr(handle, GWL_EXSTYLE, (IntPtr)exStyle);
 
-        // Bind window ownership to Windows Desktop Shell (Progman)
-        var progman = FindWindow("Progman", null);
-        if (progman != IntPtr.Zero)
-        {
-            SetWindowLongPtr(handle, GWL_HWNDPARENT, progman);
-        }
-
         // Attach Win32 Hook to prevent window from crossing screen boundaries
         var source = HwndSource.FromHwnd(handle);
         source?.AddHook(WndProc);

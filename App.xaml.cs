@@ -11,8 +11,21 @@ public partial class App : Application
 
         DispatcherUnhandledException += (s, args) =>
         {
-            // Prevent silent crashes on UI thread
+            try
+            {
+                System.IO.File.WriteAllText("D:\\projects\\OpenWidget\\crash.log", args.Exception.ToString());
+            }
+            catch { }
             args.Handled = true;
+        };
+
+        AppDomain.CurrentDomain.UnhandledException += (s, args) =>
+        {
+            try
+            {
+                System.IO.File.WriteAllText("D:\\projects\\OpenWidget\\crash_appdomain.log", args.ExceptionObject?.ToString() ?? "Unknown crash");
+            }
+            catch { }
         };
     }
 }
