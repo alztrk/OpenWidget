@@ -23,6 +23,15 @@
     <Color x:Key="PriceColor">#58A6FF</Color>
     <SolidColorBrush x:Key="PriceBrush" Color="{StaticResource PriceColor}" />
 
+    <Color x:Key="AccentRedColor">#F85149</Color>
+    <SolidColorBrush x:Key="AccentRedBrush" Color="{StaticResource AccentRedColor}" />
+
+    <Color x:Key="AccentAmberColor">#D29922</Color>
+    <SolidColorBrush x:Key="AccentAmberBrush" Color="{StaticResource AccentAmberColor}" />
+
+    <Color x:Key="TrackBgColor">#13171F</Color>
+    <SolidColorBrush x:Key="TrackBgBrush" Color="{StaticResource TrackBgColor}" />
+
     <!-- Tuned Matte Typography Opacities -->
     <Color x:Key="TextPrimaryColor">#C9D1D9</Color>
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
@@ -55,5 +64,10 @@
     <Geometry x:Key="GeoArm">M4 21h16v2H4v-2zm8-18a2 2 0 0 1 2 2v2.1l4.5 3-1.1 1.7L13 8.9V13h3a2 2 0 0 1 2 2v4h-2v-4h-3v4h-2v-4H9v4H7v-4a2 2 0 0 1 2-2h2V6.9L7.6 9.8 6.5 8.1 11 5.1V4a2 2 0 0 1 1-2z</Geometry>
     <Geometry x:Key="GeoNetwork">M5 4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-4v2h2a1 1 0 1 1 0 2H9a1 1 0 1 1 0-2h2v-2H7a2 2 0 0 1-2-2V4zm2 2v7h10V6H7zm2 2h2v3H9V8zm4 0h2v3h-2V8z</Geometry>
     <Geometry x:Key="GeoCable">M7 2h10v6a4 4 0 0 1-3 3.87V17h2v2h-2v3h-4v-3H8v-2h2v-5.13A4 4 0 0 1 7 8V2zm2 2v4a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V4H9z</Geometry>
+    <Geometry x:Key="GeoDollar">M12 2a1 1 0 0 1 1 1v1.07c2.39.49 4 2.22 4 4.43a1 1 0 1 1-2 0c0-1.25-.97-2.5-3-2.5-2.03 0-3 1.25-3 2.5 0 1.2.82 2.05 3.32 2.76 3.12.89 4.68 2.28 4.68 4.74 0 2.21-1.61 3.94-4 4.43V21a1 1 0 1 1-2 0v-1.07c-2.39-.49-4-2.22-4-4.43a1 1 0 1 1 2 0c0 1.25.97 2.5 3 2.5 2.03 0 3-1.25 3-2.5 0-1.2-.82-2.05-3.32-2.76C8.56 11.85 7 10.46 7 8c0-2.21 1.61-3.94 4-4.43V3a1 1 0 0 1 1-1z</Geometry>
+    <Geometry x:Key="GeoEuro">M19 6.41a1 1 0 0 0-1.41-1.41C15.65 6.94 13.92 8 12 8c-3.1 0-5.65 2.37-5.96 5H10a1 1 0 1 1 0 2H6.04c.31 2.63 2.86 5 5.96 5 1.92 0 3.65-1.06 5.59-3a1 1 0 0 1 1.41 1.41C16.85 20.56 14.54 22 12 22c-4.41 0-8-3.59-8-8 0-.34.02-.67.07-1H3a1 1 0 1 1 0-2h1.07c-.05-.33-.07-.66-.07-1 0-4.41 3.59-8 8-8 2.54 0 4.85 1.44 7 4.41z</Geometry>
+    <Geometry x:Key="GeoGold">M4 17l2-7h12l2 7H4zm1-5l-1.14 4h16.28L19 12H5zm3-7h8l2 3H6l2-3z</Geometry>
+    <Geometry x:Key="GeoDisk">M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6zm2 2v2h12V8H6zm10 6a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z</Geometry>
+    <Geometry x:Key="GeoPerformance">M12 3a9 9 0 0 0-9 9c0 2.12.74 4.07 1.97 5.61l1.42-1.42A6.98 6.98 0 0 1 5 12a7 7 0 1 1 14 0c0 1.6-.54 3.08-1.45 4.25l1.42 1.42A8.96 8.96 0 0 0 21 12a9 9 0 0 0-9-9zm-1 5a1 1 0 0 1 2 0v3.27l2.25 1.3a1 1 0 0 1-1 1.73l-2.75-1.59A1 1 0 0 1 11 12V8z</Geometry>
 
 </ResourceDictionary>

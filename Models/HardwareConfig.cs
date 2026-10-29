@@ -41,12 +41,30 @@ public class WidgetConfig
     public bool OnlyShowOnDesktop { get; set; } = true;
 }
 
+public class TelemetryWidgetConfig
+{
+    public bool Enabled { get; set; } = true;
+    public double OffsetX { get; set; } = 415;
+    public double OffsetY { get; set; } = 20;
+    public double Width { get; set; } = 260;
+}
+
+public class FinanceWidgetConfig
+{
+    public bool Enabled { get; set; } = true;
+    public double OffsetX { get; set; } = 415;
+    public double OffsetY { get; set; } = 275;
+    public double Width { get; set; } = 260;
+}
+
 public class HardwareConfig
 {
     public CoolingAndPowerConfig CoolingAndPower { get; set; } = new();
     public PeripheralsConfig Peripherals { get; set; } = new();
     public AccessoriesConfig Accessories { get; set; } = new();
     public WidgetConfig Widget { get; set; } = new();
+    public TelemetryWidgetConfig TelemetryWidget { get; set; } = new();
+    public FinanceWidgetConfig FinanceWidget { get; set; } = new();
 
     public static HardwareConfig Load(string path)
     {
@@ -63,5 +81,16 @@ public class HardwareConfig
         catch { }
 
         return new HardwareConfig();
+    }
+
+    public void Save(string path)
+    {
+        try
+        {
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            var json = JsonSerializer.Serialize(this, options);
+            File.WriteAllText(path, json);
+        }
+        catch { }
     }
 }

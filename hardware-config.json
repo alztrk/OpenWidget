@@ -26,5 +26,17 @@
     "alwaysOnTop": false,
     "isLocked": false,
     "onlyShowOnDesktop": true
+  },
+  "telemetryWidget": {
+    "enabled": true,
+    "offsetX": 415,
+    "offsetY": 20,
+    "width": 260
+  },
+  "financeWidget": {
+    "enabled": true,
+    "offsetX": 415,
+    "offsetY": 275,
+    "width": 260
   }
 }

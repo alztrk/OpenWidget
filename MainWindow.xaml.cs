@@ -11,6 +11,7 @@ using System.Windows.Interop;
 using System.Windows.Threading;
 using RigBadge.Models;
 using RigBadge.Services;
+using RigBadge.Windows;
 
 namespace RigBadge;
 
@@ -45,6 +46,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private string _pricesPath = string.Empty;
     private PriceService? _priceService;
     private DispatcherTimer? _desktopDetectTimer;
+    private TelemetryWindow? _telemetryWindow;
+    private FinanceWindow? _financeWindow;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -145,9 +148,33 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             MenuOnlyDesktop.IsChecked = _config.Widget.OnlyShowOnDesktop;
         }
 
+        InitSubWidgets();
         StartDesktopMonitor();
 
         await RefreshHardwareSpecsAsync();
+    }
+
+    private void InitSubWidgets()
+    {
+        if (_config.TelemetryWidget.Enabled)
+        {
+            _telemetryWindow = new TelemetryWindow(_config, _configPath);
+            _telemetryWindow.Show();
+        }
+        if (MenuTelemetry != null)
+        {
+            MenuTelemetry.IsChecked = _config.TelemetryWidget.Enabled;
+        }
+
+        if (_config.FinanceWidget.Enabled)
+        {
+            _financeWindow = new FinanceWindow(_config, _configPath);
+            _financeWindow.Show();
+        }
+        if (MenuFinance != null)
+        {
+            MenuFinance.IsChecked = _config.FinanceWidget.Enabled;
+        }
     }
 
     private void StartDesktopMonitor()
@@ -165,15 +192,25 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         if (!_config.Widget.OnlyShowOnDesktop)
         {
             if (Visibility != Visibility.Visible) Visibility = Visibility.Visible;
+            if (_telemetryWindow != null && _config.TelemetryWidget.Enabled && _telemetryWindow.Visibility != Visibility.Visible)
+                _telemetryWindow.Visibility = Visibility.Visible;
+            if (_financeWindow != null && _config.FinanceWidget.Enabled && _financeWindow.Visibility != Visibility.Visible)
+                _financeWindow.Visibility = Visibility.Visible;
             return;
         }
 
         var fg = GetForegroundWindow();
         var myHandle = new WindowInteropHelper(this).Handle;
+        var telHandle = _telemetryWindow != null ? new WindowInteropHelper(_telemetryWindow).Handle : IntPtr.Zero;
+        var finHandle = _financeWindow != null ? new WindowInteropHelper(_financeWindow).Handle : IntPtr.Zero;
 
         bool isDesktop = false;
 
-        if (fg == IntPtr.Zero || fg == myHandle || IsMouseOver || (ContextMenu != null && ContextMenu.IsOpen))
+        if (fg == IntPtr.Zero || fg == myHandle || fg == telHandle || fg == finHandle ||
+            IsMouseOver ||
+            (_telemetryWindow != null && _telemetryWindow.IsMouseOver) ||
+            (_financeWindow != null && _financeWindow.IsMouseOver) ||
+            (ContextMenu != null && ContextMenu.IsOpen))
         {
             isDesktop = true;
         }
@@ -213,12 +250,28 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             {
                 Visibility = Visibility.Visible;
             }
+            if (_telemetryWindow != null && _config.TelemetryWidget.Enabled && _telemetryWindow.Visibility != Visibility.Visible)
+            {
+                _telemetryWindow.Visibility = Visibility.Visible;
+            }
+            if (_financeWindow != null && _config.FinanceWidget.Enabled && _financeWindow.Visibility != Visibility.Visible)
+            {
+                _financeWindow.Visibility = Visibility.Visible;
+            }
         }
         else
         {
             if (Visibility != Visibility.Collapsed)
             {
                 Visibility = Visibility.Collapsed;
+            }
+            if (_telemetryWindow != null && _telemetryWindow.Visibility != Visibility.Collapsed)
+            {
+                _telemetryWindow.Visibility = Visibility.Collapsed;
+            }
+            if (_financeWindow != null && _financeWindow.Visibility != Visibility.Collapsed)
+            {
+                _financeWindow.Visibility = Visibility.Collapsed;
             }
         }
     }
@@ -274,8 +327,49 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             try
             {
                 DragMove();
+
+                var workArea = SystemParameters.WorkArea;
+                _config.Widget.OffsetX = Math.Max(0, workArea.Right - Left - Width);
+                _config.Widget.OffsetY = Math.Max(0, Top - workArea.Top);
+                _config.Save(_configPath);
             }
             catch { }
+        }
+    }
+
+    private void MenuTelemetry_Click(object sender, RoutedEventArgs e)
+    {
+        _config.TelemetryWidget.Enabled = !_config.TelemetryWidget.Enabled;
+        _config.Save(_configPath);
+        if (MenuTelemetry != null) MenuTelemetry.IsChecked = _config.TelemetryWidget.Enabled;
+
+        if (_config.TelemetryWidget.Enabled)
+        {
+            _telemetryWindow ??= new TelemetryWindow(_config, _configPath);
+            _telemetryWindow.Show();
+        }
+        else
+        {
+            _telemetryWindow?.Close();
+            _telemetryWindow = null;
+        }
+    }
+
+    private void MenuFinance_Click(object sender, RoutedEventArgs e)
+    {
+        _config.FinanceWidget.Enabled = !_config.FinanceWidget.Enabled;
+        _config.Save(_configPath);
+        if (MenuFinance != null) MenuFinance.IsChecked = _config.FinanceWidget.Enabled;
+
+        if (_config.FinanceWidget.Enabled)
+        {
+            _financeWindow ??= new FinanceWindow(_config, _configPath);
+            _financeWindow.Show();
+        }
+        else
+        {
+            _financeWindow?.Close();
+            _financeWindow = null;
         }
     }
 
@@ -371,6 +465,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void MenuExit_Click(object sender, RoutedEventArgs e)
     {
+        _telemetryWindow?.Close();
+        _financeWindow?.Close();
         Close();
     }
 }

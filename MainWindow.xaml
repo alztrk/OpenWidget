@@ -89,6 +89,8 @@
     <Window.ContextMenu>
         <ContextMenu>
             <MenuItem x:Name="MenuOnlyDesktop" Header="🖥️ Sadece Masaüstünde Göster" IsCheckable="True" Click="MenuOnlyDesktop_Click" />
+            <MenuItem x:Name="MenuTelemetry" Header="📊 Performans ve Disk Widget'ı" IsCheckable="True" Click="MenuTelemetry_Click" />
+            <MenuItem x:Name="MenuFinance" Header="💰 Döviz ve Altın Widget'ı" IsCheckable="True" Click="MenuFinance_Click" />
             <MenuItem x:Name="MenuAutoStart" Header="🚀 Windows ile Birlikte Başlat" IsCheckable="True" Click="MenuAutoStart_Click" />
             <MenuItem x:Name="MenuAlwaysOnTop" Header="📌 Her Zaman Üstte" IsCheckable="True" Click="MenuAlwaysOnTop_Click" />
             <Separator Background="{StaticResource DividerBrush}" />
