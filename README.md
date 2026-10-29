@@ -1,63 +1,105 @@
-# RigBadge
+# OpenWidget
 
-Windows masaüstü için doğrudan masaüstü kabuğuna gömülü (`Progman`), Windows 11 DWM akrilik cam (Glassmorphism) efektli ve günlük donanım piyasa fiyatlarını sergileyen minimalist donanım gadgetı.
-
----
-
-## Özellikler
-
-* **Glassmorphism & Modern DWM Akrilik Efekti:**
-  * Windows 11 yerel DWM akrilik arka planı (`DWMWA_SYSTEMBACKDROP_TYPE = Acrylic`).
-  * İnce ışık yansımalı beyaz cam kenarlığı (`GlassBorderBrush`), yumuşak ortam gölgesi ve yarı saydam koyu taban.
-* **Günlük Piyasa Fiyatları ve Toplam Değer:**
-  * Her donanımın güncel piyasa fiyatı (TL cinsinden) satır hizasında listelenir.
-  * Kartın altında tüm sistemin toplam değerini gösteren `TOPLAM DONANIM DEĞERİ` özet rozeti yer alır.
-  * Fiyatlar `hardware-prices.json` dosyasında saklanır ve her gün (24 saatlik döngüde) otomatik olarak tazelenir.
-* **Windows ile Birlikte Otomatik Başlama:**
-  * Bilgisayar her açıldığında widget doğrudan masaüstünde otomatik olarak başlar (`HKCU\...\Run` kaydı).
-  * Sağ tık menüsünden `🚀 Windows ile Birlikte Başlat` seçeneğiyle istendiğinde açılıp kapatılabilir.
-* **Masaüstü Kabuğuna Sabitleme (`Progman` Mülkiyeti):**
-  * Widget masaüstü kabuğunun (`Progman`) mülkiyetine bağlıdır; masaüstüne tıklandığında veya `Win + D` yapıldığında duvar kâğıdının arkasına düşmez.
-  * `WS_EX_TOOLWINDOW` ve `WS_EX_NOACTIVATE` sayesinde görev çubuğunda yer kaplamaz, odağı çalmaz.
-  * Sol tık ile masaüstünde serbestçe sürüklenebilir.
+OpenWidget, Windows 10 ve Windows 11 için geliştirilmiş, masaüstünde doğrudan çalışan, modern akrilik arayüze sahip bağımsız bir sistem ve bilgi widget'ıdır. Sistem telemetrisi, hava durumu, pano geçmişi, medya denetimi, finans verileri ve donanım envanterini tek bir panelde bir araya getirir.
 
 ---
 
-## Donanım ve Fiyat Listesi
+## Genel Özellikler
 
-1. **SİSTEM**
-   * **İşlemci:** AMD Ryzen 7 5700X (`8C / 16T`) • `8.250 ₺`
-   * **Ekran Kartı:** GeForce RTX 3060 (`PCIe`) • `12.800 ₺`
-   * **Anakart:** MSI B550M PRO-VDH WIFI (`AM4`) • `5.200 ₺`
-   * **RAM:** 48 GB Kingston (`3600 MHz`) • `5.550 ₺`
-2. **DEPOLAMA**
-   * **M.2 SSD:** Kingston NV2 NVMe (`1 TB M.2`) • `2.650 ₺`
-   * **SATA SSD:** SATA III SSD (`512 GB`) • `1.250 ₺`
-3. **ÇEVRE BİRİMLERİ**
-   * **Monitör:** MSI MAG 27CQ6F (`180Hz 1440p`) • `14.320 ₺`
-   * **Klavye:** Corsair K55 RGB PRO XT • `2.450 ₺`
-   * **Fare:** ROG Harpe Ace Aim Lab • `3.570 ₺`
-   * **Kulaklık:** Razer Kraken Kitty V2 BT • `4.250 ₺`
-   * **Mikrofon:** Razer Seiren V3 Chroma • `5.600 ₺`
-4. **SOĞUTMA VE GÜÇ**
-   * **Soğutucu:** Corsair iCUE LINK TITAN 240 RX • `5.200 ₺`
-   * **PSU:** MSI MPG A750GF White (`750W Gold`) • `7.490 ₺`
-5. **ÖZET**
-   * **Toplam Sistem Değeri:** `~78.580 ₺`
+* **Masaüstü Entegrasyonu:** Diğer pencerelerin üzerine çıkmadan arka planda masaüstü düzeyinde çalışır (`Topmost = false`, `WS_EX_TOOLWINDOW`). Görev çubuğunda simge oluşturmaz ve odak çalmaz (`WS_EX_NOACTIVATE`).
+* **Dinamik Çözünürlük ve Taşma Koruması:** Ekran çalışma alanı yüksekliğine göre otomatik azami boyut hesaplar. Çok sayıda kart açık olduğunda modern dikey kaydırma çubuğu devreye girer.
+* **Kompakt HUD Modu:** Tek satırlık mini çubuk görünümüne geçerek ekran alanını korur.
+* **Oyun Modu:** Tam ekran oyun veya uygulama algılandığında arka plan telemetri sorgularını otomatik olarak rölantiye alır ve RAM kullanımını düşürür.
+* **Kalıcı Yapılandırma:** Ayarlar hem `%APPDATA%\OpenWidget\hardware-config.json` altında hem de taşınabilir dizinde senkronize saklanır; derleme veya yeniden başlatmalarda sıfırlanmaz.
+
+---
+
+## Modüller ve Kartlar
+
+1. **Saat ve Sistem Durumu (Header)**
+   * Dijital saat ve tarih göstergesi.
+   * Windows çalışma süresi (Uptime).
+   * Oyun modu bildirim rozeti.
+
+2. **Detaylı Hava Durumu (Weather)**
+   * Open-Meteo API entegrasyonu (API anahtarı gerektirmez).
+   * Anlık sıcaklık, hissedilen sıcaklık ve durum ikonu.
+   * Nem oranı, rüzgar hızı ve yağış miktarı metrikleri.
+   * 3 günlük hava durumu tahmini.
+   * Ayarlar üzerinden dünya çapında şehir seçimi veya IP tabanlı otomatik konum.
+
+3. **Sistem Telemetrisi (Telemetry)**
+   * CPU, GPU ve RAM anlık kullanım oranları.
+   * Donanım sıcaklıkları ve fan devirleri.
+   * Disk ve ağ etkinlik göstergeleri.
+
+4. **Canlı Piyasa ve Finans (Finance)**
+   * Dolar (USD/TRY), Euro (EUR/TRY), Gram Altın (GA/TRY).
+   * Borsa İstanbul (BIST 100).
+   * Kripto para birimleri (Bitcoin, Ethereum).
+   * 60 saniyelik yerel önbellek ile anlık piyasa takibi.
+
+5. **Medya Oynatıcı ve Ses Denetimi (Media)**
+   * Windows Media Session (SMTC) entegrasyonu (Spotify, Chrome, Firefox, VLC vb.).
+   * Şarkı/video başlığı, sanatçı bilgisi ve albüm kapağı.
+   * Oynat, duraklat, önceki/sonraki parça kontrolleri.
+   * Gerçek zamanlı şarkı süresi ve arama (seek) çubuğu.
+   * Oynatılan tarayıcıya/uygulamaya özel bağımsız ses denetimi kaydırıcısı ve sessize alma.
+
+6. **Pano Geçmişi (Clipboard)**
+   * Windows Pano Olay Dinleyicisi (`WM_CLIPBOARDUPDATE`).
+   * Kopyalanan son metinlerin otomatik listelenmesi.
+   * Tek tıkla ilgili metni panoya yeniden yükleme.
+   * Pano temizleme butonu ve öğe sayacı.
+
+7. **Donanım Bileşenleri ve Fiyatlandırma (Hardware)**
+   * WMI ve Windows API tabanlı donanım tespiti (CPU, GPU, Anakart, RAM, SSD, Çevre Birimleri).
+   * Günlük takip edilen parça piyasa fiyatları ve toplam sistem değeri özeti.
+
+8. **Hızlı Araçlar (Quick Actions)**
+   * Görev Yöneticisi, Aygıt Yöneticisi ve Ağ Ayarları kısayolları.
+   * Tek tıkla çalışma kümesi RAM temizleme (`EmptyWorkingSet`).
+   * Windows ses karıştırıcısı hızlı erişimi.
+
+---
+
+## Sistem Gereksinimleri
+
+* **İşletim Sistemi:** Windows 10 (Sürüm 2004 / Derleme 19041 veya üstü) ya da Windows 11 (x64)
+* **Çalışma Zamanı:** .NET 10.0 Windows Masaüstü Çalışma Zamanı (Taşınabilir derlemede dahili gelir)
 
 ---
 
 ## Yapılandırma Dosyaları
 
-* `hardware-config.json`: Konum, boyut, opaklık ve manuel donanım modelleri.
-* `hardware-prices.json`: Günlük takip edilen donanım parça fiyatları ve son güncelleme tarihi.
+* `%APPDATA%\OpenWidget\hardware-config.json`: Kullanıcı tercihleri, aktif kartlar, tema, şehir ve konum ayarları.
+* `hardware-prices.json`: Donanım bileşenlerinin takip edilen referans fiyat listesi.
+* `finance-cache.json`: Finans verilerinin çevrimdışı ve hızlı yükleme önbelleği.
+* `weather-cache.json`: Hava durumu verilerinin son güncel önbelleği.
 
 ---
 
-## Derleme ve Çalıştırma
+## Derleme ve Yayınlama
+
+### Geliştirme Derlemesi
 
 ```powershell
-cd D:\projects\RigBadge
+cd D:\projects\OpenWidget
 dotnet build -c Release
-& "D:\projects\RigBadge\bin\x64\Release\net10.0-windows\RigBadge.exe"
 ```
+
+### Tek Dosya Taşınabilir (Self-Contained Portable) Paketleme
+
+Tüm bağımlılıkları içeren, kuruluma ihtiyaç duymayan tek bir `.exe` üretmek için:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "D:\projects\OpenWidget\scripts\publish-portable.ps1"
+```
+
+Çıktı `D:\projects\OpenWidget\dist\OpenWidget.exe` adresinde oluşturulur.
+
+---
+
+## Lisans
+
+Bu proje [MIT Lisansı](LICENSE) altında lisanslanmıştır.
