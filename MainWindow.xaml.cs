@@ -433,12 +433,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void MasterBorder_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
-        if (e.ClickCount == 2)
-        {
-            ToggleCompactMode();
-            return;
-        }
-
         if (_config.Widget.IsLocked) return;
 
         if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)

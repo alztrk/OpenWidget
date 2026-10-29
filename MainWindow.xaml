@@ -168,7 +168,7 @@
                         BorderThickness="0"
                         Cursor="Hand"
                         Click="BtnToggleCompact_Click"
-                        ToolTip="Genişlet (Çift Tıklama)">
+                        ToolTip="Genişlet">
                     <Path Data="{StaticResource GeoCollapse}"
                           Fill="{StaticResource TextSecondaryBrush}"
                           Stretch="Uniform" Width="9" Height="9" />
