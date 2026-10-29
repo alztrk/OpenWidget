@@ -326,76 +326,79 @@ public static class AudioMixerService
         return (master, sessions);
     }
 
-    public static (float Volume, bool IsMuted) GetMediaVolume(string sourceApp)
+    public static (float Volume, bool IsMuted) GetMasterVolume()
     {
         try
         {
-            var (master, sessions) = GetAudioState();
-            if (!string.IsNullOrWhiteSpace(sourceApp))
+            var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorComObject();
+            if (enumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out var device) == 0 && device != null)
             {
-                foreach (var s in sessions)
+                var iid = IID_IAudioEndpointVolume;
+                if (device.Activate(ref iid, 1, IntPtr.Zero, out var epObj) == 0 && epObj is IAudioEndpointVolume ep)
                 {
-                    if (s.DisplayName.Contains(sourceApp, StringComparison.OrdinalIgnoreCase) ||
-                        sourceApp.Contains(s.DisplayName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return (s.Volume, s.IsMuted);
-                    }
+                    ep.GetMasterVolumeLevelScalar(out var scalar);
+                    ep.GetMute(out var isMuted);
+                    return ((float)Math.Round(scalar * 100), isMuted);
                 }
             }
-            return (master.Volume, master.IsMuted);
         }
-        catch
-        {
-            return (50f, false);
-        }
+        catch { }
+        return (50f, false);
     }
 
-    public static void SetMediaVolume(string sourceApp, float volume)
+    public static void SetMasterVolume(float volume)
     {
         try
         {
-            var (master, sessions) = GetAudioState();
-            if (!string.IsNullOrWhiteSpace(sourceApp))
+            var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorComObject();
+            if (enumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out var device) == 0 && device != null)
             {
-                foreach (var s in sessions)
+                var iid = IID_IAudioEndpointVolume;
+                if (device.Activate(ref iid, 1, IntPtr.Zero, out var epObj) == 0 && epObj is IAudioEndpointVolume ep)
                 {
-                    if (s.DisplayName.Contains(sourceApp, StringComparison.OrdinalIgnoreCase) ||
-                        sourceApp.Contains(s.DisplayName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        s.Volume = volume;
-                        return;
-                    }
+                    var guid = Guid.Empty;
+                    ep.SetMasterVolumeLevelScalar(Math.Clamp(volume / 100f, 0f, 1f), ref guid);
                 }
             }
-            master.Volume = volume;
         }
         catch { }
     }
 
-    public static bool ToggleMediaMute(string sourceApp)
+    public static bool ToggleMasterMute()
     {
         try
         {
-            var (master, sessions) = GetAudioState();
-            if (!string.IsNullOrWhiteSpace(sourceApp))
+            var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorComObject();
+            if (enumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out var device) == 0 && device != null)
             {
-                foreach (var s in sessions)
+                var iid = IID_IAudioEndpointVolume;
+                if (device.Activate(ref iid, 1, IntPtr.Zero, out var epObj) == 0 && epObj is IAudioEndpointVolume ep)
                 {
-                    if (s.DisplayName.Contains(sourceApp, StringComparison.OrdinalIgnoreCase) ||
-                        sourceApp.Contains(s.DisplayName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        s.ToggleMute();
-                        return s.IsMuted;
-                    }
+                    ep.GetMute(out var isMuted);
+                    bool newMute = !isMuted;
+                    var guid = Guid.Empty;
+                    ep.SetMute(newMute, ref guid);
+                    return newMute;
                 }
             }
-            master.ToggleMute();
-            return master.IsMuted;
         }
-        catch
-        {
-            return false;
-        }
+        catch { }
+        return false;
+    }
+
+    public static (float Volume, bool IsMuted) GetMediaVolume(string sourceApp)
+    {
+        return GetMasterVolume();
+    }
+
+    public static void SetMediaVolume(string sourceApp, float volume)
+    {
+        SetMasterVolume(volume);
+    }
+
+    public static bool ToggleMediaMute(string sourceApp)
+    {
+        return ToggleMasterMute();
     }
 }
 

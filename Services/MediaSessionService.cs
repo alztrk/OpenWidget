@@ -122,10 +122,18 @@ public class MediaSessionService : IDisposable
 
     private void OnProgressTimerElapsed(object? sender, ElapsedEventArgs e)
     {
-        if (!_currentTrack.HasMedia || !_currentTrack.IsPlaying || _currentTrack.Duration <= TimeSpan.Zero) return;
+        if (!_currentTrack.HasMedia || !_currentTrack.IsPlaying) return;
 
-        var nextPos = _currentTrack.Position.Add(TimeSpan.FromSeconds(1));
-        if (nextPos > _currentTrack.Duration) nextPos = _currentTrack.Duration;
+        TimeSpan nextPos;
+        if (_currentTrack.Duration > TimeSpan.Zero)
+        {
+            nextPos = _currentTrack.Position.Add(TimeSpan.FromSeconds(1));
+            if (nextPos > _currentTrack.Duration) nextPos = _currentTrack.Duration;
+        }
+        else
+        {
+            nextPos = _currentTrack.Position.Add(TimeSpan.FromSeconds(1));
+        }
 
         _currentTrack = _currentTrack with { Position = nextPos };
         PositionChanged?.Invoke(nextPos, _currentTrack.Duration);
@@ -179,11 +187,22 @@ public class MediaSessionService : IDisposable
                     var timeline = _currentSession.GetTimelineProperties();
                     if (timeline != null)
                     {
-                        pos = timeline.Position;
                         dur = timeline.EndTime;
+                        if (dur > TimeSpan.Zero)
+                        {
+                            var elapsed = DateTimeOffset.UtcNow - timeline.LastUpdatedTime;
+                            if (elapsed < TimeSpan.Zero) elapsed = TimeSpan.Zero;
+                            pos = timeline.Position + (isPlaying ? elapsed : TimeSpan.Zero);
+                            if (pos > dur) pos = dur;
+                        }
                     }
                 }
                 catch { }
+
+                if (dur <= TimeSpan.Zero && _currentTrack.Title == props.Title)
+                {
+                    pos = _currentTrack.Position;
+                }
 
                 _currentTrack = new MediaTrackInfo(
                     HasMedia: true,
@@ -196,7 +215,7 @@ public class MediaSessionService : IDisposable
                     Duration: dur
                 );
 
-                if (isPlaying && dur > TimeSpan.Zero)
+                if (isPlaying)
                 {
                     _progressTimer.Start();
                 }

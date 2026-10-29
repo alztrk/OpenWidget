@@ -219,6 +219,9 @@
                         VerticalAlignment="Center"
                         Height="16"
                         Margin="0,0,8,0"
+                        ToolTip="Ana Ses Seviyesi (Kulaklık / Hoparlör)"
+                        PreviewMouseDown="SliderMediaVolume_PreviewMouseDown"
+                        PreviewMouseUp="SliderMediaVolume_PreviewMouseUp"
                         ValueChanged="SliderMediaVolume_ValueChanged" />
 
                 <!-- Volume Percentage -->

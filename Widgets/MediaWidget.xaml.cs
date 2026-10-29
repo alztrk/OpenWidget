@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using OpenWidget.Services;
 
 namespace OpenWidget.Widgets;
@@ -15,12 +16,19 @@ public partial class MediaWidget : UserControl
     private TimeSpan _currentDuration = TimeSpan.Zero;
     private bool _isUserSeeking = false;
     private bool _isUpdatingVolumeInternal = false;
-    private string _currentSourceApp = "";
-    private bool _isMediaMuted = false;
+    private bool _isUserAdjustingVolume = false;
+    private readonly DispatcherTimer _volumeSyncTimer;
 
     public MediaWidget()
     {
         InitializeComponent();
+
+        _volumeSyncTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(1)
+        };
+        _volumeSyncTimer.Tick += (s, e) => UpdateMediaVolumeUI();
+        _volumeSyncTimer.Start();
     }
 
     public void AttachService(MediaSessionService service)
@@ -43,20 +51,22 @@ public partial class MediaWidget : UserControl
             if (_isUserSeeking) return;
 
             _currentDuration = dur;
+            TxtCurrentTime.Text = FormatTime(pos);
+
             if (dur > TimeSpan.Zero)
             {
                 SliderSeek.IsEnabled = true;
                 double pct = Math.Clamp((pos.TotalSeconds / dur.TotalSeconds) * 100.0, 0.0, 100.0);
                 SliderSeek.Value = pct;
-                TxtCurrentTime.Text = FormatTime(pos);
                 TxtTotalTime.Text = FormatTime(dur);
             }
             else
             {
-                SliderSeek.IsEnabled = false;
-                SliderSeek.Value = 0;
-                TxtCurrentTime.Text = FormatTime(pos);
-                TxtTotalTime.Text = "Canlı / Akış";
+                // Web stream / YouTube / video without fixed timeline metadata
+                SliderSeek.IsEnabled = true;
+                double modSec = pos.TotalSeconds % 60.0;
+                SliderSeek.Value = (modSec / 60.0) * 100.0;
+                TxtTotalTime.Text = "Akış";
             }
         });
     }
@@ -72,7 +82,6 @@ public partial class MediaWidget : UserControl
         Visibility = Visibility.Visible;
         TxtTitle.Text = info.Title;
         TxtArtist.Text = info.Artist;
-        _currentSourceApp = info.SourceApp;
 
         // Play/Pause icon
         var geoKey = info.IsPlaying ? "GeoPause" : "GeoPlay";
@@ -114,36 +123,40 @@ public partial class MediaWidget : UserControl
 
         // Seek Bar & Timeline
         _currentDuration = info.Duration;
+        TxtCurrentTime.Text = FormatTime(info.Position);
         if (info.Duration > TimeSpan.Zero)
         {
             SliderSeek.IsEnabled = true;
             double pct = Math.Clamp((info.Position.TotalSeconds / info.Duration.TotalSeconds) * 100.0, 0.0, 100.0);
             SliderSeek.Value = pct;
-            TxtCurrentTime.Text = FormatTime(info.Position);
             TxtTotalTime.Text = FormatTime(info.Duration);
         }
         else
         {
-            SliderSeek.IsEnabled = false;
-            SliderSeek.Value = 0;
-            TxtCurrentTime.Text = "00:00";
-            TxtTotalTime.Text = "Canlı / Akış";
+            SliderSeek.IsEnabled = true;
+            double modSec = info.Position.TotalSeconds % 60.0;
+            SliderSeek.Value = (modSec / 60.0) * 100.0;
+            TxtTotalTime.Text = "Akış";
         }
 
-        // Initialize Media Volume Control
+        // Initialize Real Master Volume Control
         UpdateMediaVolumeUI();
     }
 
     private void UpdateMediaVolumeUI()
     {
+        if (_isUserAdjustingVolume) return;
+
         try
         {
-            var (vol, isMuted) = AudioMixerService.GetMediaVolume(_currentSourceApp);
-            _isMediaMuted = isMuted;
+            var (vol, isMuted) = AudioMixerService.GetMasterVolume();
 
             _isUpdatingVolumeInternal = true;
             SliderMediaVolume.Value = vol;
-            TxtMediaVolumePercent.Text = $"{(int)Math.Round(vol)}%";
+            if (TxtMediaVolumePercent != null)
+            {
+                TxtMediaVolumePercent.Text = $"{(int)Math.Round(vol)}%";
+            }
             _isUpdatingVolumeInternal = false;
 
             UpdateMuteIcon(isMuted);
@@ -197,6 +210,16 @@ public partial class MediaWidget : UserControl
         }
     }
 
+    private void SliderMediaVolume_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        _isUserAdjustingVolume = true;
+    }
+
+    private void SliderMediaVolume_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+    {
+        _isUserAdjustingVolume = false;
+    }
+
     private void SliderMediaVolume_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         if (_isUpdatingVolumeInternal) return;
@@ -207,13 +230,12 @@ public partial class MediaWidget : UserControl
             TxtMediaVolumePercent.Text = $"{(int)Math.Round(newVol)}%";
         }
 
-        AudioMixerService.SetMediaVolume(_currentSourceApp, newVol);
+        AudioMixerService.SetMasterVolume(newVol);
     }
 
     private void BtnMediaMute_Click(object sender, RoutedEventArgs e)
     {
-        bool isMuted = AudioMixerService.ToggleMediaMute(_currentSourceApp);
-        _isMediaMuted = isMuted;
+        bool isMuted = AudioMixerService.ToggleMasterMute();
         UpdateMuteIcon(isMuted);
     }
 
