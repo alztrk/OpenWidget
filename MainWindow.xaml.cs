@@ -204,10 +204,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         // Auto-calculate 2.5% margins based on current resolution
         double rightMargin = workArea.Width * 0.025;
         double topMargin = workArea.Height * 0.025;
-        double availableHeight = workArea.Height * 0.95;
 
         Width = 380;
-        MaxHeight = availableHeight;
 
         Left = Math.Round(workArea.Right - Width - rightMargin);
         Top = Math.Round(workArea.Top + topMargin);
