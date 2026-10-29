@@ -42,13 +42,10 @@ public static class LocalizationService
         ["Volume"] = ("Ses Karıştırıcı", "Volume Mixer"),
         ["Notes"] = ("Hızlı Notlar", "Quick Notes"),
         ["Terminal"] = ("Terminal", "Terminal"),
-        ["CleanRam"] = ("Bellek Boşalt", "Clean RAM"),
-        ["Cleaned"] = ("Temizlendi!", "Cleaned!"),
         ["TaskMgrTooltip"] = ("Görev Yöneticisi (Ctrl+Shift+Esc)", "Task Manager (Ctrl+Shift+Esc)"),
         ["VolumeTooltip"] = ("Ses Düzeyi Karıştırıcısı", "Volume Mixer"),
         ["NotesTooltip"] = ("Masaüstü Hızlı Not Defteri", "Desktop Quick Scratchpad"),
         ["TerminalTooltip"] = ("PowerShell Terminali", "PowerShell Terminal"),
-        ["CleanRamTooltip"] = ("Çalışma kümesi belleğini boşalt", "Trim process working set memory"),
 
         // Context Menu
         ["WidgetSelection"] = ("Widget Seçimi", "Widget Selection"),

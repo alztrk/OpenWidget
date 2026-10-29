@@ -61,9 +61,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private const uint SWP_NOMOVE = 0x0002;
     private const uint SWP_NOACTIVATE = 0x0010;
 
-    [DllImport("psapi.dll")]
-    private static extern int EmptyWorkingSet(IntPtr hwProc);
-
     private HardwareConfig _config = new();
     private HardwareSpecs _specs = new();
     private TelemetrySpecs _telemetry = new();
@@ -641,7 +638,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 {
                     _isGamingThrottled = true;
                     _gamingThrottleCounter = 0;
-                    TrimMemory();
                 }
 
                 _gamingThrottleCounter++;
@@ -722,30 +718,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             var scanner = new HardwareScanner(_config, _priceService);
             var result = await Task.Run(() => scanner.Scan());
             Specs = result;
-
-            TrimMemory();
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Hardware scan error: {ex.Message}");
         }
-    }
-
-    private static void TrimMemory()
-    {
-        try
-        {
-            GC.Collect(2, GCCollectionMode.Forced, true, true);
-            GC.WaitForPendingFinalizers();
-            GC.Collect(2, GCCollectionMode.Forced, true, true);
-            EmptyWorkingSet(Process.GetCurrentProcess().Handle);
-        }
-        catch { }
-    }
-
-    private void QuickActionsWidget_RamCleaned(object? sender, EventArgs e)
-    {
-        RefreshTelemetry();
     }
 
     // Interactive Widget Visibility Toggles

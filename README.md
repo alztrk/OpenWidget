@@ -61,7 +61,6 @@ OpenWidget, Windows 10 ve Windows 11 için geliştirilmiş, masaüstünde doğru
 
 8. **Hızlı Araçlar (Quick Actions)**
    * Görev Yöneticisi, Aygıt Yöneticisi ve Ağ Ayarları kısayolları.
-   * Tek tıkla çalışma kümesi RAM temizleme (`EmptyWorkingSet`).
    * Asenkron kilit korumalı kalıcı hızlı not defteri (Scratchpad).
    * Windows ses karıştırıcısı hızlı erişimi.
 

@@ -12,10 +12,6 @@ namespace OpenWidget.Widgets;
 
 public partial class QuickActionsWidget : UserControl
 {
-    [DllImport("psapi.dll")]
-    private static extern int EmptyWorkingSet(IntPtr hwProc);
-
-    public event EventHandler? RamCleaned;
     private DateTime _lastPopupClosedTime = DateTime.MinValue;
     private DateTime _lastNotesPopupClosedTime = DateTime.MinValue;
     private readonly DispatcherTimer _saveNotesTimer;
@@ -80,9 +76,6 @@ public partial class QuickActionsWidget : UserControl
 
         TxtTerminal.Text = LocalizationService.Get("Terminal");
         BtnTerminal.ToolTip = LocalizationService.Get("TerminalTooltip");
-
-        TxtCleanRam.Text = LocalizationService.Get("CleanRam");
-        BtnCleanRam.ToolTip = LocalizationService.Get("CleanRamTooltip");
     }
 
     private void BtnTaskMgr_Click(object sender, RoutedEventArgs e)
@@ -246,31 +239,6 @@ public partial class QuickActionsWidget : UserControl
                     FileName = "powershell.exe",
                     UseShellExecute = true
                 });
-            }
-        }
-        catch { }
-    }
-
-    private async void BtnCleanRam_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            GC.Collect(2, GCCollectionMode.Forced, true, true);
-            GC.WaitForPendingFinalizers();
-            GC.Collect(2, GCCollectionMode.Forced, true, true);
-            EmptyWorkingSet(Process.GetCurrentProcess().Handle);
-
-            RamCleaned?.Invoke(this, EventArgs.Empty);
-
-            if (TxtCleanRam != null)
-            {
-                TxtCleanRam.Text = LocalizationService.Get("Cleaned");
-                TxtCleanRam.Foreground = Application.Current.Resources["AccentGreenBrush"] as Brush ?? Brushes.LightGreen;
-
-                await Task.Delay(1500);
-
-                TxtCleanRam.Text = LocalizationService.Get("CleanRam");
-                TxtCleanRam.ClearValue(TextBlock.ForegroundProperty);
             }
         }
         catch { }

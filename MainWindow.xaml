@@ -170,8 +170,7 @@
                         <widgets:HardwareWidget Visibility="{Binding IsHardwareVisible, Converter={StaticResource BoolToVis}}" />
 
                         <!-- 8. Quick Actions Toolbar -->
-                        <widgets:QuickActionsWidget Visibility="{Binding IsQuickActionsVisible, Converter={StaticResource BoolToVis}}"
-                                                    RamCleaned="QuickActionsWidget_RamCleaned" />
+                        <widgets:QuickActionsWidget Visibility="{Binding IsQuickActionsVisible, Converter={StaticResource BoolToVis}}" />
                     </StackPanel>
                 </ScrollViewer>
             </DockPanel>

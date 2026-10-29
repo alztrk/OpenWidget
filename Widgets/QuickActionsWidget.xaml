@@ -190,13 +190,6 @@
                     <TextBlock x:Name="TxtTerminal" Text="Terminal" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
-
-            <!-- Bellek Temizle (Preserved for compatibility, collapsed) -->
-            <Button x:Name="BtnCleanRam"
-                    Visibility="Collapsed"
-                    Click="BtnCleanRam_Click">
-                <TextBlock x:Name="TxtCleanRam" Text="Bellek Boşalt" />
-            </Button>
         </Grid>
 
         <!-- Upward Sound Mixer Dropdown Popup -->
