@@ -20,4 +20,5 @@ public class HardwareSpecs
 
     public string TotalPriceFormatted { get; set; } = "0 ₺";
     public string LastUpdatedText { get; set; } = "Bugün";
+    public string PriceSource { get; set; } = "Amazon.com.tr";
 }

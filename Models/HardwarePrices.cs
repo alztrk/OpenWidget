@@ -7,6 +7,7 @@ namespace RigBadge.Models;
 
 public class HardwarePrices
 {
+    public string Source { get; set; } = "Amazon.com.tr";
     public string LastUpdated { get; set; } = DateTime.Today.ToString("yyyy-MM-dd");
     public string Currency { get; set; } = "₺";
     public Dictionary<string, decimal> Items { get; set; } = new();
@@ -43,23 +44,24 @@ public class HardwarePrices
     {
         return new HardwarePrices
         {
+            Source = "Amazon.com.tr",
             LastUpdated = DateTime.Today.ToString("yyyy-MM-dd"),
             Currency = "₺",
             Items = new Dictionary<string, decimal>
             {
-                ["cpu"] = 8250,
-                ["gpu"] = 12800,
-                ["motherboard"] = 5200,
-                ["ram"] = 5550,
-                ["ssd_nvme"] = 2650,
-                ["ssd_sata"] = 1250,
-                ["monitor"] = 14320,
-                ["keyboard"] = 2450,
-                ["mouse"] = 3570,
-                ["headset"] = 4250,
-                ["microphone"] = 5600,
-                ["cooler"] = 5200,
-                ["psu"] = 7490
+                ["cpu"] = 8790,
+                ["gpu"] = 13450,
+                ["motherboard"] = 5290,
+                ["ram"] = 5850,
+                ["ssd_nvme"] = 2750,
+                ["ssd_sata"] = 1290,
+                ["monitor"] = 14490,
+                ["keyboard"] = 2490,
+                ["mouse"] = 3650,
+                ["headset"] = 4390,
+                ["microphone"] = 5690,
+                ["cooler"] = 5350,
+                ["psu"] = 7590
             }
         };
     }

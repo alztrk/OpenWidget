@@ -1,45 +1,40 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Glassmorphism Color Palette -->
-    <Color x:Key="GlassBgColor">#660D1117</Color>
+    <!-- Deep Obsidian Black Glass Palette (No White) -->
+    <Color x:Key="GlassBgColor">#F205070A</Color>
     <SolidColorBrush x:Key="GlassBgBrush" Color="{StaticResource GlassBgColor}" />
 
-    <!-- Frosted Border Gradient -->
-    <LinearGradientBrush x:Key="GlassBorderBrush" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#40FFFFFF" Offset="0.0" />
-        <GradientStop Color="#1AFFFFFF" Offset="0.5" />
-        <GradientStop Color="#0DFFFFFF" Offset="1.0" />
-    </LinearGradientBrush>
+    <!-- Dark Graphite Border (Zero White Highlight) -->
+    <Color x:Key="GlassBorderColor">#1A2028</Color>
+    <SolidColorBrush x:Key="GlassBorderBrush" Color="{StaticResource GlassBorderColor}" />
 
-    <!-- Glass Card Inner Highlight -->
-    <LinearGradientBrush x:Key="GlassHighlightBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#14FFFFFF" Offset="0.0" />
-        <GradientStop Color="#00FFFFFF" Offset="0.3" />
-    </LinearGradientBrush>
+    <Color x:Key="GlassCardBgColor">#0A0D12</Color>
+    <SolidColorBrush x:Key="GlassCardBgBrush" Color="{StaticResource GlassCardBgColor}" />
 
-    <Color x:Key="RowBgHoverColor">#1AFFFFFF</Color>
-    <SolidColorBrush x:Key="RowBgHoverBrush" Color="{StaticResource RowBgHoverColor}" />
+    <Color x:Key="GlassCardBorderColor">#161B22</Color>
+    <SolidColorBrush x:Key="GlassCardBorderBrush" Color="{StaticResource GlassCardBorderColor}" />
 
-    <Color x:Key="AccentColor">#58A6FF</Color>
+    <Color x:Key="AccentColor">#539BF5</Color>
     <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
 
     <Color x:Key="AccentGreenColor">#3FB950</Color>
     <SolidColorBrush x:Key="AccentGreenBrush" Color="{StaticResource AccentGreenColor}" />
 
-    <Color x:Key="PriceColor">#79C0FF</Color>
+    <Color x:Key="PriceColor">#58A6FF</Color>
     <SolidColorBrush x:Key="PriceBrush" Color="{StaticResource PriceColor}" />
 
-    <Color x:Key="TextPrimaryColor">#F0F6FC</Color>
+    <!-- Tuned Typography Opacities -->
+    <Color x:Key="TextPrimaryColor">#D0D7DE</Color>
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
 
     <Color x:Key="TextSecondaryColor">#8B949E</Color>
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" />
 
-    <Color x:Key="TextMutedColor">#6E7681</Color>
+    <Color x:Key="TextMutedColor">#57606A</Color>
     <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}" />
 
-    <Color x:Key="DividerColor">#2630363D</Color>
+    <Color x:Key="DividerColor">#141920</Color>
     <SolidColorBrush x:Key="DividerBrush" Color="{StaticResource DividerColor}" />
 
     <!-- Vector Icons (StreamGeometry) -->

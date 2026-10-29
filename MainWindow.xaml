@@ -19,9 +19,9 @@
         <converters:IconKeyToGeometryConverter x:Key="IconConverter" />
         <converters:StringToVisibilityConverter x:Key="StringToVis" />
 
-        <!-- Minimalist Glassmorphism Row Template with Price Tag -->
+        <!-- Minimalist Obsidian Glass Row Template -->
         <DataTemplate x:Key="GadgetRowTemplate">
-            <Grid Margin="0,1.5,0,3.5">
+            <Grid Margin="0,2,0,3">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="18" />
                     <ColumnDefinition Width="*" />
@@ -31,14 +31,14 @@
                 <!-- Icon -->
                 <Path Grid.Column="0"
                       Data="{Binding IconKey, Converter={StaticResource IconConverter}}"
-                      Fill="{StaticResource TextSecondaryBrush}"
+                      Fill="{StaticResource TextMutedBrush}"
                       Stretch="Uniform"
                       Width="11"
                       Height="11"
                       VerticalAlignment="Center"
                       HorizontalAlignment="Left" />
 
-                <!-- Names & Specs -->
+                <!-- Names & Subtitles -->
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
                     <TextBlock Text="{Binding Value}"
                                FontSize="11"
@@ -46,17 +46,17 @@
                                Foreground="{StaticResource TextPrimaryBrush}"
                                TextTrimming="CharacterEllipsis" />
                     <TextBlock Text="{Binding SubValue}"
-                               FontSize="9"
+                               FontSize="8.5"
                                Foreground="{StaticResource TextMutedBrush}"
                                TextTrimming="CharacterEllipsis"
                                Visibility="{Binding SubValue, Converter={StaticResource StringToVis}}" />
                 </StackPanel>
 
-                <!-- Daily Market Price -->
+                <!-- Amazon Market Price -->
                 <TextBlock Grid.Column="2"
                            Text="{Binding PriceFormatted}"
                            FontSize="10.5"
-                           FontWeight="Bold"
+                           FontWeight="SemiBold"
                            Foreground="{StaticResource PriceBrush}"
                            VerticalAlignment="Center"
                            HorizontalAlignment="Right" />
@@ -77,16 +77,16 @@
         </ContextMenu>
     </Window.ContextMenu>
 
-    <!-- Glassmorphism Container with Ambient Shadow -->
+    <!-- Deep Obsidian Black Glass Panel (No White) -->
     <Border Margin="8">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="28"
+            <DropShadowEffect BlurRadius="30"
                               Color="#000000"
-                              Opacity="0.5"
-                              ShadowDepth="4" />
+                              Opacity="0.75"
+                              ShadowDepth="5" />
         </Border.Effect>
 
-        <!-- Frosted Glass Card Body -->
+        <!-- Pure Dark Smoky Glass Shell -->
         <Border Background="{StaticResource GlassBgBrush}"
                 BorderBrush="{StaticResource GlassBorderBrush}"
                 BorderThickness="1"
@@ -97,7 +97,7 @@
                 <!-- 1. SİSTEM -->
                 <DockPanel Margin="0,0,0,4">
                     <TextBlock Text="SİSTEM"
-                               FontSize="9"
+                               FontSize="8.5"
                                FontWeight="Bold"
                                Foreground="{StaticResource AccentBrush}"
                                VerticalAlignment="Center"
@@ -110,7 +110,7 @@
                 <!-- 2. DEPOLAMA -->
                 <DockPanel Margin="0,5,0,4">
                     <TextBlock Text="DEPOLAMA"
-                               FontSize="9"
+                               FontSize="8.5"
                                FontWeight="Bold"
                                Foreground="{StaticResource AccentBrush}"
                                VerticalAlignment="Center"
@@ -123,7 +123,7 @@
                 <!-- 3. ÇEVRE BİRİMLERİ -->
                 <DockPanel Margin="0,5,0,4">
                     <TextBlock Text="ÇEVRE BİRİMLERİ"
-                               FontSize="9"
+                               FontSize="8.5"
                                FontWeight="Bold"
                                Foreground="{StaticResource AccentBrush}"
                                VerticalAlignment="Center"
@@ -136,7 +136,7 @@
                 <!-- 4. SOĞUTMA VE GÜÇ -->
                 <DockPanel Margin="0,5,0,4">
                     <TextBlock Text="SOĞUTMA VE GÜÇ"
-                               FontSize="9"
+                               FontSize="8.5"
                                FontWeight="Bold"
                                Foreground="{StaticResource AccentBrush}"
                                VerticalAlignment="Center"
@@ -146,9 +146,9 @@
                 <ItemsControl ItemsSource="{Binding Specs.CoolingAndPower}"
                               ItemTemplate="{StaticResource GadgetRowTemplate}" />
 
-                <!-- 5. TOPLAM SİSTEM DEĞERİ (FROSTED SUMMARY BADGE) -->
-                <Border Background="#26161B22"
-                        BorderBrush="{StaticResource GlassBorderBrush}"
+                <!-- 5. TOPLAM DONANIM DEĞERİ (OBSIDIAN SUMMARY BADGE) -->
+                <Border Background="{StaticResource GlassCardBgBrush}"
+                        BorderBrush="{StaticResource GlassCardBorderBrush}"
                         BorderThickness="1"
                         CornerRadius="8"
                         Margin="0,6,0,0"
@@ -156,7 +156,7 @@
                     <DockPanel LastChildFill="True">
                         <TextBlock Text="{Binding Specs.TotalPriceFormatted}"
                                    DockPanel.Dock="Right"
-                                   FontSize="13"
+                                   FontSize="12.5"
                                    FontWeight="Heavy"
                                    Foreground="{StaticResource AccentGreenBrush}"
                                    VerticalAlignment="Center" />
@@ -169,13 +169,13 @@
                                         VerticalAlignment="Center"
                                         Margin="0,0,5,0" />
                                 <TextBlock Text="TOPLAM DONANIM DEĞERİ"
-                                           FontSize="8.5"
+                                           FontSize="8"
                                            FontWeight="Bold"
                                            Foreground="{StaticResource TextSecondaryBrush}"
                                            VerticalAlignment="Center" />
                             </StackPanel>
-                            <TextBlock Text="Günlük Piyasa Değeri"
-                                       FontSize="8"
+                            <TextBlock Text="Amazon.com.tr Günlük"
+                                       FontSize="7.5"
                                        Foreground="{StaticResource TextMutedBrush}"
                                        Margin="10,1,0,0" />
                         </StackPanel>

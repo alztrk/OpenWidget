@@ -66,6 +66,7 @@ public class HardwareScanner
         // Summary Values
         specs.TotalPriceFormatted = _priceService.GetTotalPriceFormatted();
         specs.LastUpdatedText = _priceService.GetLastUpdatedFormatted();
+        specs.PriceSource = _priceService.GetSource();
 
         return specs;
     }

@@ -24,11 +24,12 @@ public class PriceService
         var today = DateTime.Today.ToString("yyyy-MM-dd");
         if (_prices.LastUpdated != today)
         {
-            // A new calendar day has arrived: update last updated date and persist
             _prices.LastUpdated = today;
             _prices.Save(_priceFilePath);
         }
     }
+
+    public string GetSource() => _prices.Source;
 
     public string GetPriceFormatted(string itemKey)
     {
