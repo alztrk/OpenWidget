@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using OpenWidget.Models;
 using OpenWidget.Services;
+using OpenWidget.Utils;
 
 namespace OpenWidget.Windows;
 
@@ -15,6 +16,7 @@ public partial class SettingsWindow : Window
     private readonly HardwareConfig _config;
     private readonly Action<HardwareConfig> _onSave;
     private string _selectedCity = "auto";
+    private bool _isClosing;
 
     public SettingsWindow(HardwareConfig config, Action<HardwareConfig> onSave)
     {
@@ -24,6 +26,11 @@ public partial class SettingsWindow : Window
 
         LoadValues();
         ApplyLocalization();
+    }
+
+    private void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+        AnimationHelper.AnimateWindowEntrance(this, MasterDialogBorder, Opacity);
     }
 
     private void LoadValues()
@@ -237,11 +244,16 @@ public partial class SettingsWindow : Window
 
     private void BtnClose_Click(object sender, RoutedEventArgs e)
     {
-        Close();
+        if (_isClosing) return;
+        _isClosing = true;
+        AnimationHelper.AnimateWindowExit(this, MasterDialogBorder);
     }
 
     private void BtnSave_Click(object sender, RoutedEventArgs e)
     {
+        if (_isClosing) return;
+        _isClosing = true;
+
         // 1. Language
         if (CmbLanguage.SelectedItem is ComboBoxItem langItem && langItem.Tag != null)
         {
@@ -284,7 +296,6 @@ public partial class SettingsWindow : Window
             AutoStartService.SetAutoStart(autoStart);
         }
 
-        _onSave?.Invoke(_config);
-        Close();
+        AnimationHelper.AnimateWindowExit(this, MasterDialogBorder, () => _onSave?.Invoke(_config));
     }
 }

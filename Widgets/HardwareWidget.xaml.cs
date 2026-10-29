@@ -1,11 +1,14 @@
 using System.Windows;
 using System.Windows.Controls;
 using OpenWidget.Services;
+using OpenWidget.Utils;
 
 namespace OpenWidget.Widgets;
 
 public partial class HardwareWidget : UserControl
 {
+    private bool _isExpanded = true;
+
     public HardwareWidget()
     {
         InitializeComponent();
@@ -29,15 +32,6 @@ public partial class HardwareWidget : UserControl
 
     private void Header_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
-        if (ContentPanel.Visibility == Visibility.Visible)
-        {
-            ContentPanel.Visibility = Visibility.Collapsed;
-            ArrowIcon.Data = (System.Windows.Media.Geometry)FindResource("GeoExpand");
-        }
-        else
-        {
-            ContentPanel.Visibility = Visibility.Visible;
-            ArrowIcon.Data = (System.Windows.Media.Geometry)FindResource("GeoCollapse");
-        }
+        AnimationHelper.ToggleAccordion(ContentPanel, ArrowIcon, ref _isExpanded);
     }
 }

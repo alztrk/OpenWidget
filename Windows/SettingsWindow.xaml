@@ -13,7 +13,8 @@
         FontFamily="Segoe UI Variable Text, Segoe UI, -apple-system, sans-serif"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
-        RenderOptions.ClearTypeHint="Enabled">
+        RenderOptions.ClearTypeHint="Enabled"
+        Loaded="Window_Loaded">
 
     <Window.Resources>
         <!-- Modern Pill Tab Button Style -->
@@ -240,7 +241,8 @@
     </Window.Resources>
 
     <!-- Frosted Acrylic Master Dialog Container -->
-    <Border Background="{StaticResource MasterHudBgBrush}"
+    <Border x:Name="MasterDialogBorder"
+            Background="{StaticResource MasterHudBgBrush}"
             BorderBrush="{StaticResource MasterHudBorderBrush}"
             BorderThickness="1"
             CornerRadius="16"

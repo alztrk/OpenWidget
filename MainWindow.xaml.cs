@@ -460,10 +460,25 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void ToggleCompactMode()
     {
-        _config.Widget.IsCompact = !_config.Widget.IsCompact;
-        _config.Save(_configPath);
-        SyncMenuCheckboxes();
-        NotifyCompactState();
+        var targetOpacity = _config.Widget.Opacity > 0.1 ? _config.Widget.Opacity : 1.0;
+        var animOut = new System.Windows.Media.Animation.DoubleAnimation(targetOpacity, 0, TimeSpan.FromMilliseconds(120))
+        {
+            EasingFunction = Utils.AnimationHelper.EaseInOut
+        };
+        animOut.Completed += (_, _) =>
+        {
+            _config.Widget.IsCompact = !_config.Widget.IsCompact;
+            _config.Save(_configPath);
+            SyncMenuCheckboxes();
+            NotifyCompactState();
+
+            var animIn = new System.Windows.Media.Animation.DoubleAnimation(0, targetOpacity, TimeSpan.FromMilliseconds(160))
+            {
+                EasingFunction = Utils.AnimationHelper.EaseInOut
+            };
+            MasterBorder.BeginAnimation(UIElement.OpacityProperty, animIn);
+        };
+        MasterBorder.BeginAnimation(UIElement.OpacityProperty, animOut);
     }
 
     private void SaveCurrentPosition()
