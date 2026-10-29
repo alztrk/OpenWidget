@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace RigBadge.Converters;
+namespace OpenWidget.Converters;
 
 public class KeyToBrushConverter : IValueConverter
 {

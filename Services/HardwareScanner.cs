@@ -5,9 +5,9 @@ using System.Linq;
 using System.Management;
 using System.Text;
 using System.Windows;
-using RigBadge.Models;
+using OpenWidget.Models;
 
-namespace RigBadge.Services;
+namespace OpenWidget.Services;
 
 public class HardwareScanner
 {

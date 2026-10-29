@@ -3,12 +3,12 @@ using System.Diagnostics;
 using System.IO;
 using Microsoft.Win32;
 
-namespace RigBadge.Services;
+namespace OpenWidget.Services;
 
 public static class AutoStartService
 {
     private const string RunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
-    private const string AppName = "RigBadge";
+    private const string AppName = "OpenWidget";
 
     public static bool IsAutoStartEnabled()
     {

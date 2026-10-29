@@ -1,7 +1,7 @@
 using System.IO;
 using System.Text.Json;
 
-namespace RigBadge.Models;
+namespace OpenWidget.Models;
 
 public class CoolingAndPowerConfig
 {
@@ -34,11 +34,20 @@ public class WidgetConfig
     public double Opacity { get; set; } = 1.0;
     public double OffsetX { get; set; } = 28;
     public double OffsetY { get; set; } = 28;
-    public double Width { get; set; } = 380;
+    public double Width { get; set; } = 360;
     public double Height { get; set; } = 780;
     public bool AlwaysOnTop { get; set; } = false;
     public bool IsLocked { get; set; } = true;
     public bool OnlyShowOnDesktop { get; set; } = false;
+}
+
+public class WidgetSelectionConfig
+{
+    public bool ShowHeader { get; set; } = true;
+    public bool ShowTelemetry { get; set; } = true;
+    public bool ShowFinance { get; set; } = true;
+    public bool ShowHardware { get; set; } = true;
+    public bool ShowQuickActions { get; set; } = true;
 }
 
 public class TelemetryWidgetConfig
@@ -63,6 +72,7 @@ public class HardwareConfig
     public PeripheralsConfig Peripherals { get; set; } = new();
     public AccessoriesConfig Accessories { get; set; } = new();
     public WidgetConfig Widget { get; set; } = new();
+    public WidgetSelectionConfig Widgets { get; set; } = new();
     public TelemetryWidgetConfig TelemetryWidget { get; set; } = new();
     public FinanceWidgetConfig FinanceWidget { get; set; } = new();
 
@@ -75,7 +85,13 @@ public class HardwareConfig
                 var json = File.ReadAllText(path);
                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                 var config = JsonSerializer.Deserialize<HardwareConfig>(json, options);
-                if (config != null) return config;
+                if (config != null)
+                {
+                    // Sync legacy flags if present
+                    if (!config.TelemetryWidget.Enabled) config.Widgets.ShowTelemetry = false;
+                    if (!config.FinanceWidget.Enabled) config.Widgets.ShowFinance = false;
+                    return config;
+                }
             }
         }
         catch { }
@@ -87,6 +103,10 @@ public class HardwareConfig
     {
         try
         {
+            // Sync legacy
+            TelemetryWidget.Enabled = Widgets.ShowTelemetry;
+            FinanceWidget.Enabled = Widgets.ShowFinance;
+
             var options = new JsonSerializerOptions { WriteIndented = true };
             var json = JsonSerializer.Serialize(this, options);
             File.WriteAllText(path, json);

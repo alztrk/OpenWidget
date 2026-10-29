@@ -6,13 +6,12 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
-using RigBadge.Models;
-using RigBadge.Services;
+using OpenWidget.Models;
+using OpenWidget.Services;
 
-namespace RigBadge;
+namespace OpenWidget;
 
 public partial class MainWindow : Window, INotifyPropertyChanged
 {
@@ -83,8 +82,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
-    public bool IsTelemetryVisible => _config.TelemetryWidget.Enabled;
-    public bool IsFinanceVisible => _config.FinanceWidget.Enabled;
+    public bool IsHeaderVisible => _config.Widgets.ShowHeader;
+    public bool IsTelemetryVisible => _config.Widgets.ShowTelemetry;
+    public bool IsFinanceVisible => _config.Widgets.ShowFinance;
+    public bool IsHardwareVisible => _config.Widgets.ShowHardware;
+    public bool IsQuickActionsVisible => _config.Widgets.ShowQuickActions;
 
     public MainWindow()
     {
@@ -150,18 +152,17 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         if (_config.Widget.Opacity > 0.1 && _config.Widget.Opacity <= 1.0) Opacity = _config.Widget.Opacity;
         Topmost = _config.Widget.AlwaysOnTop;
 
-        if (MenuAlwaysOnTop != null)
-        {
-            MenuAlwaysOnTop.IsChecked = Topmost;
-        }
-        if (MenuTelemetry != null)
-        {
-            MenuTelemetry.IsChecked = _config.TelemetryWidget.Enabled;
-        }
-        if (MenuFinance != null)
-        {
-            MenuFinance.IsChecked = _config.FinanceWidget.Enabled;
-        }
+        SyncMenuCheckboxes();
+    }
+
+    private void SyncMenuCheckboxes()
+    {
+        if (MenuHeader != null) MenuHeader.IsChecked = _config.Widgets.ShowHeader;
+        if (MenuTelemetry != null) MenuTelemetry.IsChecked = _config.Widgets.ShowTelemetry;
+        if (MenuFinance != null) MenuFinance.IsChecked = _config.Widgets.ShowFinance;
+        if (MenuHardware != null) MenuHardware.IsChecked = _config.Widgets.ShowHardware;
+        if (MenuQuickActions != null) MenuQuickActions.IsChecked = _config.Widgets.ShowQuickActions;
+        if (MenuAlwaysOnTop != null) MenuAlwaysOnTop.IsChecked = Topmost;
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -283,28 +284,47 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         catch { }
     }
 
+    private void QuickActionsWidget_RamCleaned(object? sender, EventArgs e)
+    {
+        RefreshTelemetry();
+    }
+
+    // Interactive Widget Visibility Toggles
+    private void MenuHeader_Click(object sender, RoutedEventArgs e)
+    {
+        _config.Widgets.ShowHeader = !_config.Widgets.ShowHeader;
+        SaveAndNotifyLayout(nameof(IsHeaderVisible), MenuHeader, _config.Widgets.ShowHeader);
+    }
+
     private void MenuTelemetry_Click(object sender, RoutedEventArgs e)
     {
-        _config.TelemetryWidget.Enabled = !_config.TelemetryWidget.Enabled;
-        _config.Save(_configPath);
-        if (MenuTelemetry != null) MenuTelemetry.IsChecked = _config.TelemetryWidget.Enabled;
-
-        NotifyLayoutChanged();
+        _config.Widgets.ShowTelemetry = !_config.Widgets.ShowTelemetry;
+        SaveAndNotifyLayout(nameof(IsTelemetryVisible), MenuTelemetry, _config.Widgets.ShowTelemetry);
     }
 
     private void MenuFinance_Click(object sender, RoutedEventArgs e)
     {
-        _config.FinanceWidget.Enabled = !_config.FinanceWidget.Enabled;
-        _config.Save(_configPath);
-        if (MenuFinance != null) MenuFinance.IsChecked = _config.FinanceWidget.Enabled;
-
-        NotifyLayoutChanged();
+        _config.Widgets.ShowFinance = !_config.Widgets.ShowFinance;
+        SaveAndNotifyLayout(nameof(IsFinanceVisible), MenuFinance, _config.Widgets.ShowFinance);
     }
 
-    private void NotifyLayoutChanged()
+    private void MenuHardware_Click(object sender, RoutedEventArgs e)
     {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsTelemetryVisible)));
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsFinanceVisible)));
+        _config.Widgets.ShowHardware = !_config.Widgets.ShowHardware;
+        SaveAndNotifyLayout(nameof(IsHardwareVisible), MenuHardware, _config.Widgets.ShowHardware);
+    }
+
+    private void MenuQuickActions_Click(object sender, RoutedEventArgs e)
+    {
+        _config.Widgets.ShowQuickActions = !_config.Widgets.ShowQuickActions;
+        SaveAndNotifyLayout(nameof(IsQuickActionsVisible), MenuQuickActions, _config.Widgets.ShowQuickActions);
+    }
+
+    private void SaveAndNotifyLayout(string propertyName, MenuItem? menuItem, bool isChecked)
+    {
+        _config.Save(_configPath);
+        if (menuItem != null) menuItem.IsChecked = isChecked;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     private void MenuAutoStart_Click(object sender, RoutedEventArgs e)
@@ -345,7 +365,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         OpenFileWithDefaultEditor(_configPath);
     }
 
-    private void OpenFileWithDefaultEditor(string path)
+    private static void OpenFileWithDefaultEditor(string path)
     {
         try
         {
@@ -359,106 +379,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             }
             else
             {
-                MessageBox.Show($"Dosya bulunamadı:\n{path}", "RigBadge", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Dosya bulunamadı:\n{path}", "OpenWidget", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Dosya açılamadı: {ex.Message}", "RigBadge", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"Dosya açılamadı: {ex.Message}", "OpenWidget", MessageBoxButton.OK, MessageBoxImage.Error);
         }
-    }
-
-    private void Link_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        e.Handled = true;
-    }
-
-    private void Link_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-    {
-        e.Handled = true;
-        if (sender is FrameworkElement elem && elem.Tag is string url && !string.IsNullOrEmpty(url))
-        {
-            try
-            {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = url,
-                    UseShellExecute = true
-                });
-            }
-            catch { }
-        }
-    }
-
-    private void BtnTaskMgr_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = "taskmgr.exe",
-                UseShellExecute = true
-            });
-        }
-        catch { }
-    }
-
-    private void BtnVolume_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = "sndvol.exe",
-                UseShellExecute = true
-            });
-        }
-        catch { }
-    }
-
-    private void BtnTerminal_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            try
-            {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "wt.exe",
-                    UseShellExecute = true
-                });
-            }
-            catch
-            {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "powershell.exe",
-                    UseShellExecute = true
-                });
-            }
-        }
-        catch { }
-    }
-
-    private async void BtnCleanRam_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            TrimMemory();
-            RefreshTelemetry();
-
-            if (TxtCleanRam != null)
-            {
-                TxtCleanRam.Text = "Temizlendi!";
-                TxtCleanRam.Foreground = Application.Current.Resources["AccentGreenBrush"] as System.Windows.Media.Brush ?? System.Windows.Media.Brushes.LightGreen;
-
-                await Task.Delay(1500);
-
-                TxtCleanRam.Text = "Bellek Boşalt";
-                TxtCleanRam.ClearValue(TextBlock.ForegroundProperty);
-            }
-        }
-        catch { }
     }
 
     private void MenuExit_Click(object sender, RoutedEventArgs e)

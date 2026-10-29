@@ -4,9 +4,9 @@ using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using RigBadge.Models;
+using OpenWidget.Models;
 
-namespace RigBadge.Services;
+namespace OpenWidget.Services;
 
 public class SystemTelemetryService : IDisposable
 {

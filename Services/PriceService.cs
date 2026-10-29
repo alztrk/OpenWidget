@@ -5,9 +5,9 @@ using System.IO;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using RigBadge.Models;
+using OpenWidget.Models;
 
-namespace RigBadge.Services;
+namespace OpenWidget.Services;
 
 public class PriceService
 {

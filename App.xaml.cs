@@ -1,7 +1,7 @@
 using System;
 using System.Windows;
 
-namespace RigBadge;
+namespace OpenWidget;
 
 public partial class App : Application
 {

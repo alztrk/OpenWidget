@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
-namespace RigBadge.Models;
+namespace OpenWidget.Models;
 
 public class HardwarePrices
 {

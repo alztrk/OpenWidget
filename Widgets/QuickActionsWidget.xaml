@@ -1,0 +1,96 @@
+<UserControl x:Class="OpenWidget.Widgets.QuickActionsWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Margin="0,8,0,0">
+
+    <UserControl.Resources>
+        <Style x:Key="ToolbarBtnStyle" TargetType="Button">
+            <Setter Property="Background" Value="#12FFFFFF" />
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="BorderBrush" Value="#18FFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="4,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#24FFFFFF" />
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#38FFFFFF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <UniformGrid Columns="4">
+        <!-- Görev Yöneticisi -->
+        <Button Style="{StaticResource ToolbarBtnStyle}"
+                Margin="0,0,3,0"
+                ToolTip="Görev Yöneticisi (Ctrl+Shift+Esc)"
+                Click="BtnTaskMgr_Click">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Path Data="{StaticResource GeoTaskmgr}"
+                      Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                      Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
+                <TextBlock Text="Görev Yön." FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+            </StackPanel>
+        </Button>
+
+        <!-- Ses Karıştırıcısı -->
+        <Button Style="{StaticResource ToolbarBtnStyle}"
+                Margin="3,0,3,0"
+                ToolTip="Ses Düzeyi Karıştırıcısı"
+                Click="BtnVolume_Click">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Path Data="{StaticResource GeoSpeaker}"
+                      Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                      Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
+                <TextBlock Text="Ses" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+            </StackPanel>
+        </Button>
+
+        <!-- Terminal -->
+        <Button Style="{StaticResource ToolbarBtnStyle}"
+                Margin="3,0,3,0"
+                ToolTip="Windows Terminal / PowerShell"
+                Click="BtnTerminal_Click">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Path Data="{StaticResource GeoTerminal}"
+                      Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                      Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
+                <TextBlock Text="Terminal" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+            </StackPanel>
+        </Button>
+
+        <!-- Bellek Temizle -->
+        <Button x:Name="BtnCleanRam"
+                Style="{StaticResource ToolbarBtnStyle}"
+                Margin="3,0,0,0"
+                ToolTip="Çalışma Kümesini ve Belleği Temizle"
+                Click="BtnCleanRam_Click">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Path Data="{StaticResource GeoClean}"
+                      Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                      Stretch="Uniform" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
+                <TextBlock x:Name="TxtCleanRam" Text="Bellek Boşalt" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+            </StackPanel>
+        </Button>
+    </UniformGrid>
+</UserControl>

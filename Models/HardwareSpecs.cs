@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace RigBadge.Models;
+namespace OpenWidget.Models;
 
 public record HardwareItem(
     string Category,
