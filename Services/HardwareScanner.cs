@@ -45,6 +45,16 @@ public class HardwareScanner
         specs.Peripherals.Add(GetMicrophoneItem());
 
         // 4. Cooling and Power
+        var caseName = _config.CoolingAndPower.PcCase ?? "MSI MAG FORGE M100R";
+        specs.CoolingAndPower.Add(new HardwareItem(
+            Category: "Kasa",
+            IconKey: "IconCase",
+            Label: "Kasa",
+            Value: caseName,
+            SubValue: "Temperli Cam • 4x ARGB Fan mATX",
+            PriceFormatted: _priceService.GetPriceFormatted("case")
+        ));
+
         specs.CoolingAndPower.Add(new HardwareItem(
             Category: "Soğutma",
             IconKey: "IconCooler",
@@ -61,6 +71,52 @@ public class HardwareScanner
             Value: "MSI MPG A750GF White",
             SubValue: "750W 80+ Gold Modüler",
             PriceFormatted: _priceService.GetPriceFormatted("psu")
+        ));
+
+        // 5. Accessories
+        specs.Accessories.Add(new HardwareItem(
+            Category: "Aksesuar",
+            IconKey: "IconArm",
+            Label: "Monitör Kolu",
+            Value: _config.Accessories.MonitorArm,
+            SubValue: "Amortisörlü VESA Kol (2-9 kg)",
+            PriceFormatted: _priceService.GetPriceFormatted("monitor_arm")
+        ));
+
+        specs.Accessories.Add(new HardwareItem(
+            Category: "Aksesuar",
+            IconKey: "IconArm",
+            Label: "Mikrofon Kolu",
+            Value: _config.Accessories.MicArm,
+            SubValue: "Mafsallı Akrobat Masa Standı",
+            PriceFormatted: _priceService.GetPriceFormatted("mic_arm")
+        ));
+
+        specs.Accessories.Add(new HardwareItem(
+            Category: "Aksesuar",
+            IconKey: "IconGamepad",
+            Label: "Gamepad",
+            Value: _config.Accessories.Gamepad,
+            SubValue: "9. Nesil • Microsoft TR Garantili",
+            PriceFormatted: _priceService.GetPriceFormatted("gamepad")
+        ));
+
+        specs.Accessories.Add(new HardwareItem(
+            Category: "Aksesuar",
+            IconKey: "IconNetwork",
+            Label: "Ağ Adaptörü",
+            Value: _config.Accessories.EthernetAdapter,
+            SubValue: "1000 Mbps USB 3.0 Gigabit",
+            PriceFormatted: _priceService.GetPriceFormatted("ethernet_adapter")
+        ));
+
+        specs.Accessories.Add(new HardwareItem(
+            Category: "Aksesuar",
+            IconKey: "IconCable",
+            Label: "Ağ Kablosu",
+            Value: _config.Accessories.EthernetCable,
+            SubValue: "Cat 7 10Gbit/s Siyah Kablo",
+            PriceFormatted: _priceService.GetPriceFormatted("ethernet_cable")
         ));
 
         // Summary Values

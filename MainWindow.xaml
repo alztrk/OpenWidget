@@ -126,7 +126,7 @@
 
             <!-- 4. SOĞUTMA VE GÜÇ -->
             <DockPanel Margin="0,5,0,4">
-                <TextBlock Text="SOĞUTMA VE GÜÇ"
+                <TextBlock Text="KASA, SOĞUTMA VE GÜÇ"
                            FontSize="8.5"
                            FontWeight="Bold"
                            Foreground="{StaticResource AccentBrush}"
@@ -137,7 +137,20 @@
             <ItemsControl ItemsSource="{Binding Specs.CoolingAndPower}"
                           ItemTemplate="{StaticResource GadgetRowTemplate}" />
 
-            <!-- 5. TOPLAM DONANIM DEĞERİ (MATTE SUMMARY BADGE) -->
+            <!-- 5. AKSESUAR VE EKİPMAN -->
+            <DockPanel Margin="0,5,0,4">
+                <TextBlock Text="AKSESUAR VE EKİPMAN"
+                           FontSize="8.5"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource AccentBrush}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0" />
+                <Rectangle Height="1" Fill="{StaticResource DividerBrush}" VerticalAlignment="Center" />
+            </DockPanel>
+            <ItemsControl ItemsSource="{Binding Specs.Accessories}"
+                          ItemTemplate="{StaticResource GadgetRowTemplate}" />
+
+            <!-- 6. TOPLAM DEĞER (MATTE SUMMARY BADGE) -->
             <Border Background="{StaticResource GlassCardBgBrush}"
                     BorderBrush="{StaticResource GlassCardBorderBrush}"
                     BorderThickness="1"

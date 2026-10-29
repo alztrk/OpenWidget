@@ -17,6 +17,7 @@ public class HardwareSpecs
     public List<HardwareItem> Storage { get; set; } = new();
     public List<HardwareItem> Peripherals { get; set; } = new();
     public List<HardwareItem> CoolingAndPower { get; set; } = new();
+    public List<HardwareItem> Accessories { get; set; } = new();
 
     public string TotalPriceFormatted { get; set; } = "0 ₺";
     public string LastUpdatedText { get; set; } = "Bugün";

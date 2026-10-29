@@ -14,7 +14,13 @@
     "mouse": 3568,
     "headset": 4799,
     "microphone": 4849,
+    "case": 2450,
     "cooler": 5199,
-    "psu": 7492
+    "psu": 7492,
+    "monitor_arm": 1150,
+    "mic_arm": 590,
+    "gamepad": 3599,
+    "ethernet_adapter": 1100,
+    "ethernet_cable": 290
   }
 }
