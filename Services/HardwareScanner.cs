@@ -58,22 +58,24 @@ public class HardwareScanner
             LinkDisplay: "amazon.com.tr ↗"
         ));
 
+        var coolerName = _config.CoolingAndPower.CpuCooler ?? "Corsair iCUE LINK TITAN 240";
         specs.CoolingAndPower.Add(new HardwareItem(
             Category: "Soğutma",
             IconKey: "IconCooler",
             Label: "Soğutucu",
-            Value: "Corsair iCUE LINK TITAN 240",
+            Value: coolerName,
             SubValue: "CW-9061016-WW • 240mm AIO",
             PriceFormatted: _priceService.GetPriceFormatted("cooler"),
             Url: "https://www.amazon.com.tr/dp/B0DC21M89J",
             LinkDisplay: "amazon.com.tr ↗"
         ));
 
+        var psuName = _config.CoolingAndPower.Psu ?? "MSI MPG A750GF White";
         specs.CoolingAndPower.Add(new HardwareItem(
             Category: "Güç",
             IconKey: "IconPsu",
             Label: "PSU",
-            Value: "MSI MPG A750GF White",
+            Value: psuName,
             SubValue: "750W 80+ Gold Modüler",
             PriceFormatted: _priceService.GetPriceFormatted("psu"),
             Url: "https://www.amazon.com.tr/dp/B0991WL16F",

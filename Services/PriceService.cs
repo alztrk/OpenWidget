@@ -15,6 +15,16 @@ public class PriceService
     private HardwarePrices _prices;
     private static readonly CultureInfo TrCulture = new("tr-TR");
 
+    private static readonly HttpClient HttpClient = new()
+    {
+        Timeout = TimeSpan.FromSeconds(8)
+    };
+
+    static PriceService()
+    {
+        HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+    }
+
     public PriceService(string priceFilePath)
     {
         _priceFilePath = priceFilePath;
@@ -36,16 +46,12 @@ public class PriceService
     {
         try
         {
-            using var client = new HttpClient();
-            client.Timeout = TimeSpan.FromSeconds(8);
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
-
             // 1. Izoly RAM (16GB 3200MHz Gaming)
-            var ramHtml = await client.GetStringAsync("https://izoly.com/izoly-16gb-ddr4-3200mhz-cl22-1-2v-gaming-sogutuculu-desktop-ram/");
+            var ramHtml = await HttpClient.GetStringAsync("https://izoly.com/izoly-16gb-ddr4-3200mhz-cl22-1-2v-gaming-sogutuculu-desktop-ram/");
             var ramPrice = ExtractPrice(ramHtml);
 
             // 2. Izoly SSD (512GB S280 Gaming SATA3)
-            var ssdHtml = await client.GetStringAsync("https://izoly.com/izoly-512gb-gaming-sata3-s280-550-520mb-s-ssd/");
+            var ssdHtml = await HttpClient.GetStringAsync("https://izoly.com/izoly-512gb-gaming-sata3-s280-550-520mb-s-ssd/");
             var ssdPrice = ExtractPrice(ssdHtml);
 
             bool changed = false;
@@ -66,7 +72,7 @@ public class PriceService
             // 3. Wraith Esports Mousepad (Spirit of Aim Speed / White - Variant 47478471262401)
             try
             {
-                var mousepadHtml = await client.GetStringAsync("https://wraithesports.com/products/wraith-spirit-of-aim-mousepad?variant=47478471262401");
+                var mousepadHtml = await HttpClient.GetStringAsync("https://wraithesports.com/products/wraith-spirit-of-aim-mousepad?variant=47478471262401");
                 var mousepadPrice = ExtractWraithPrice(mousepadHtml, "47478471262401");
                 if (mousepadPrice > 0)
                 {

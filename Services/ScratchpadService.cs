@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OpenWidget.Services;
@@ -7,6 +8,7 @@ namespace OpenWidget.Services;
 public static class ScratchpadService
 {
     private static readonly string FilePath;
+    private static readonly SemaphoreSlim _fileLock = new(1, 1);
 
     static ScratchpadService()
     {
@@ -25,6 +27,7 @@ public static class ScratchpadService
 
     public static async Task<string> LoadAsync()
     {
+        await _fileLock.WaitAsync();
         try
         {
             if (File.Exists(FilePath))
@@ -33,15 +36,24 @@ public static class ScratchpadService
             }
         }
         catch { }
+        finally
+        {
+            _fileLock.Release();
+        }
         return string.Empty;
     }
 
     public static async Task SaveAsync(string text)
     {
+        await _fileLock.WaitAsync();
         try
         {
             await File.WriteAllTextAsync(FilePath, text);
         }
         catch { }
+        finally
+        {
+            _fileLock.Release();
+        }
     }
 }

@@ -252,15 +252,25 @@ public static class AudioMixerService
     private static readonly Guid IID_IPropertyStore = new("886d8eeb-8cf2-4446-8d02-cdba1dbdcf99");
     private static readonly PropertyKey PKEY_Device_FriendlyName = new(new Guid("a45c254e-df1c-4efd-8020-67d146a850e0"), 14);
 
+    private static void SafeReleaseCom(object? obj)
+    {
+        if (obj != null && Marshal.IsComObject(obj))
+        {
+            try { Marshal.ReleaseComObject(obj); } catch { }
+        }
+    }
+
     public static (MasterVolumeModel Master, List<AudioSessionModel> Sessions) GetAudioState()
     {
         var master = new MasterVolumeModel();
         var sessions = new List<AudioSessionModel>();
+        IMMDeviceEnumerator? enumerator = null;
+        IMMDevice? device = null;
 
         try
         {
-            var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorComObject();
-            if (enumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out var device) != 0 || device == null)
+            enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorComObject();
+            if (enumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out device) != 0 || device == null)
             {
                 return (master, sessions);
             }
@@ -402,20 +412,29 @@ public static class AudioMixerService
             catch { }
         }
         catch { }
+        finally
+        {
+            SafeReleaseCom(device);
+            SafeReleaseCom(enumerator);
+        }
 
         return (master, sessions);
     }
 
     public static (float Volume, bool IsMuted) GetMasterVolume()
     {
+        IMMDeviceEnumerator? enumerator = null;
+        IMMDevice? device = null;
+        IAudioEndpointVolume? ep = null;
         try
         {
-            var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorComObject();
-            if (enumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out var device) == 0 && device != null)
+            enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorComObject();
+            if (enumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out device) == 0 && device != null)
             {
                 var iid = IID_IAudioEndpointVolume;
-                if (device.Activate(ref iid, 1, IntPtr.Zero, out var epObj) == 0 && epObj is IAudioEndpointVolume ep)
+                if (device.Activate(ref iid, 1, IntPtr.Zero, out var epObj) == 0 && epObj is IAudioEndpointVolume epVol)
                 {
+                    ep = epVol;
                     ep.GetMasterVolumeLevelScalar(out var scalar);
                     ep.GetMute(out var isMuted);
                     return ((float)Math.Round(scalar * 100), isMuted);
@@ -423,37 +442,57 @@ public static class AudioMixerService
             }
         }
         catch { }
+        finally
+        {
+            SafeReleaseCom(ep);
+            SafeReleaseCom(device);
+            SafeReleaseCom(enumerator);
+        }
         return (50f, false);
     }
 
     public static void SetMasterVolume(float volume)
     {
+        IMMDeviceEnumerator? enumerator = null;
+        IMMDevice? device = null;
+        IAudioEndpointVolume? ep = null;
         try
         {
-            var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorComObject();
-            if (enumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out var device) == 0 && device != null)
+            enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorComObject();
+            if (enumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out device) == 0 && device != null)
             {
                 var iid = IID_IAudioEndpointVolume;
-                if (device.Activate(ref iid, 1, IntPtr.Zero, out var epObj) == 0 && epObj is IAudioEndpointVolume ep)
+                if (device.Activate(ref iid, 1, IntPtr.Zero, out var epObj) == 0 && epObj is IAudioEndpointVolume epVol)
                 {
+                    ep = epVol;
                     var guid = Guid.Empty;
                     ep.SetMasterVolumeLevelScalar(Math.Clamp(volume / 100f, 0f, 1f), ref guid);
                 }
             }
         }
         catch { }
+        finally
+        {
+            SafeReleaseCom(ep);
+            SafeReleaseCom(device);
+            SafeReleaseCom(enumerator);
+        }
     }
 
     public static bool ToggleMasterMute()
     {
+        IMMDeviceEnumerator? enumerator = null;
+        IMMDevice? device = null;
+        IAudioEndpointVolume? ep = null;
         try
         {
-            var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorComObject();
-            if (enumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out var device) == 0 && device != null)
+            enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorComObject();
+            if (enumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out device) == 0 && device != null)
             {
                 var iid = IID_IAudioEndpointVolume;
-                if (device.Activate(ref iid, 1, IntPtr.Zero, out var epObj) == 0 && epObj is IAudioEndpointVolume ep)
+                if (device.Activate(ref iid, 1, IntPtr.Zero, out var epObj) == 0 && epObj is IAudioEndpointVolume epVol)
                 {
+                    ep = epVol;
                     ep.GetMute(out var isMuted);
                     bool newMute = !isMuted;
                     var guid = Guid.Empty;
@@ -463,32 +502,44 @@ public static class AudioMixerService
             }
         }
         catch { }
+        finally
+        {
+            SafeReleaseCom(ep);
+            SafeReleaseCom(device);
+            SafeReleaseCom(enumerator);
+        }
         return false;
     }
 
     private static ISimpleAudioVolume? FindMediaAudioSession(string sourceApp)
     {
+        IMMDeviceEnumerator? enumerator = null;
+        IMMDevice? device = null;
+        IAudioSessionManager2? mgr = null;
+        IAudioSessionEnumerator? sessionEnum = null;
+        ISimpleAudioVolume? bestCandidate = null;
+
         try
         {
-            var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorComObject();
-            if (enumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out var device) != 0 || device == null)
+            enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorComObject();
+            if (enumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out device) != 0 || device == null)
             {
                 return null;
             }
 
             var iidMgr = IID_IAudioSessionManager2;
-            if (device.Activate(ref iidMgr, 1, IntPtr.Zero, out var mgrObj) != 0 || mgrObj is not IAudioSessionManager2 mgr)
+            if (device.Activate(ref iidMgr, 1, IntPtr.Zero, out var mgrObj) != 0 || mgrObj is not IAudioSessionManager2 mgrVal)
             {
                 return null;
             }
+            mgr = mgrVal;
 
-            if (mgr.GetSessionEnumerator(out var sessionEnum) != 0 || sessionEnum == null)
+            if (mgr.GetSessionEnumerator(out sessionEnum) != 0 || sessionEnum == null)
             {
                 return null;
             }
 
             sessionEnum.GetCount(out int count);
-            ISimpleAudioVolume? bestCandidate = null;
 
             string target = (sourceApp ?? "").Trim().ToLowerInvariant();
             if (target.EndsWith(".exe")) target = target[..^4];
@@ -540,6 +591,13 @@ public static class AudioMixerService
             return bestCandidate;
         }
         catch { }
+        finally
+        {
+            SafeReleaseCom(sessionEnum);
+            SafeReleaseCom(mgr);
+            SafeReleaseCom(device);
+            SafeReleaseCom(enumerator);
+        }
 
         return null;
     }

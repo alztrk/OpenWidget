@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using OpenWidget.Models;
 using OpenWidget.Services;
+using OpenWidget.Utils;
 
 namespace OpenWidget;
 
@@ -22,42 +23,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private const int WS_EX_NOACTIVATE = 0x08000000;
     private const int WM_NCLBUTTONDOWN = 0xA1;
     private const int HT_CAPTION = 0x2;
-    private const int WM_MOVING = 0x0216;
-    private const uint MONITOR_DEFAULTTONEAREST = 2;
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct RECT
-    {
-        public int Left;
-        public int Top;
-        public int Right;
-        public int Bottom;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct MONITORINFO
-    {
-        public int cbSize;
-        public RECT rcMonitor;
-        public RECT rcWork;
-        public int dwFlags;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct POINT
-    {
-        public int X;
-        public int Y;
-    }
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
 
     [DllImport("user32.dll")]
     private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
@@ -129,7 +94,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     public ClipboardService Clipboard => _clipboardService;
     public System.Collections.ObjectModel.ObservableCollection<ClipboardItem> ClipboardItems => _clipboardService.Items;
     public WeatherDetailsModel Weather => _weatherService?.GetDetails() ?? new WeatherDetailsModel();
-    public string CompactWeatherText => _weatherService != null ? $"{_weatherService.GetDetails().City} {_weatherService.GetDetails().TempFormatted}" : "İstanbul 17°";
+    public string CompactWeatherText => _weatherService != null && !string.IsNullOrWhiteSpace(_weatherService.GetDetails().City)
+        ? $"{_weatherService.GetDetails().City} {_weatherService.GetDetails().TempFormatted}"
+        : (LocalizationService.CurrentLanguage == "en" ? "Weather updating..." : "Hava durumu...");
 
     public HardwareSpecs Specs
     {
@@ -269,48 +236,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             return IntPtr.Zero;
         }
 
-        if (msg == WM_MOVING)
+        if (msg == WindowPlacementHelper.WM_MOVING)
         {
             var rect = Marshal.PtrToStructure<RECT>(lParam);
-            var monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-            if (monitor != IntPtr.Zero)
-            {
-                var mi = new MONITORINFO { cbSize = Marshal.SizeOf(typeof(MONITORINFO)) };
-                if (GetMonitorInfo(monitor, ref mi))
-                {
-                    var work = mi.rcWork;
-                    int width = rect.Right - rect.Left;
-                    int height = rect.Bottom - rect.Top;
-                    const int snapDistance = 12;
-
-                    // Clamp & Snap Horizontal (Left / Right)
-                    if (rect.Left < work.Left || Math.Abs(rect.Left - work.Left) <= snapDistance)
-                    {
-                        rect.Left = work.Left;
-                        rect.Right = work.Left + width;
-                    }
-                    else if (rect.Right > work.Right || Math.Abs(rect.Right - work.Right) <= snapDistance)
-                    {
-                        rect.Right = work.Right;
-                        rect.Left = work.Right - width;
-                    }
-
-                    // Clamp & Snap Vertical (Top / Bottom)
-                    if (rect.Top < work.Top || Math.Abs(rect.Top - work.Top) <= snapDistance)
-                    {
-                        rect.Top = work.Top;
-                        rect.Bottom = work.Top + height;
-                    }
-                    else if (rect.Bottom > work.Bottom || Math.Abs(rect.Bottom - work.Bottom) <= snapDistance)
-                    {
-                        rect.Bottom = work.Bottom;
-                        rect.Top = work.Bottom - height;
-                    }
-
-                    Marshal.StructureToPtr(rect, lParam, true);
-                    handled = true;
-                }
-            }
+            WindowPlacementHelper.ClampAndSnapMovingRect(ref rect, hwnd);
+            Marshal.StructureToPtr(rect, lParam, true);
+            handled = true;
+            return new IntPtr(1);
         }
 
         return IntPtr.Zero;
@@ -565,47 +497,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         Dispatcher.Invoke(PositionWidget);
     }
 
-    private Rect GetTargetWorkArea(double left, double top)
-    {
-        var pt = new POINT { X = (int)left + 30, Y = (int)top + 30 };
-        var monitor = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
-        if (monitor != IntPtr.Zero)
-        {
-            var mi = new MONITORINFO { cbSize = Marshal.SizeOf(typeof(MONITORINFO)) };
-            if (GetMonitorInfo(monitor, ref mi))
-            {
-                var work = mi.rcWork;
-                return new Rect(work.Left, work.Top, work.Right - work.Left, work.Bottom - work.Top);
-            }
-        }
-        return SystemParameters.WorkArea;
-    }
-
     public void PositionWidget()
     {
         Width = 360;
 
-        Rect workArea;
-        if (_config.Widget.CustomLeft.HasValue && _config.Widget.CustomTop.HasValue)
-        {
-            workArea = GetTargetWorkArea(_config.Widget.CustomLeft.Value, _config.Widget.CustomTop.Value);
-        }
-        else
-        {
-            var handle = new WindowInteropHelper(this).Handle;
-            IntPtr monitor = handle != IntPtr.Zero ? MonitorFromWindow(handle, MONITOR_DEFAULTTONEAREST) : IntPtr.Zero;
-            if (monitor != IntPtr.Zero)
-            {
-                var mi = new MONITORINFO { cbSize = Marshal.SizeOf(typeof(MONITORINFO)) };
-                if (GetMonitorInfo(monitor, ref mi))
-                {
-                    var work = mi.rcWork;
-                    workArea = new Rect(work.Left, work.Top, work.Right - work.Left, work.Bottom - work.Top);
-                }
-                else workArea = SystemParameters.WorkArea;
-            }
-            else workArea = SystemParameters.WorkArea;
-        }
+        Rect workArea = (_config.Widget.CustomLeft.HasValue && _config.Widget.CustomTop.HasValue)
+            ? WindowPlacementHelper.GetTargetWorkArea(_config.Widget.CustomLeft.Value, _config.Widget.CustomTop.Value)
+            : WindowPlacementHelper.GetWindowWorkArea(new WindowInteropHelper(this).Handle);
 
         // Dynamic MaxHeight calculation based on current display resolution
         double topMargin = workArea.Height * 0.025;
@@ -707,7 +605,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void SaveCurrentPosition()
     {
-        var workArea = GetTargetWorkArea(Left, Top);
+        var workArea = WindowPlacementHelper.GetTargetWorkArea(Left, Top);
         double w = ActualWidth > 0 ? ActualWidth : Width;
         double h = ActualHeight > 0 ? ActualHeight : 450;
 

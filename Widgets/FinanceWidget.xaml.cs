@@ -13,6 +13,7 @@ public partial class FinanceWidget : UserControl
     {
         InitializeComponent();
         LocalizationService.LanguageChanged += OnLanguageChanged;
+        Unloaded += (s, e) => LocalizationService.LanguageChanged -= OnLanguageChanged;
     }
 
     private void UserControl_Loaded(object sender, RoutedEventArgs e)

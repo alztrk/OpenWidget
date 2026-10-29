@@ -14,7 +14,17 @@ public class WeatherService
     private readonly string _cachePath;
     private string _currentCityConfig = "auto";
     private WeatherDetailsModel _currentDetails = new();
-    private string _cachedWeather = "İstanbul 17°C";
+    private string _cachedWeather = string.Empty;
+
+    private static readonly HttpClient HttpClient = new()
+    {
+        Timeout = TimeSpan.FromSeconds(6)
+    };
+
+    static WeatherService()
+    {
+        HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("OpenWidget/2.0");
+    }
 
     public event Action<WeatherDetailsModel>? WeatherUpdated;
 
@@ -32,16 +42,16 @@ public class WeatherService
 
     public WeatherDetailsModel GetDetails() => _currentDetails;
 
-    public string GetCurrentWeather() => _cachedWeather;
+    public string GetCurrentWeather()
+    {
+        if (!string.IsNullOrEmpty(_cachedWeather)) return _cachedWeather;
+        return LocalizationService.CurrentLanguage == "en" ? "Updating weather..." : "Hava durumu güncelleniyor...";
+    }
 
     public async Task<string> FetchLatestAsync()
     {
         try
         {
-            using var client = new HttpClient();
-            client.Timeout = TimeSpan.FromSeconds(6);
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("OpenWidget/2.0");
-
             double latitude = 41.0082;
             double longitude = 28.9784;
             string displayCity = "İstanbul";
@@ -51,7 +61,7 @@ public class WeatherService
                 // Auto-detect via IP
                 try
                 {
-                    var geoJson = await client.GetStringAsync("http://ip-api.com/json/?fields=city,lat,lon");
+                    var geoJson = await HttpClient.GetStringAsync("http://ip-api.com/json/?fields=city,lat,lon");
                     using var geoDoc = JsonDocument.Parse(geoJson);
                     var root = geoDoc.RootElement;
                     if (root.TryGetProperty("lat", out var latProp) && root.TryGetProperty("lon", out var lonProp))
@@ -72,7 +82,7 @@ public class WeatherService
                 try
                 {
                     var geoUrl = $"https://geocoding-api.open-meteo.com/v1/search?name={Uri.EscapeDataString(_currentCityConfig)}&count=1&format=json";
-                    var geoJson = await client.GetStringAsync(geoUrl);
+                    var geoJson = await HttpClient.GetStringAsync(geoUrl);
                     using var geoDoc = JsonDocument.Parse(geoJson);
                     if (geoDoc.RootElement.TryGetProperty("results", out var results) && results.GetArrayLength() > 0)
                     {
@@ -93,7 +103,7 @@ public class WeatherService
             }
 
             var weatherUrl = $"https://api.open-meteo.com/v1/forecast?latitude={latitude.ToString(CultureInfo.InvariantCulture)}&longitude={longitude.ToString(CultureInfo.InvariantCulture)}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=3";
-            var weatherJson = await client.GetStringAsync(weatherUrl);
+            var weatherJson = await HttpClient.GetStringAsync(weatherUrl);
 
             using var doc = JsonDocument.Parse(weatherJson);
             var rootWeather = doc.RootElement;

@@ -31,6 +31,12 @@ public partial class QuickActionsWidget : UserControl
             Interval = TimeSpan.FromMilliseconds(500)
         };
         _saveNotesTimer.Tick += OnSaveNotesTimerTick;
+
+        Unloaded += (s, e) =>
+        {
+            LocalizationService.LanguageChanged -= OnLanguageChanged;
+            _saveNotesTimer.Stop();
+        };
     }
 
     private void UserControl_Loaded(object sender, RoutedEventArgs e)

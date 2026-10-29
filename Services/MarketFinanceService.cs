@@ -15,6 +15,16 @@ public class MarketFinanceService
     private static readonly CultureInfo TrCulture = new("tr-TR");
     private FinanceSpecs _cachedSpecs = new();
 
+    private static readonly HttpClient HttpClient = new()
+    {
+        Timeout = TimeSpan.FromSeconds(8)
+    };
+
+    static MarketFinanceService()
+    {
+        HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+    }
+
     public MarketFinanceService(string cacheFilePath)
     {
         _cacheFilePath = cacheFilePath;
@@ -25,14 +35,10 @@ public class MarketFinanceService
 
     public async Task<FinanceSpecs> FetchLatestAsync()
     {
-        using var client = new HttpClient();
-        client.Timeout = TimeSpan.FromSeconds(8);
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
-
         // 1. Currencies & Gold from Truncgil
         try
         {
-            var json = await client.GetStringAsync("https://finans.truncgil.com/v3/today.json");
+            var json = await HttpClient.GetStringAsync("https://finans.truncgil.com/v3/today.json");
             var specs = ParseTruncgilJson(json);
             if (specs.Currencies.Count > 0 || specs.Gold.Count > 0)
             {
@@ -47,10 +53,10 @@ public class MarketFinanceService
         // 2. Crypto from Binance (BTC & ETH)
         try
         {
-            var btcJson = await client.GetStringAsync("https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT");
+            var btcJson = await HttpClient.GetStringAsync("https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT");
             var btcItem = ParseBinanceTicker(btcJson, "btc", "IconBitcoin", LocalizationService.Get("Bitcoin"));
 
-            var ethJson = await client.GetStringAsync("https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT");
+            var ethJson = await HttpClient.GetStringAsync("https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT");
             var ethItem = ParseBinanceTicker(ethJson, "eth", "IconEthereum", LocalizationService.Get("Ethereum"));
 
             _cachedSpecs.Crypto = new List<FinanceItem> { btcItem, ethItem };
@@ -59,8 +65,8 @@ public class MarketFinanceService
 
         if (_cachedSpecs.Crypto.Count == 0)
         {
-            _cachedSpecs.Crypto.Add(new FinanceItem("btc", "IconBitcoin", LocalizationService.Get("Bitcoin"), "$84.250", "%+1,20", "Up"));
-            _cachedSpecs.Crypto.Add(new FinanceItem("eth", "IconEthereum", LocalizationService.Get("Ethereum"), "$2.940", "%-0,45", "Down"));
+            _cachedSpecs.Crypto.Add(new FinanceItem("btc", "IconBitcoin", LocalizationService.Get("Bitcoin"), "$--", "%0,00", "Neutral"));
+            _cachedSpecs.Crypto.Add(new FinanceItem("eth", "IconEthereum", LocalizationService.Get("Ethereum"), "$--", "%0,00", "Neutral"));
         }
 
         return _cachedSpecs;
@@ -84,8 +90,8 @@ public class MarketFinanceService
         }
         else if (_cachedSpecs.Crypto.Count == 0)
         {
-            _cachedSpecs.Crypto.Add(new FinanceItem("btc", "IconBitcoin", LocalizationService.Get("Bitcoin"), "$84.250", "%+1,20", "Up"));
-            _cachedSpecs.Crypto.Add(new FinanceItem("eth", "IconEthereum", LocalizationService.Get("Ethereum"), "$2.940", "%-0,45", "Down"));
+            _cachedSpecs.Crypto.Add(new FinanceItem("btc", "IconBitcoin", LocalizationService.Get("Bitcoin"), "$--", "%0,00", "Neutral"));
+            _cachedSpecs.Crypto.Add(new FinanceItem("eth", "IconEthereum", LocalizationService.Get("Ethereum"), "$--", "%0,00", "Neutral"));
         }
     }
 
@@ -201,13 +207,14 @@ public class MarketFinanceService
 
     private static FinanceSpecs CreateDefaultSpecs()
     {
-        var specs = new FinanceSpecs { LastUpdatedText = "Piyasa Kurları" };
-        specs.Currencies.Add(new FinanceItem("usd", "IconDollar", LocalizationService.Get("Dollar"), "49,84 ₺", "%0,00", "Neutral"));
-        specs.Currencies.Add(new FinanceItem("eur", "IconEuro", LocalizationService.Get("Euro"), "55,65 ₺", "%+0,14", "Up"));
-        specs.Gold.Add(new FinanceItem("gram_altin", "IconGoldBar", LocalizationService.Get("GramGold"), "6.450 ₺", "%-1,03", "Down"));
-        specs.Gold.Add(new FinanceItem("ceyrek_altin", "IconGoldQuarter", LocalizationService.Get("QuarterGold"), "10.632 ₺", "%0,00", "Neutral"));
-        specs.Crypto.Add(new FinanceItem("btc", "IconBitcoin", LocalizationService.Get("Bitcoin"), "$84.250", "%+1,20", "Up"));
-        specs.Crypto.Add(new FinanceItem("eth", "IconEthereum", LocalizationService.Get("Ethereum"), "$2.940", "%-0,45", "Down"));
+        var isEn = LocalizationService.CurrentLanguage == "en";
+        var specs = new FinanceSpecs { LastUpdatedText = isEn ? "Updating..." : "Güncelleniyor..." };
+        specs.Currencies.Add(new FinanceItem("usd", "IconDollar", LocalizationService.Get("Dollar"), "-- ₺", "%0,00", "Neutral"));
+        specs.Currencies.Add(new FinanceItem("eur", "IconEuro", LocalizationService.Get("Euro"), "-- ₺", "%0,00", "Neutral"));
+        specs.Gold.Add(new FinanceItem("gram_altin", "IconGoldBar", LocalizationService.Get("GramGold"), "-- ₺", "%0,00", "Neutral"));
+        specs.Gold.Add(new FinanceItem("ceyrek_altin", "IconGoldQuarter", LocalizationService.Get("QuarterGold"), "-- ₺", "%0,00", "Neutral"));
+        specs.Crypto.Add(new FinanceItem("btc", "IconBitcoin", LocalizationService.Get("Bitcoin"), "$--", "%0,00", "Neutral"));
+        specs.Crypto.Add(new FinanceItem("eth", "IconEthereum", LocalizationService.Get("Ethereum"), "$--", "%0,00", "Neutral"));
         return specs;
     }
 }

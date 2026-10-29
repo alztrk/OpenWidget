@@ -15,6 +15,11 @@ public partial class HeaderWidget : UserControl
     {
         InitializeComponent();
         LocalizationService.LanguageChanged += OnLanguageChanged;
+        Unloaded += (s, e) =>
+        {
+            LocalizationService.LanguageChanged -= OnLanguageChanged;
+            _clockTimer?.Stop();
+        };
     }
 
     private void UserControl_Loaded(object sender, RoutedEventArgs e)
