@@ -44,6 +44,7 @@ public partial class SettingsWindow : Window
         var op = _config.Widget.Opacity > 0.1 ? _config.Widget.Opacity * 100 : 100;
         SliderOpacity.Value = Math.Clamp(op, 30, 100);
         TxtOpacityValue.Text = $"{(int)SliderOpacity.Value}%";
+        Opacity = Math.Clamp(op / 100.0, 0.3, 1.0);
 
         // Accent Theme
         var accent = _config.Widget.AccentTheme ?? "Sky";
@@ -113,6 +114,7 @@ public partial class SettingsWindow : Window
         if (TxtOpacityValue != null)
         {
             TxtOpacityValue.Text = $"{(int)SliderOpacity.Value}%";
+            Opacity = Math.Clamp(SliderOpacity.Value / 100.0, 0.3, 1.0);
         }
     }
 

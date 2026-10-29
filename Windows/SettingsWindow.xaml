@@ -185,7 +185,7 @@
     </Window.Resources>
 
     <!-- Frosted Acrylic Master Dialog Container -->
-    <Border Background="#F4090D16"
+    <Border Background="{StaticResource MasterHudBgBrush}"
             BorderBrush="{StaticResource MasterHudBorderBrush}"
             BorderThickness="1"
             CornerRadius="16"

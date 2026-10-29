@@ -35,19 +35,19 @@
             <MenuItem x:Name="MenuMedia" Header="🎵 Medya Oynatıcı" IsCheckable="True" Click="MenuMedia_Click" />
             <MenuItem x:Name="MenuHardware" Header="🖥️ Donanım Bileşenleri" IsCheckable="True" Click="MenuHardware_Click" />
             <MenuItem x:Name="MenuQuickActions" Header="⚡ Hızlı Araçlar" IsCheckable="True" Click="MenuQuickActions_Click" />
-            <Separator Background="{StaticResource DividerBrush}" />
+            <Separator />
             <MenuItem x:Name="MenuCompactMode" Header="⚡ Kompakt HUD Modu" IsCheckable="True" Click="MenuCompactMode_Click" />
             <MenuItem x:Name="MenuLockPosition" Header="🔒 Konumu Kilitle" IsCheckable="True" Click="MenuLockPosition_Click" />
             <MenuItem x:Name="MenuPinToDesktop" Header="🖼️ Masaüstüne Sabitle (En Arkada)" IsCheckable="True" Click="MenuPinToDesktop_Click" />
             <MenuItem x:Name="MenuAlwaysOnTop" Header="📌 Her Zaman Üstte" IsCheckable="True" Click="MenuAlwaysOnTop_Click" />
             <MenuItem x:Name="MenuGameMode" Header="🎮 Oyun Modu (Otomatik Rölanti)" IsCheckable="True" Click="MenuGameMode_Click" />
             <MenuItem x:Name="MenuAutoStart" Header="🚀 Windows ile Birlikte Başlat" IsCheckable="True" Click="MenuAutoStart_Click" />
-            <Separator Background="{StaticResource DividerBrush}" />
+            <Separator />
             <MenuItem x:Name="MenuSettings" Header="⚙️ Ayarlar" Click="MenuSettings_Click" FontWeight="SemiBold" />
             <MenuItem x:Name="MenuRefresh" Header="🔄 Yenile" Click="MenuRefresh_Click" />
             <MenuItem x:Name="MenuResetPos" Header="🎯 Konumu Varsayılana Sıfırla" Click="MenuResetPosition_Click" />
             <MenuItem x:Name="MenuPrices" Header="💰 Fiyatlar (hardware-prices.json)" Click="MenuEditPrices_Click" />
-            <Separator Background="{StaticResource DividerBrush}" />
+            <Separator />
             <MenuItem x:Name="MenuExit" Header="❌ Kapat" Click="MenuExit_Click" />
         </ContextMenu>
     </Window.ContextMenu>

@@ -52,6 +52,107 @@
     <SolidColorBrush x:Key="GlassCardBgBrush" Color="{StaticResource SectionBgColor}" />
     <SolidColorBrush x:Key="GlassCardBorderBrush" Color="{StaticResource SectionBorderColor}" />
 
+    <!-- Modern Acrylic ContextMenu Styles -->
+    <Style TargetType="ContextMenu">
+        <Setter Property="Background" Value="#CC090D16" />
+        <Setter Property="BorderBrush" Value="{StaticResource MasterHudBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="4,4" />
+        <Setter Property="HasDropShadow" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContextMenu">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="10"
+                            Padding="{TemplateBinding Padding}">
+                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="Separator">
+        <Setter Property="Height" Value="1" />
+        <Setter Property="Margin" Value="4,3" />
+        <Setter Property="Background" Value="{StaticResource DividerBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Separator">
+                    <Border Height="1" Background="{TemplateBinding Background}" SnapsToDevicePixels="True" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="MenuItem">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Border x:Name="bd"
+                            Background="Transparent"
+                            CornerRadius="6"
+                            Padding="8,0"
+                            Margin="1,0.5">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Checkmark / Indicator -->
+                            <Path x:Name="CheckMark"
+                                  Grid.Column="0"
+                                  Data="M3.5 8.5l3 3 7-7"
+                                  Stroke="{StaticResource AccentBrush}"
+                                  StrokeThickness="1.8"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"
+                                  VerticalAlignment="Center"
+                                  HorizontalAlignment="Left"
+                                  Visibility="Collapsed"
+                                  Width="11" Height="9" />
+
+                            <!-- Header -->
+                            <ContentPresenter Grid.Column="1"
+                                              ContentSource="Header"
+                                              RecognizesAccessKey="True"
+                                              VerticalAlignment="Center"
+                                              Margin="2,0,8,0" />
+
+                            <!-- Input Gesture -->
+                            <TextBlock Grid.Column="2"
+                                       Text="{TemplateBinding InputGestureText}"
+                                       Foreground="{StaticResource TextMutedBrush}"
+                                       FontSize="11"
+                                       VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="CheckMark" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="#22FFFFFF" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Vector Icons (StreamGeometry Pack) -->
     <Geometry x:Key="GeoCpu">M4 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4zm4 4v8h8V8H8zm2 2h4v4h-4v-4zM2 7h2v2H2V7zm0 4h2v2H2v-2zm0 4h2v2H2v-2zm20-8h-2v2h2V7zm0 4h-2v2h2v-2zm0 4h-2v2h2v-2zM7 2v2h2V2H7zm4 0v2h2V2h-2zm4 0v2h2V2h-2zm-8 20v-2h2v2H7zm4 0v-2h2v2h-2zm4 0v-2h2v2h-2z</Geometry>
     <Geometry x:Key="GeoGpu">M2 5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5zm3 1a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H5zm3.5 1.5a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7-2a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM5 19h14v2H5v-2z</Geometry>
