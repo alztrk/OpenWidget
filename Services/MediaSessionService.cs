@@ -25,10 +25,29 @@ public class MediaSessionService : IDisposable
     private MediaTrackInfo _currentTrack = new(false, "", "", false, "");
     private readonly System.Timers.Timer _progressTimer;
 
+    // High-precision stopwatch tracking
+    private string _activeTrackKey = "";
+    private readonly Stopwatch _trackStopwatch = new();
+    private TimeSpan _trackBasePosition = TimeSpan.Zero;
+    private TimeSpan _trackDuration = TimeSpan.Zero;
+
     public event Action<MediaTrackInfo>? MediaChanged;
     public event Action<TimeSpan, TimeSpan>? PositionChanged;
 
     public MediaTrackInfo CurrentTrack => _currentTrack;
+
+    public TimeSpan CurrentPlaybackPosition
+    {
+        get
+        {
+            var elapsed = _trackBasePosition + _trackStopwatch.Elapsed;
+            if (_trackDuration > TimeSpan.Zero && elapsed > _trackDuration)
+            {
+                return _trackDuration;
+            }
+            return elapsed;
+        }
+    }
 
     public MediaSessionService()
     {
@@ -81,6 +100,8 @@ public class MediaSessionService : IDisposable
             else
             {
                 _progressTimer.Stop();
+                _trackStopwatch.Stop();
+                _activeTrackKey = "";
                 _currentTrack = new MediaTrackInfo(false, "", "", false, "");
                 MediaChanged?.Invoke(_currentTrack);
             }
@@ -109,12 +130,19 @@ public class MediaSessionService : IDisposable
         try
         {
             var timeline = _currentSession.GetTimelineProperties();
-            if (timeline != null)
+            // Only sync timeline if player reports a real non-zero duration (e.g. Spotify)
+            if (timeline != null && timeline.EndTime > TimeSpan.Zero)
             {
-                var pos = timeline.Position;
-                var dur = timeline.EndTime;
-                _currentTrack = _currentTrack with { Position = pos, Duration = dur };
-                PositionChanged?.Invoke(pos, dur);
+                _trackDuration = timeline.EndTime;
+                var elapsedSinceSnap = DateTimeOffset.UtcNow - timeline.LastUpdatedTime;
+                if (elapsedSinceSnap < TimeSpan.Zero) elapsedSinceSnap = TimeSpan.Zero;
+                _trackBasePosition = timeline.Position + (_currentTrack.IsPlaying ? elapsedSinceSnap : TimeSpan.Zero);
+                if (_trackBasePosition > _trackDuration) _trackBasePosition = _trackDuration;
+                _trackStopwatch.Restart();
+
+                var pos = CurrentPlaybackPosition;
+                _currentTrack = _currentTrack with { Position = pos, Duration = _trackDuration };
+                PositionChanged?.Invoke(pos, _trackDuration);
             }
         }
         catch { }
@@ -124,19 +152,9 @@ public class MediaSessionService : IDisposable
     {
         if (!_currentTrack.HasMedia || !_currentTrack.IsPlaying) return;
 
-        TimeSpan nextPos;
-        if (_currentTrack.Duration > TimeSpan.Zero)
-        {
-            nextPos = _currentTrack.Position.Add(TimeSpan.FromSeconds(1));
-            if (nextPos > _currentTrack.Duration) nextPos = _currentTrack.Duration;
-        }
-        else
-        {
-            nextPos = _currentTrack.Position.Add(TimeSpan.FromSeconds(1));
-        }
-
-        _currentTrack = _currentTrack with { Position = nextPos };
-        PositionChanged?.Invoke(nextPos, _currentTrack.Duration);
+        var pos = CurrentPlaybackPosition;
+        _currentTrack = _currentTrack with { Position = pos, Duration = _trackDuration };
+        PositionChanged?.Invoke(pos, _trackDuration);
     }
 
     public async Task RefreshMediaInfoAsync()
@@ -149,6 +167,8 @@ public class MediaSessionService : IDisposable
                 if (_currentSession == null)
                 {
                     _progressTimer.Stop();
+                    _trackStopwatch.Stop();
+                    _activeTrackKey = "";
                     _currentTrack = new MediaTrackInfo(false, "", "", false, "");
                     MediaChanged?.Invoke(_currentTrack);
                     return;
@@ -180,30 +200,40 @@ public class MediaSessionService : IDisposable
                     catch { }
                 }
 
-                TimeSpan pos = TimeSpan.Zero;
-                TimeSpan dur = TimeSpan.Zero;
-                try
-                {
-                    var timeline = _currentSession.GetTimelineProperties();
-                    if (timeline != null)
-                    {
-                        dur = timeline.EndTime;
-                        if (dur > TimeSpan.Zero)
-                        {
-                            var elapsed = DateTimeOffset.UtcNow - timeline.LastUpdatedTime;
-                            if (elapsed < TimeSpan.Zero) elapsed = TimeSpan.Zero;
-                            pos = timeline.Position + (isPlaying ? elapsed : TimeSpan.Zero);
-                            if (pos > dur) pos = dur;
-                        }
-                    }
-                }
-                catch { }
+                string trackKey = $"{props.Title}|{props.Artist}";
+                bool trackChanged = trackKey != _activeTrackKey;
 
-                if (dur <= TimeSpan.Zero && _currentTrack.Title == props.Title)
+                var timeline = _currentSession.GetTimelineProperties();
+                if (timeline != null && timeline.EndTime > TimeSpan.Zero)
                 {
-                    pos = _currentTrack.Position;
+                    _trackDuration = timeline.EndTime;
+                    var elapsedSinceSnap = DateTimeOffset.UtcNow - timeline.LastUpdatedTime;
+                    if (elapsedSinceSnap < TimeSpan.Zero) elapsedSinceSnap = TimeSpan.Zero;
+                    _trackBasePosition = timeline.Position + (isPlaying ? elapsedSinceSnap : TimeSpan.Zero);
+                    if (_trackBasePosition > _trackDuration) _trackBasePosition = _trackDuration;
+                    _trackStopwatch.Restart();
+                }
+                else if (trackChanged)
+                {
+                    _trackDuration = TimeSpan.Zero;
+                    _trackBasePosition = TimeSpan.Zero;
+                    _trackStopwatch.Restart();
                 }
 
+                _activeTrackKey = trackKey;
+
+                if (isPlaying)
+                {
+                    if (!_trackStopwatch.IsRunning) _trackStopwatch.Start();
+                    _progressTimer.Start();
+                }
+                else
+                {
+                    if (_trackStopwatch.IsRunning) _trackStopwatch.Stop();
+                    _progressTimer.Stop();
+                }
+
+                var currentPos = CurrentPlaybackPosition;
                 _currentTrack = new MediaTrackInfo(
                     HasMedia: true,
                     Title: props.Title,
@@ -211,22 +241,15 @@ public class MediaSessionService : IDisposable
                     IsPlaying: isPlaying,
                     SourceApp: source,
                     ThumbnailBytes: thumbBytes,
-                    Position: pos,
-                    Duration: dur
+                    Position: currentPos,
+                    Duration: _trackDuration
                 );
-
-                if (isPlaying)
-                {
-                    _progressTimer.Start();
-                }
-                else
-                {
-                    _progressTimer.Stop();
-                }
             }
             else
             {
                 _progressTimer.Stop();
+                _trackStopwatch.Stop();
+                _activeTrackKey = "";
                 _currentTrack = new MediaTrackInfo(false, "", "", false, "");
             }
 
@@ -235,6 +258,8 @@ public class MediaSessionService : IDisposable
         catch
         {
             _progressTimer.Stop();
+            _trackStopwatch.Stop();
+            _activeTrackKey = "";
             _currentTrack = new MediaTrackInfo(false, "", "", false, "");
             MediaChanged?.Invoke(_currentTrack);
         }
@@ -247,8 +272,11 @@ public class MediaSessionService : IDisposable
             if (_currentSession != null)
             {
                 await _currentSession.TryChangePlaybackPositionAsync(position.Ticks);
-                _currentTrack = _currentTrack with { Position = position };
-                PositionChanged?.Invoke(position, _currentTrack.Duration);
+                _trackBasePosition = position;
+                _trackStopwatch.Restart();
+                var currentPos = CurrentPlaybackPosition;
+                _currentTrack = _currentTrack with { Position = currentPos };
+                PositionChanged?.Invoke(currentPos, _trackDuration);
             }
         }
         catch { }
@@ -300,6 +328,7 @@ public class MediaSessionService : IDisposable
     {
         _progressTimer.Stop();
         _progressTimer.Dispose();
+        _trackStopwatch.Stop();
         if (_manager != null)
         {
             _manager.CurrentSessionChanged -= OnCurrentSessionChanged;

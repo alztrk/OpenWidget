@@ -56,17 +56,20 @@ public partial class MediaWidget : UserControl
             if (dur > TimeSpan.Zero)
             {
                 SliderSeek.IsEnabled = true;
-                double pct = Math.Clamp((pos.TotalSeconds / dur.TotalSeconds) * 100.0, 0.0, 100.0);
-                SliderSeek.Value = pct;
+                SliderSeek.IsHitTestVisible = true;
+                SliderSeek.Maximum = dur.TotalSeconds;
+                SliderSeek.Value = Math.Clamp(pos.TotalSeconds, 0, dur.TotalSeconds);
                 TxtTotalTime.Text = FormatTime(dur);
             }
             else
             {
                 // Web stream / YouTube / video without fixed timeline metadata
                 SliderSeek.IsEnabled = true;
-                double modSec = pos.TotalSeconds % 60.0;
-                SliderSeek.Value = (modSec / 60.0) * 100.0;
-                TxtTotalTime.Text = "Akış";
+                SliderSeek.IsHitTestVisible = false;
+                double scale = Math.Max(300, pos.TotalSeconds * 1.25);
+                SliderSeek.Maximum = scale;
+                SliderSeek.Value = Math.Clamp(pos.TotalSeconds, 0, scale);
+                TxtTotalTime.Text = "Çalıyor";
             }
         });
     }
@@ -127,16 +130,19 @@ public partial class MediaWidget : UserControl
         if (info.Duration > TimeSpan.Zero)
         {
             SliderSeek.IsEnabled = true;
-            double pct = Math.Clamp((info.Position.TotalSeconds / info.Duration.TotalSeconds) * 100.0, 0.0, 100.0);
-            SliderSeek.Value = pct;
+            SliderSeek.IsHitTestVisible = true;
+            SliderSeek.Maximum = info.Duration.TotalSeconds;
+            SliderSeek.Value = Math.Clamp(info.Position.TotalSeconds, 0, info.Duration.TotalSeconds);
             TxtTotalTime.Text = FormatTime(info.Duration);
         }
         else
         {
             SliderSeek.IsEnabled = true;
-            double modSec = info.Position.TotalSeconds % 60.0;
-            SliderSeek.Value = (modSec / 60.0) * 100.0;
-            TxtTotalTime.Text = "Akış";
+            SliderSeek.IsHitTestVisible = false;
+            double scale = Math.Max(300, info.Position.TotalSeconds * 1.25);
+            SliderSeek.Maximum = scale;
+            SliderSeek.Value = Math.Clamp(info.Position.TotalSeconds, 0, scale);
+            TxtTotalTime.Text = "Çalıyor";
         }
 
         // Initialize Real Master Volume Control
@@ -178,7 +184,11 @@ public partial class MediaWidget : UserControl
 
     private static string FormatTime(TimeSpan t)
     {
-        return t.TotalHours >= 1 ? t.ToString(@"hh\:mm\:ss") : t.ToString(@"mm\:ss");
+        if (t.TotalHours >= 1)
+        {
+            return $"{(int)t.TotalHours}:{t.Minutes:D2}:{t.Seconds:D2}";
+        }
+        return $"{t.Minutes:D2}:{t.Seconds:D2}";
     }
 
     private void SliderSeek_PreviewMouseDown(object sender, MouseButtonEventArgs e)
@@ -196,7 +206,7 @@ public partial class MediaWidget : UserControl
     {
         if (_isUserSeeking && _currentDuration > TimeSpan.Zero)
         {
-            var previewPos = TimeSpan.FromSeconds((SliderSeek.Value / 100.0) * _currentDuration.TotalSeconds);
+            var previewPos = TimeSpan.FromSeconds(SliderSeek.Value);
             TxtCurrentTime.Text = FormatTime(previewPos);
         }
     }
@@ -205,7 +215,7 @@ public partial class MediaWidget : UserControl
     {
         if (_service != null && _currentDuration > TimeSpan.Zero)
         {
-            var target = TimeSpan.FromSeconds((SliderSeek.Value / 100.0) * _currentDuration.TotalSeconds);
+            var target = TimeSpan.FromSeconds(SliderSeek.Value);
             _ = _service.SeekToAsync(target);
         }
     }
