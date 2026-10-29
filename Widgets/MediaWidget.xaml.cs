@@ -17,6 +17,7 @@ public partial class MediaWidget : UserControl
     private bool _isUserSeeking = false;
     private bool _isUpdatingVolumeInternal = false;
     private bool _isUserAdjustingVolume = false;
+    private DateTime _lastUserVolumeAdjustTime = DateTime.MinValue;
     private readonly DispatcherTimer _volumeSyncTimer;
 
     public MediaWidget()
@@ -151,7 +152,7 @@ public partial class MediaWidget : UserControl
 
     private void UpdateMediaVolumeUI()
     {
-        if (_isUserAdjustingVolume) return;
+        if (_isUserAdjustingVolume || (DateTime.UtcNow - _lastUserVolumeAdjustTime < TimeSpan.FromMilliseconds(1500))) return;
 
         try
         {
@@ -234,6 +235,7 @@ public partial class MediaWidget : UserControl
     {
         if (_isUpdatingVolumeInternal) return;
 
+        _lastUserVolumeAdjustTime = DateTime.UtcNow;
         float newVol = (float)SliderMediaVolume.Value;
         if (TxtMediaVolumePercent != null)
         {

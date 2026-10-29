@@ -33,14 +33,14 @@
     <Color x:Key="TrackBgColor">#1AFFFFFF</Color>
     <SolidColorBrush x:Key="TrackBgBrush" Color="{StaticResource TrackBgColor}" />
 
-    <!-- Typography -->
-    <Color x:Key="TextPrimaryColor">#F8FAFC</Color>
+    <!-- Typography (25% Increased Brightness / Opacity for Clear Readability) -->
+    <Color x:Key="TextPrimaryColor">#FFFFFF</Color>
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
 
-    <Color x:Key="TextSecondaryColor">#94A3B8</Color>
+    <Color x:Key="TextSecondaryColor">#CBD5E1</Color>
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" />
 
-    <Color x:Key="TextMutedColor">#64748B</Color>
+    <Color x:Key="TextMutedColor">#94A3B8</Color>
     <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}" />
 
     <Color x:Key="DividerColor">#1CFFFFFF</Color>

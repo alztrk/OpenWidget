@@ -10,7 +10,7 @@
         Background="Transparent"
         ResizeMode="NoResize"
         ShowInTaskbar="True"
-        FontFamily="Segoe UI Variable Text, Segoe UI, -apple-system, sans-serif"
+        FontFamily="Roboto, Segoe UI Variable Text, Segoe UI, sans-serif"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
         RenderOptions.ClearTypeHint="Enabled"

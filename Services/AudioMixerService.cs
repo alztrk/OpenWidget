@@ -170,7 +170,7 @@ public class MasterVolumeModel : INotifyPropertyChanged
 
 public static class AudioMixerService
 {
-    private static readonly Guid IID_IAudioEndpointVolume = new("5BC64874-38E4-4DB2-8360-CEF610F2232E");
+    private static readonly Guid IID_IAudioEndpointVolume = new("5CDF2C82-841E-4546-9722-0CF74078229A");
     private static readonly Guid IID_IAudioSessionManager2 = new("77AA99A0-1BD6-484F-8BC7-2C654C9A9B6F");
     private static readonly Guid IID_IPropertyStore = new("886d8eeb-8cf2-4446-8d02-cdba1dbdcf99");
     private static readonly PropertyKey PKEY_Device_FriendlyName = new(new Guid("a45c254e-df1c-4efd-8020-67d146a850e0"), 14);
@@ -404,21 +404,21 @@ public static class AudioMixerService
 
 #region COM Declarations
 
-internal enum EDataFlow
+public enum EDataFlow
 {
     eRender = 0,
     eCapture = 1,
     eAll = 2
 }
 
-internal enum ERole
+public enum ERole
 {
     eConsole = 0,
     eMultimedia = 1,
     eCommunications = 2
 }
 
-internal enum AudioSessionState
+public enum AudioSessionState
 {
     AudioSessionStateInactive = 0,
     AudioSessionStateActive = 1,
@@ -426,7 +426,7 @@ internal enum AudioSessionState
 }
 
 [StructLayout(LayoutKind.Sequential)]
-internal struct PropertyKey
+public struct PropertyKey
 {
     public Guid fmtid;
     public uint pid;
@@ -439,7 +439,7 @@ internal struct PropertyKey
 }
 
 [StructLayout(LayoutKind.Explicit)]
-internal struct PropVariant
+public struct PropVariant
 {
     [FieldOffset(0)] public ushort vt;
     [FieldOffset(8)] public IntPtr pwszVal;
@@ -447,10 +447,10 @@ internal struct PropVariant
 
 [ComImport]
 [Guid("BCDE0395-E52F-467C-8E3D-C4579291692E")]
-internal class MMDeviceEnumeratorComObject { }
+public class MMDeviceEnumeratorComObject { }
 
 [Guid("A95664D2-9614-4F35-A746-DE8DB63617E6"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-internal interface IMMDeviceEnumerator
+public interface IMMDeviceEnumerator
 {
     int EnumAudioEndpoints(EDataFlow dataFlow, uint dwStateMask, out IntPtr ppDevices);
     [PreserveSig]
@@ -461,7 +461,7 @@ internal interface IMMDeviceEnumerator
 }
 
 [Guid("D666063F-1587-4E43-81F1-B948E807363F"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-internal interface IMMDevice
+public interface IMMDevice
 {
     [PreserveSig]
     int Activate(ref Guid iid, uint dwClsCtx, IntPtr pActivationParams, [MarshalAs(UnmanagedType.IUnknown)] out object ppInterface);
@@ -472,7 +472,7 @@ internal interface IMMDevice
 }
 
 [Guid("886d8eeb-8cf2-4446-8d02-cdba1dbdcf99"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-internal interface IPropertyStore
+public interface IPropertyStore
 {
     int GetCount(out uint cProps);
     int GetAt(uint iProp, out PropertyKey pkey);
@@ -482,8 +482,8 @@ internal interface IPropertyStore
     int Commit();
 }
 
-[Guid("5BC64874-38E4-4DB2-8360-CEF610F2232E"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-internal interface IAudioEndpointVolume
+[Guid("5CDF2C82-841E-4546-9722-0CF74078229A"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+public interface IAudioEndpointVolume
 {
     int RegisterControlChangeNotify(IntPtr pNotify);
     int UnregisterControlChangeNotify(IntPtr pNotify);

@@ -16,6 +16,15 @@
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="Padding" Value="8,4" />
                 <Setter Property="FontSize" Value="11.5" />
+                <Setter Property="FontFamily" Value="Roboto, Segoe UI Variable Text, Segoe UI, sans-serif" />
+            </Style>
+
+            <Style TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="Roboto, Segoe UI Variable Text, Segoe UI, sans-serif" />
+            </Style>
+
+            <Style TargetType="Control">
+                <Setter Property="FontFamily" Value="Roboto, Segoe UI Variable Text, Segoe UI, sans-serif" />
             </Style>
         </ResourceDictionary>
     </Application.Resources>

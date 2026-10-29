@@ -467,7 +467,7 @@
                                          Foreground="{StaticResource TextPrimaryBrush}"
                                          CaretBrush="{StaticResource AccentBrush}"
                                          FontSize="11.5"
-                                         FontFamily="Segoe UI, Consolas"
+                                         FontFamily="Roboto, Segoe UI, Consolas"
                                          AcceptsReturn="True"
                                          TextWrapping="Wrap"
                                          VerticalScrollBarVisibility="Auto"

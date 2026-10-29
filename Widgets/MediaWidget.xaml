@@ -174,7 +174,7 @@
                     <TextBlock x:Name="TxtCurrentTime"
                                Text="00:00"
                                FontSize="9.5"
-                               FontFamily="Consolas, Segoe UI"
+                               FontFamily="Roboto, Consolas, Segoe UI"
                                Foreground="{StaticResource TextMutedBrush}"
                                VerticalAlignment="Center" />
                     <TextBlock x:Name="TxtTotalTime"
@@ -182,7 +182,7 @@
                                HorizontalAlignment="Right"
                                Text="00:00"
                                FontSize="9.5"
-                               FontFamily="Consolas, Segoe UI"
+                               FontFamily="Roboto, Consolas, Segoe UI"
                                Foreground="{StaticResource TextMutedBrush}"
                                VerticalAlignment="Center" />
                 </DockPanel>
