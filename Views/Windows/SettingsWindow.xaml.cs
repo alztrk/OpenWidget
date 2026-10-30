@@ -91,6 +91,8 @@ public partial class SettingsWindow : Window
         ChkGameMode.IsChecked = _config.Widget.AutoGameMode;
         ChkModularCards.IsChecked = _config.Widget.UseModularCards;
         ChkClipboardHeight.IsChecked = _config.Widget.LimitClipboardHeight;
+        ChkClipboardExpanded.IsChecked = _config.Widget.IsClipboardHistoryExpanded;
+        SelectCurrency(_config.Widget.Currency);
         ChkHardwareCore.IsChecked = _config.HardwareVisibility.CoreSystem;
         ChkHardwareStorage.IsChecked = _config.HardwareVisibility.Storage;
         ChkHardwarePeripherals.IsChecked = _config.HardwareVisibility.Peripherals;
@@ -370,6 +372,7 @@ public partial class SettingsWindow : Window
         ChkGameMode.IsChecked = true;
         ChkModularCards.IsChecked = false;
         ChkClipboardHeight.IsChecked = true;
+        ChkClipboardExpanded.IsChecked = true;
         ChkHardwareCore.IsChecked = true;
         ChkHardwareStorage.IsChecked = true;
         ChkHardwarePeripherals.IsChecked = true;
@@ -486,6 +489,8 @@ public partial class SettingsWindow : Window
         _config.Widget.AutoGameMode = ChkGameMode.IsChecked == true;
         _config.Widget.UseModularCards = ChkModularCards.IsChecked == true;
         _config.Widget.LimitClipboardHeight = ChkClipboardHeight.IsChecked == true;
+        _config.Widget.IsClipboardHistoryExpanded = ChkClipboardExpanded.IsChecked == true;
+        _config.Widget.Currency = (CmbCurrency.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "TRY";
         _config.HardwareVisibility.CoreSystem = ChkHardwareCore.IsChecked == true;
         _config.HardwareVisibility.Storage = ChkHardwareStorage.IsChecked == true;
         _config.HardwareVisibility.Peripherals = ChkHardwarePeripherals.IsChecked == true;
@@ -502,6 +507,20 @@ public partial class SettingsWindow : Window
         _onSave?.Invoke(_config);
 
         AnimationHelper.AnimateWindowExit(this, MasterDialogBorder);
+    }
+
+    private void SelectCurrency(string currency)
+    {
+        foreach (ComboBoxItem item in CmbCurrency.Items)
+        {
+            if (string.Equals(item.Tag?.ToString(), currency, StringComparison.OrdinalIgnoreCase))
+            {
+                CmbCurrency.SelectedItem = item;
+                return;
+            }
+        }
+
+        CmbCurrency.SelectedIndex = 0;
     }
 
     private async void BtnCheckUpdate_Click(object sender, RoutedEventArgs e)

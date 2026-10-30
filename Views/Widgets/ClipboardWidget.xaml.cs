@@ -88,6 +88,20 @@ public partial class ClipboardWidget : UserControl
         TxtItemCount.Text = $"{count} {unit}";
     }
 
+    private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.OriginalSource is Button)
+        {
+            return;
+        }
+
+        if (DataContext is MainWindow mainWindow)
+        {
+            mainWindow.ToggleClipboardHistory();
+            e.Handled = true;
+        }
+    }
+
     private async void Item_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (sender is FrameworkElement elem && elem.DataContext is ClipboardItem item && _clipboardService != null)

@@ -22,7 +22,7 @@ OpenWidget is a standalone desktop system and information widget for Windows 10 
 1. **Header:** Clock, date, uptime, and game-mode status.
 2. **Weather:** Current conditions and a three-day forecast through Open-Meteo.
 3. **Telemetry:** CPU, GPU, VRAM, RAM, disk, and network metrics.
-4. **Finance:** Currency, gold, and cryptocurrency prices with local caching.
+4. **Finance:** Currency, gold, and cryptocurrency prices with local caching and a selectable display currency.
 5. **Media:** Windows Media Session controls, session switching, album artwork, and application-specific volume control.
 6. **Clipboard:** Persistent text, image thumbnail, and copied-file history.
 7. **Hardware:** Hardware detection and tracked reference prices.
@@ -69,6 +69,8 @@ The output is written to `dist\OpenWidget.exe`.
 - `%APPDATA%\OpenWidget\crash.log`: Unexpected error log.
 - `config.schema.json`: JSON Schema for the local configuration file.
 - `finance-cache.json`: Cached finance data.
+- The display currency can be selected in Settings > General. Supported currencies are TRY, USD, EUR, GBP, JPY, CHF, CAD, and AUD. TRY is the default.
+- Clipboard history can be collapsed from its header or Settings, while the history count remains visible.
 - `weather-cache.json`: Cached weather data.
 
 ## Project Structure

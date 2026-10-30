@@ -172,6 +172,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     public double ClipboardMaxHeight => _config.Widget.LimitClipboardHeight
         ? Math.Max(120, _config.Widget.ClipboardHeight)
         : double.PositiveInfinity;
+    public bool IsClipboardHistoryExpanded => _config.Widget.IsClipboardHistoryExpanded;
+
+    public void ToggleClipboardHistory()
+    {
+        _config.Widget.IsClipboardHistoryExpanded = !_config.Widget.IsClipboardHistoryExpanded;
+        SaveConfig();
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsClipboardHistoryExpanded)));
+    }
 
     public string CompactCpuText => GetCompactTelemetryText("cpu", "CPU");
     public string CompactGpuText => GetCompactTelemetryText("gpu", "GPU");
@@ -293,6 +301,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         _priceService = new PriceService(_config, _configPath);
         _telemetryService = new SystemTelemetryService();
         _financeService = new MarketFinanceService(_financeCachePath);
+        _financeService.SetCurrency(_config.Widget.Currency);
         _weatherService = new WeatherService(_weatherCachePath, _config.Widget.City);
         _weatherService.WeatherUpdated += (details) =>
         {
@@ -388,6 +397,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSingleCardLayoutVisible)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsModularLayoutVisible)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ClipboardMaxHeight)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsClipboardHistoryExpanded)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsFullViewVisible)));
     }
 
@@ -787,7 +797,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         if (_financeService != null)
         {
-            var specs = await _financeService.FetchLatestAsync();
+            var specs = await _financeService.FetchLatestAsync(_config.Widget.Currency);
             if (_weatherService != null)
             {
                 specs.WeatherText = await _weatherService.FetchLatestAsync();
@@ -991,6 +1001,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         ThemeService.ApplyAccent(_config.Widget.AccentTheme);
         LocalizationService.CurrentLanguage = _config.Widget.Language;
         _weatherService?.UpdateCity(_config.Widget.City);
+        _financeService?.SetCurrency(_config.Widget.Currency);
 
         ApplyLockState();
         ApplyDesktopPinning();

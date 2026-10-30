@@ -309,6 +309,30 @@
                     </Grid>
                 </Border>
 
+                <!-- Piyasa Para Birimi -->
+                <Border Style="{StaticResource ComponentCard}" Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="170" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center" Margin="0,0,28,0">
+                            <TextBlock x:Name="LblCurrency" Text="Piyasa para birimi" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
+                            <TextBlock x:Name="LblCurrencyHelp" Text="Piyasa verilerini seçtiğiniz para biriminde gösterir" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,3,0,0" />
+                        </StackPanel>
+                        <ComboBox x:Name="CmbCurrency" Grid.Column="1" Style="{StaticResource ComponentComboBox}" VerticalAlignment="Center" PreviewMouseLeftButtonDown="ComponentComboBox_PreviewMouseLeftButtonDown">
+                            <ComboBoxItem Content="Türk Lirası (TRY)" Tag="TRY" IsSelected="True" />
+                            <ComboBoxItem Content="US Dollar (USD)" Tag="USD" />
+                            <ComboBoxItem Content="Euro (EUR)" Tag="EUR" />
+                            <ComboBoxItem Content="British Pound (GBP)" Tag="GBP" />
+                            <ComboBoxItem Content="Japanese Yen (JPY)" Tag="JPY" />
+                            <ComboBoxItem Content="Swiss Franc (CHF)" Tag="CHF" />
+                            <ComboBoxItem Content="Canadian Dollar (CAD)" Tag="CAD" />
+                            <ComboBoxItem Content="Australian Dollar (AUD)" Tag="AUD" />
+                        </ComboBox>
+                    </Grid>
+                </Border>
+
                 <!-- Hava Durumu Şehri (Tüm Dünya İlleri Dropdown ile Search ve Kategori/Thread Yapısı) -->
                 <Border Style="{StaticResource ComponentCard}" Margin="0,0,0,10">
                     <Grid>
@@ -832,6 +856,13 @@
                             <StackPanel>
                                 <TextBlock Text="Pano kartı yüksekliğini sınırla" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                                 <TextBlock Text="Kapalı olduğunda pano geçmişi tüm içeriğiyle açılır" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </CheckBox>
+                        <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
+                        <CheckBox x:Name="ChkClipboardExpanded" Style="{StaticResource ComponentToggle}">
+                            <StackPanel>
+                                <TextBlock Text="Pano geçmişini açık tut" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Text="Kapalı olduğunda yalnızca pano başlığı ve sayaç gösterilir" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
                             </StackPanel>
                         </CheckBox>
                     </StackPanel>

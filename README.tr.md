@@ -127,6 +127,8 @@ powershell -ExecutionPolicy Bypass -File ".\scripts\publish-portable.ps1"
 * `%APPDATA%\OpenWidget\crash.log`: Olası beklenmeyen çökme ve hata kayıtları.
 * `config.schema.json`: Yerel yapılandırma dosyasının JSON Schema tanımı.
 * `finance-cache.json`: Finans verilerinin yerel önbelleği.
+* Ayarlar > Genel bölümünden piyasa gösterim para birimi seçilebilir. TRY, USD, EUR, GBP, JPY, CHF, CAD ve AUD desteklenir; varsayılan TRY'dir.
+* Pano geçmişi başlığına tıklanarak veya Ayarlar üzerinden açılıp kapatılabilir; kapalı durumda sayaç görünmeye devam eder.
 * `weather-cache.json`: Hava durumu verilerinin son güncel önbelleği.
 
 ---

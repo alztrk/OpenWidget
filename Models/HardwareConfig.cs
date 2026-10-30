@@ -47,10 +47,12 @@ public class WidgetConfig
     public bool UseModularCards { get; set; } = false;
     public bool LimitClipboardHeight { get; set; } = true;
     public double ClipboardHeight { get; set; } = 220;
+    public bool IsClipboardHistoryExpanded { get; set; } = true;
     public bool OnlyShowOnDesktop { get; set; } = false;
     public string Language { get; set; } = "tr";
     public string City { get; set; } = "auto";
     public string AccentTheme { get; set; } = "Sky";
+    public string Currency { get; set; } = "TRY";
 }
 
 public class WidgetSelectionConfig

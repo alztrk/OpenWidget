@@ -69,9 +69,11 @@
         "UseModularCards": { "type": "boolean" },
         "LimitClipboardHeight": { "type": "boolean" },
         "ClipboardHeight": { "type": "number", "minimum": 120, "maximum": 2000 },
+        "IsClipboardHistoryExpanded": { "type": "boolean" },
         "Language": { "type": "string", "enum": ["tr", "en", "de", "fr", "es", "it", "pt", "ja", "ru"] },
         "City": { "type": "string" },
-        "AccentTheme": { "type": "string" }
+        "AccentTheme": { "type": "string" },
+        "Currency": { "type": "string", "enum": ["TRY", "USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD"] }
       }
     },
     "widgets": {

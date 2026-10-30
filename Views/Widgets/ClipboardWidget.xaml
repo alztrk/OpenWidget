@@ -12,7 +12,7 @@
 
     <StackPanel>
         <!-- Header Row -->
-        <Grid Margin="4,0,4,6">
+        <Grid Margin="4,0,4,6" MouseLeftButtonDown="Header_MouseLeftButtonDown">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <Path Data="{StaticResource GeoClipboard}"
                       Fill="{StaticResource TextMutedBrush}"
@@ -60,7 +60,8 @@
                 BorderBrush="{StaticResource SectionBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="8"
-                Padding="5,4">
+                Padding="5,4"
+                Visibility="{Binding IsClipboardHistoryExpanded, Converter={StaticResource BoolToVis}}">
             <StackPanel>
                 <!-- Empty State -->
                 <TextBlock x:Name="TxtEmptyState"
