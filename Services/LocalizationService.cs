@@ -66,7 +66,7 @@ public static class LocalizationService
         ["MenuRefresh"] = ("Yenile", "Refresh"),
         ["MenuResetPos"] = ("Konumu Varsayılana Sıfırla", "Reset Position"),
         ["MenuSettings"] = ("Ayarlar", "Settings"),
-        ["MenuPrices"] = ("Fiyatlar (hardware-prices.json)", "Prices (hardware-prices.json)"),
+        ["MenuPrices"] = ("Fiyatlar (config.json)", "Prices (config.json)"),
         ["MenuExit"] = ("Kapat", "Exit"),
 
         // Telemetry Labels
@@ -130,6 +130,11 @@ public static class LocalizationService
         ["ShowMediaLabel"] = ("Medya Oynatıcı (Spotify / Tarayıcı)", "Media Player (Spotify / Browser)"),
         ["ShowHardwareLabel"] = ("Donanım Özellikleri & Fiyatlar", "Hardware Specs & Price Summary"),
         ["ShowQuickActionsLabel"] = ("Hızlı Araç Çubuğu (Kısayollar)", "Quick Tools Bar (Shortcuts)"),
+        ["HardwareCategoryAccessories"] = ("Aksesuar", "Accessories"),
+        ["HardwareCategoryCoreSystem"] = ("Sistem", "System"),
+        ["HardwareCategoryStorage"] = ("Depolama", "Storage"),
+        ["HardwareCategoryPeripherals"] = ("Çevre Birimleri", "Peripherals"),
+        ["HardwareCategoryCoolingAndPower"] = ("Soğutma ve Güç", "Cooling & Power"),
         ["PerformanceGroupLabel"] = ("Sistem Seçenekleri", "System Options"),
         ["AutoStartSettingLabel"] = ("Windows ile Birlikte Başlat", "Start Automatically with Windows"),
         ["AlwaysOnTopSettingLabel"] = ("Her Zaman Üstte Tut", "Keep Window Always on Top"),

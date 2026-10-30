@@ -89,9 +89,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private FinanceSpecs _finance = new();
 
     private string _configPath = string.Empty;
-    private string _appDataConfigPath = string.Empty;
-    private string _fallbackRepoConfigPath = string.Empty;
-    private string _pricesPath = string.Empty;
     private string _financeCachePath = string.Empty;
     private string _weatherCachePath = string.Empty;
 
@@ -270,39 +267,17 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void ResolvePaths()
     {
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        _configPath = Path.Combine(localAppData, "OpenWidget", "config.json");
+
         var baseDir = AppContext.BaseDirectory;
-        var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        _appDataConfigPath = Path.Combine(appData, "OpenWidget", "hardware-config.json");
-
-        _configPath = Path.Combine(baseDir, "hardware-config.json");
-        if (!File.Exists(_configPath))
-        {
-            var cwdPath = Path.Combine(Environment.CurrentDirectory, "hardware-config.json");
-            if (File.Exists(cwdPath)) _configPath = cwdPath;
-        }
-
-        const string repoRoot = @"D:\projects\OpenWidget";
-        var repoConfig = Path.Combine(repoRoot, "hardware-config.json");
-        if (File.Exists(repoConfig))
-        {
-            _fallbackRepoConfigPath = repoConfig;
-        }
-
-        _pricesPath = Path.Combine(baseDir, "hardware-prices.json");
-        if (!File.Exists(_pricesPath))
-        {
-            var cwdPrices = Path.Combine(Environment.CurrentDirectory, "hardware-prices.json");
-            if (File.Exists(cwdPrices)) _pricesPath = cwdPrices;
-            else if (File.Exists(Path.Combine(repoRoot, "hardware-prices.json"))) _pricesPath = Path.Combine(repoRoot, "hardware-prices.json");
-        }
-
         _financeCachePath = Path.Combine(baseDir, "finance-cache.json");
         _weatherCachePath = Path.Combine(baseDir, "weather-cache.json");
 
         // Load configuration before dependent services are initialized
         LoadConfig();
 
-        _priceService = new PriceService(_pricesPath);
+        _priceService = new PriceService(_config, _configPath);
         _telemetryService = new SystemTelemetryService();
         _financeService = new MarketFinanceService(_financeCachePath);
         _weatherService = new WeatherService(_weatherCachePath, _config.Widget.City);
@@ -318,23 +293,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void LoadConfig()
     {
-        if (File.Exists(_appDataConfigPath))
-        {
-            _config = HardwareConfig.Load(_appDataConfigPath);
-        }
-        else if (File.Exists(_configPath))
+        if (File.Exists(_configPath))
         {
             _config = HardwareConfig.Load(_configPath);
-            SaveConfig();
-        }
-        else if (!string.IsNullOrEmpty(_fallbackRepoConfigPath) && File.Exists(_fallbackRepoConfigPath))
-        {
-            _config = HardwareConfig.Load(_fallbackRepoConfigPath);
-            SaveConfig();
         }
         else
         {
-            _config = new HardwareConfig();
+            _config = LoadMigratedConfig();
+            SaveConfig();
         }
 
         Width = 360;
@@ -360,25 +326,39 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         try
         {
-            if (!string.IsNullOrEmpty(_appDataConfigPath))
-            {
-                _config.Save(_appDataConfigPath);
-            }
-
-            if (!string.IsNullOrEmpty(_configPath))
-            {
-                _config.Save(_configPath);
-            }
-
-            if (!string.IsNullOrEmpty(_fallbackRepoConfigPath) && File.Exists(_fallbackRepoConfigPath))
-            {
-                _config.Save(_fallbackRepoConfigPath);
-            }
+            _config.Save(_configPath);
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Failed to save config: {ex.Message}");
         }
+    }
+
+    private HardwareConfig LoadMigratedConfig()
+    {
+        var config = new HardwareConfig();
+        var legacyConfigPath = Path.Combine(AppContext.BaseDirectory, "hardware-config.json");
+        var legacyPricePath = Path.Combine(AppContext.BaseDirectory, "hardware-prices.json");
+        var legacyAppData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "OpenWidget");
+        var legacyAppDataConfigPath = Path.Combine(legacyAppData, "hardware-config.json");
+        var legacyAppDataPricePath = Path.Combine(legacyAppData, "hardware-prices.json");
+
+        var sourceConfigPath = File.Exists(legacyAppDataConfigPath) ? legacyAppDataConfigPath : legacyConfigPath;
+        var sourcePricePath = File.Exists(legacyAppDataPricePath) ? legacyAppDataPricePath : legacyPricePath;
+
+        if (File.Exists(sourceConfigPath))
+        {
+            config = HardwareConfig.Load(sourceConfigPath);
+        }
+
+        if (File.Exists(sourcePricePath))
+        {
+            config.Prices = HardwarePrices.Load(sourcePricePath);
+        }
+
+        config.Prices.Source = "Amazon.com.tr";
+        config.Peripherals.Mousepad = null;
+        return config;
     }
 
     private void NotifyAllWidgetVisibilities()
@@ -804,10 +784,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         try
         {
-            _priceService ??= new PriceService(_pricesPath);
+            _priceService ??= new PriceService(_config, _configPath);
             _priceService.CheckAndApplyDailyUpdate();
 
-            await _priceService.UpdateIzolyPricesAsync();
+            await _priceService.UpdateAmazonPricesAsync();
 
             var scanner = new HardwareScanner(_config, _priceService);
             var result = await Task.Run(() => scanner.Scan());
@@ -975,19 +955,18 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         LoadConfig();
         RefreshTelemetry();
         _ = RefreshFinanceLiveAsync();
-        _priceService = new PriceService(_pricesPath);
+        _priceService = new PriceService(_config, _configPath);
         await RefreshHardwareSpecsAsync();
     }
 
     private void MenuEditPrices_Click(object sender, RoutedEventArgs e)
     {
-        OpenFileWithDefaultEditor(_pricesPath);
+        OpenFileWithDefaultEditor(_configPath);
     }
 
     private void MenuEditConfig_Click(object sender, RoutedEventArgs e)
     {
-        var target = File.Exists(_appDataConfigPath) ? _appDataConfigPath : _configPath;
-        OpenFileWithDefaultEditor(target);
+        OpenFileWithDefaultEditor(_configPath);
     }
 
     private static void OpenFileWithDefaultEditor(string path)

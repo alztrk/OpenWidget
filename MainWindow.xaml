@@ -116,7 +116,7 @@
                     <Path Data="{StaticResource GeoReset}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem x:Name="MenuPrices" Header="Fiyatlar (hardware-prices.json)" Click="MenuEditPrices_Click">
+            <MenuItem x:Name="MenuPrices" Header="Fiyatlar (config.json)" Click="MenuEditPrices_Click">
                 <MenuItem.Icon>
                     <Path Data="{StaticResource GeoDollar}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
                 </MenuItem.Icon>

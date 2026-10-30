@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OpenWidget configuration",
+  "type": "object",
+  "properties": {
+    "CoolingAndPower": { "$ref": "#/$defs/coolingAndPower" },
+    "Peripherals": { "$ref": "#/$defs/peripherals" },
+    "Accessories": { "$ref": "#/$defs/accessories" },
+    "Widget": { "$ref": "#/$defs/widget" },
+    "Widgets": { "$ref": "#/$defs/widgets" },
+    "TelemetryWidget": { "$ref": "#/$defs/enabledLayout" },
+    "FinanceWidget": { "$ref": "#/$defs/enabledLayout" },
+    "Prices": { "$ref": "#/$defs/prices" },
+    "HardwareVisibility": { "$ref": "#/$defs/hardwareVisibility" },
+    "ManualHardware": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/manualHardware" }
+    }
+  },
+  "$defs": {
+    "coolingAndPower": {
+      "type": "object",
+      "properties": {
+        "PcCase": { "type": ["string", "null"] },
+        "CpuCooler": { "type": ["string", "null"] },
+        "Psu": { "type": ["string", "null"] }
+      }
+    },
+    "peripherals": {
+      "type": "object",
+      "properties": {
+        "Keyboard": { "type": ["string", "null"] },
+        "Mouse": { "type": ["string", "null"] },
+        "Mousepad": { "type": ["string", "null"] },
+        "Headset": { "type": ["string", "null"] },
+        "Microphone": { "type": ["string", "null"] },
+        "Monitor": { "type": ["string", "null"] }
+      }
+    },
+    "accessories": {
+      "type": "object",
+      "additionalProperties": { "type": ["string", "null"] }
+    },
+    "widget": {
+      "type": "object",
+      "properties": {
+        "Opacity": { "type": "number", "minimum": 0.1, "maximum": 1 },
+        "CustomLeft": { "type": ["number", "null"] },
+        "CustomTop": { "type": ["number", "null"] },
+        "AlwaysOnTop": { "type": "boolean" },
+        "PinToDesktop": { "type": "boolean" },
+        "AutoGameMode": { "type": "boolean" },
+        "IsLocked": { "type": "boolean" },
+        "IsCompact": { "type": "boolean" },
+        "Language": { "type": "string", "enum": ["tr", "en"] },
+        "City": { "type": "string" },
+        "AccentTheme": { "type": "string" }
+      }
+    },
+    "widgets": {
+      "type": "object",
+      "additionalProperties": { "type": "boolean" }
+    },
+    "enabledLayout": {
+      "type": "object",
+      "properties": {
+        "Enabled": { "type": "boolean" },
+        "OffsetX": { "type": "number" },
+        "OffsetY": { "type": "number" },
+        "Width": { "type": "number" }
+      }
+    },
+    "prices": {
+      "type": "object",
+      "properties": {
+        "Source": { "const": "Amazon.com.tr" },
+        "LastUpdated": { "type": "string", "format": "date" },
+        "Currency": { "type": "string" },
+        "Items": {
+          "type": "object",
+          "additionalProperties": { "type": "number", "minimum": 0 }
+        }
+      }
+    },
+    "hardwareVisibility": {
+      "type": "object",
+      "additionalProperties": { "type": "boolean" }
+    },
+    "manualHardware": {
+      "type": "object",
+      "required": ["Name", "Category", "AmazonUrl"],
+      "properties": {
+        "Name": { "type": "string", "minLength": 1 },
+        "Category": {
+          "type": "string",
+          "enum": ["CoreSystem", "Storage", "Peripherals", "CoolingAndPower", "Accessories"],
+          "description": "Language-independent hardware category key. Display names are localized by the application."
+        },
+        "Price": { "type": "number", "minimum": 0 },
+        "AmazonUrl": {
+          "type": "string",
+          "pattern": "^https://(www\\.)?amazon\\.com\\.tr/"
+        }
+      }
+    }
+  }
+}

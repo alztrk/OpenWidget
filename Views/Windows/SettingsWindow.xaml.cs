@@ -87,6 +87,12 @@ public partial class SettingsWindow : Window
         ChkAutoStart.IsChecked = AutoStartService.IsAutoStartEnabled();
         ChkAlwaysOnTop.IsChecked = _config.Widget.AlwaysOnTop;
         ChkGameMode.IsChecked = _config.Widget.AutoGameMode;
+        ChkHardwareCore.IsChecked = _config.HardwareVisibility.CoreSystem;
+        ChkHardwareStorage.IsChecked = _config.HardwareVisibility.Storage;
+        ChkHardwarePeripherals.IsChecked = _config.HardwareVisibility.Peripherals;
+        ChkHardwareCooling.IsChecked = _config.HardwareVisibility.CoolingAndPower;
+        ChkHardwareAccessories.IsChecked = _config.HardwareVisibility.Accessories;
+        ListManualHardware.ItemsSource = _config.ManualHardware;
     }
 
     private void UpdateCityDisplay()
@@ -111,6 +117,11 @@ public partial class SettingsWindow : Window
         TabBtnGeneral.Content = LocalizationService.Get("GeneralTab");
         TabBtnWidgets.Content = LocalizationService.Get("WidgetsTab");
         TabBtnSystem.Content = LocalizationService.Get("PerformanceTab");
+        HardwareCategoryAccessories.Content = LocalizationService.Get("HardwareCategoryAccessories");
+        HardwareCategoryCoreSystem.Content = LocalizationService.Get("HardwareCategoryCoreSystem");
+        HardwareCategoryStorage.Content = LocalizationService.Get("HardwareCategoryStorage");
+        HardwareCategoryPeripherals.Content = LocalizationService.Get("HardwareCategoryPeripherals");
+        HardwareCategoryCoolingAndPower.Content = LocalizationService.Get("HardwareCategoryCoolingAndPower");
 
         LblLanguage.Text = LocalizationService.Get("LanguageLabel");
         LblCity.Text = LocalizationService.Get("CityLabel");
@@ -127,10 +138,11 @@ public partial class SettingsWindow : Window
 
     private void Tab_Checked(object sender, RoutedEventArgs e)
     {
-        if (PanelGeneral == null || PanelWidgets == null || PanelSystem == null) return;
+        if (PanelGeneral == null || PanelWidgets == null || PanelHardware == null || PanelSystem == null) return;
 
         PanelGeneral.Visibility = TabBtnGeneral.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
         PanelWidgets.Visibility = TabBtnWidgets.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+        PanelHardware.Visibility = TabBtnHardware.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
         PanelSystem.Visibility = TabBtnSystem.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
     }
 
@@ -244,6 +256,53 @@ public partial class SettingsWindow : Window
         ChkAutoStart.IsChecked = true;
         ChkAlwaysOnTop.IsChecked = false;
         ChkGameMode.IsChecked = true;
+        ChkHardwareCore.IsChecked = true;
+        ChkHardwareStorage.IsChecked = true;
+        ChkHardwarePeripherals.IsChecked = true;
+        ChkHardwareCooling.IsChecked = true;
+        ChkHardwareAccessories.IsChecked = true;
+        _config.ManualHardware.Clear();
+        ListManualHardware.ItemsSource = null;
+        ListManualHardware.ItemsSource = _config.ManualHardware;
+    }
+
+    private void BtnAddHardware_Click(object sender, RoutedEventArgs e)
+    {
+        var name = TxtHardwareName.Text.Trim();
+        var url = TxtHardwareUrl.Text.Trim();
+        if (string.IsNullOrWhiteSpace(name) ||
+            !Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
+            !string.Equals(uri.Host, "www.amazon.com.tr", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(uri.Host, "amazon.com.tr", StringComparison.OrdinalIgnoreCase))
+        {
+            MessageBox.Show("Ürün adı ve geçerli bir Amazon.com.tr bağlantısı girin.", "OpenWidget", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var category = HardwareCategory.Normalize((CmbHardwareCategory.SelectedItem as ComboBoxItem)?.Tag?.ToString());
+        decimal.TryParse(TxtHardwarePrice.Text.Trim(), NumberStyles.Number, CultureInfo.GetCultureInfo("tr-TR"), out var price);
+        _config.ManualHardware.Add(new ManualHardwareItem
+        {
+            Name = name,
+            Category = category,
+            Price = price,
+            AmazonUrl = uri.ToString()
+        });
+        ListManualHardware.ItemsSource = null;
+        ListManualHardware.ItemsSource = _config.ManualHardware;
+        TxtHardwareName.Clear();
+        TxtHardwareUrl.Clear();
+        TxtHardwarePrice.Clear();
+    }
+
+    private void BtnRemoveHardware_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.Tag is ManualHardwareItem item)
+        {
+            _config.ManualHardware.Remove(item);
+            ListManualHardware.ItemsSource = null;
+            ListManualHardware.ItemsSource = _config.ManualHardware;
+        }
     }
 
     private void BtnClose_Click(object sender, RoutedEventArgs e)
@@ -295,6 +354,11 @@ public partial class SettingsWindow : Window
         _config.Widget.PinToDesktop = ChkPinToDesktop.IsChecked == true;
         _config.Widget.AlwaysOnTop = ChkPinToDesktop.IsChecked == true ? false : (ChkAlwaysOnTop.IsChecked == true);
         _config.Widget.AutoGameMode = ChkGameMode.IsChecked == true;
+        _config.HardwareVisibility.CoreSystem = ChkHardwareCore.IsChecked == true;
+        _config.HardwareVisibility.Storage = ChkHardwareStorage.IsChecked == true;
+        _config.HardwareVisibility.Peripherals = ChkHardwarePeripherals.IsChecked == true;
+        _config.HardwareVisibility.CoolingAndPower = ChkHardwareCooling.IsChecked == true;
+        _config.HardwareVisibility.Accessories = ChkHardwareAccessories.IsChecked == true;
 
         var autoStart = ChkAutoStart.IsChecked == true;
         if (AutoStartService.IsAutoStartEnabled() != autoStart)

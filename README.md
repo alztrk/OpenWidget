@@ -15,7 +15,7 @@ OpenWidget is a standalone desktop system and information widget for Windows 10 
 - **Responsive layout:** Adjusts its maximum height to the available display area and enables scrolling when needed.
 - **Compact HUD mode:** Switches to a compact single-line view.
 - **Game mode:** Reduces background telemetry activity when a full-screen application or game is detected.
-- **Persistent configuration:** Synchronizes settings between `%APPDATA%\OpenWidget` and the portable application directory.
+- **Persistent configuration:** Stores all application settings in `%LOCALAPPDATA%\OpenWidget\config.json`.
 
 ## Included Modules
 
@@ -62,11 +62,11 @@ The output is written to `dist\OpenWidget.exe`.
 
 ## Configuration and Data Files
 
-- `%APPDATA%\OpenWidget\hardware-config.json`: User preferences, enabled widgets, theme, city, and position.
+- `%LOCALAPPDATA%\OpenWidget\config.json`: User preferences, enabled widgets, theme, city, hardware visibility, prices, and manually added Amazon products.
 - `%APPDATA%\OpenWidget\clipboard-history.json`: Persistent clipboard history.
 - `%APPDATA%\OpenWidget\scratchpad.txt`: Scratchpad contents.
 - `%APPDATA%\OpenWidget\crash.log`: Unexpected error log.
-- `hardware-prices.json`: Tracked hardware reference prices.
+- `config.schema.json`: JSON Schema for the local configuration file.
 - `finance-cache.json`: Cached finance data.
 - `weather-cache.json`: Cached weather data.
 

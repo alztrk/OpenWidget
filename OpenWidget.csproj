@@ -19,13 +19,4 @@
     <PackageReference Include="System.Management" Version="10.0.14" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="hardware-config.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="hardware-prices.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

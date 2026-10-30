@@ -28,7 +28,7 @@ OpenWidget, Windows 10 ve Windows 11 için geliştirilmiş, masaüstünde doğru
 * **Dinamik Çözünürlük ve Taşma Koruması:** Ekran çalışma alanı yüksekliğine göre otomatik azami boyut hesaplar. Çok sayıda kart açık olduğunda modern dikey kaydırma çubuğu devreye girer.
 * **Kompakt HUD Modu:** Tek satırlık mini çubuk görünümüne geçerek ekran alanını korur.
 * **Oyun Modu:** Tam ekran oyun veya uygulama algılandığında arka plan telemetri sorgularını otomatik olarak rölantiye alır ve RAM kullanımını düşürür.
-* **Kalıcı Yapılandırma:** Ayarlar hem `%APPDATA%\OpenWidget\hardware-config.json` altında hem de taşınabilir dizinde senkronize saklanır; derleme veya yeniden başlatmalarda sıfırlanmaz.
+* **Kalıcı Yapılandırma:** Tüm ayarlar `%LOCALAPPDATA%\OpenWidget\config.json` dosyasında saklanır; derleme veya yeniden başlatmalarda sıfırlanmaz.
 
 ---
 
@@ -120,11 +120,11 @@ powershell -ExecutionPolicy Bypass -File ".\scripts\publish-portable.ps1"
 
 ## Yapılandırma ve Veri Dosyaları
 
-* `%APPDATA%\OpenWidget\hardware-config.json`: Kullanıcı tercihleri, aktif kartlar, tema, şehir ve konum ayarları.
+* `%LOCALAPPDATA%\OpenWidget\config.json`: Kullanıcı tercihleri, aktif kartlar, tema, şehir, donanım görünürlüğü, fiyatlar ve manuel Amazon ürünleri.
 * `%APPDATA%\OpenWidget\clipboard-history.json`: Kalıcı pano geçmişi kayıtları.
 * `%APPDATA%\OpenWidget\scratchpad.txt`: Hızlı not defteri içeriği.
 * `%APPDATA%\OpenWidget\crash.log`: Olası beklenmeyen çökme ve hata kayıtları.
-* `hardware-prices.json`: Donanım bileşenlerinin takip edilen referans fiyat listesi.
+* `config.schema.json`: Yerel yapılandırma dosyasının JSON Schema tanımı.
 * `finance-cache.json`: Finans verilerinin yerel önbelleği.
 * `weather-cache.json`: Hava durumu verilerinin son güncel önbelleği.
 

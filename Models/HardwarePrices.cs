@@ -23,6 +23,7 @@ public class HardwarePrices
                 var prices = JsonSerializer.Deserialize<HardwarePrices>(json, options);
                 if (prices != null) return prices;
             }
+
         }
         catch { }
 

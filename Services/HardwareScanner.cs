@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management;
@@ -24,29 +25,34 @@ public class HardwareScanner
     {
         var specs = new HardwareSpecs();
 
-        // 1. Core System
-        specs.CoreSystem.Add(GetCpuItem());
-        specs.CoreSystem.Add(GetGpuItem());
-        specs.CoreSystem.Add(GetMotherboardItem());
-        specs.CoreSystem.Add(GetMemoryItem());
+        if (_config.HardwareVisibility.CoreSystem)
+        {
+            specs.CoreSystem.Add(GetCpuItem());
+            specs.CoreSystem.Add(GetGpuItem());
+            specs.CoreSystem.Add(GetMotherboardItem());
+            specs.CoreSystem.Add(GetMemoryItem());
+        }
 
         // 2. Storage
-        var storageDrives = GetStorageItems();
-        foreach (var drive in storageDrives)
+        if (_config.HardwareVisibility.Storage)
         {
-            specs.Storage.Add(drive);
+            specs.Storage.AddRange(GetStorageItems());
         }
 
         // 3. Peripherals
-        specs.Peripherals.Add(GetMonitorItem());
-        specs.Peripherals.Add(GetKeyboardItem());
-        specs.Peripherals.Add(GetMouseItem());
-        specs.Peripherals.Add(GetMousepadItem());
-        specs.Peripherals.Add(GetHeadsetItem());
-        specs.Peripherals.Add(GetMicrophoneItem());
+        if (_config.HardwareVisibility.Peripherals)
+        {
+            specs.Peripherals.Add(GetMonitorItem());
+            specs.Peripherals.Add(GetKeyboardItem());
+            specs.Peripherals.Add(GetMouseItem());
+            specs.Peripherals.Add(GetHeadsetItem());
+            specs.Peripherals.Add(GetMicrophoneItem());
+        }
 
         // 4. Cooling and Power
         var caseName = _config.CoolingAndPower.PcCase ?? "MSI MAG FORGE M100R";
+        if (_config.HardwareVisibility.CoolingAndPower)
+        {
         specs.CoolingAndPower.Add(new HardwareItem(
             Category: "Kasa",
             IconKey: "IconCase",
@@ -81,8 +87,11 @@ public class HardwareScanner
             Url: "https://www.amazon.com.tr/dp/B0991WL16F",
             LinkDisplay: "amazon.com.tr ↗"
         ));
+        }
 
         // 5. Accessories
+        if (_config.HardwareVisibility.Accessories)
+        {
         specs.Accessories.Add(new HardwareItem(
             Category: "Aksesuar",
             IconKey: "IconArm",
@@ -137,9 +146,37 @@ public class HardwareScanner
             Url: "https://www.amazon.com.tr/dp/B018M7ST42",
             LinkDisplay: "amazon.com.tr ↗"
         ));
+        }
+
+        decimal manualTotal = 0;
+        foreach (var item in _config.ManualHardware)
+        {
+            var category = HardwareCategory.Normalize(item.Category);
+            var (target, enabled) = category switch
+            {
+                HardwareCategory.CoreSystem => (specs.CoreSystem, _config.HardwareVisibility.CoreSystem),
+                HardwareCategory.Storage => (specs.Storage, _config.HardwareVisibility.Storage),
+                HardwareCategory.Peripherals => (specs.Peripherals, _config.HardwareVisibility.Peripherals),
+                HardwareCategory.CoolingAndPower => (specs.CoolingAndPower, _config.HardwareVisibility.CoolingAndPower),
+                _ => (specs.Accessories, _config.HardwareVisibility.Accessories)
+            };
+
+            if (!enabled) continue;
+            manualTotal += item.Price;
+            target.Add(new HardwareItem(
+                category,
+                "IconMonitor",
+                "Manuel Donanım",
+                item.Name,
+                "Amazon.com.tr",
+                item.Price > 0 ? $"{item.Price:N0} ₺" : "- ₺",
+                item.AmazonUrl,
+                "amazon.com.tr ↗"));
+        }
 
         // Summary Values
-        specs.TotalPriceFormatted = _priceService.GetTotalPriceFormatted();
+        var total = _priceService.GetTotalPriceValue() + manualTotal;
+        specs.TotalPriceFormatted = $"{total.ToString("N0", CultureInfo.GetCultureInfo("tr-TR"))} ₺";
         specs.LastUpdatedText = _priceService.GetLastUpdatedFormatted();
         specs.PriceSource = _priceService.GetSource();
 
@@ -324,11 +361,11 @@ public class HardwareScanner
                         Category: "Depolama",
                         IconKey: "IconStorage",
                         Label: "SSD",
-                        Value: "Izoly S280 Gaming SSD",
-                        SubValue: "512 GB SATA3 550/520",
+                        Value: model,
+                        SubValue: "SATA SSD",
                         PriceFormatted: _priceService.GetPriceFormatted("ssd_sata"),
-                        Url: "https://izoly.com/izoly-512gb-gaming-sata3-s280-550-520mb-s-ssd/",
-                        LinkDisplay: "izoly.com ↗"
+                        Url: "https://www.amazon.com.tr/",
+                        LinkDisplay: "amazon.com.tr ↗"
                     ));
                 }
             }
@@ -338,7 +375,7 @@ public class HardwareScanner
         if (items.Count == 0)
         {
             items.Add(new HardwareItem("Depolama", "IconStorage", "SSD", "Kingston NV2 (SNV2S1000G)", "1 TB PCIe 4.0 NVMe M.2", _priceService.GetPriceFormatted("ssd_nvme"), "https://www.amazon.com.tr/dp/B0BBWJH1HG", "amazon.com.tr ↗"));
-            items.Add(new HardwareItem("Depolama", "IconStorage", "SSD", "Izoly S280 Gaming SSD", "512 GB SATA3 550/520", _priceService.GetPriceFormatted("ssd_sata"), "https://izoly.com/izoly-512gb-gaming-sata3-s280-550-520mb-s-ssd/", "izoly.com ↗"));
+            items.Add(new HardwareItem("Depolama", "IconStorage", "SSD", "SATA SSD", "Model algılanamadı", _priceService.GetPriceFormatted("ssd_sata"), "https://www.amazon.com.tr/", "amazon.com.tr ↗"));
         }
 
         return items;
@@ -386,12 +423,6 @@ public class HardwareScanner
     {
         var name = _config.Peripherals.Mouse ?? "ROG Harpe Ace Aim Lab";
         return new HardwareItem("Çevre Birimleri", "IconMouse", "Fare", name, "Ultralight 54g Wireless", _priceService.GetPriceFormatted("mouse"), "https://www.amazon.com.tr/dp/B0BQ7D9B4Y", "amazon.com.tr ↗");
-    }
-
-    private HardwareItem GetMousepadItem()
-    {
-        var name = _config.Peripherals.Mousepad ?? "Wraith Spirit of Aim";
-        return new HardwareItem("Çevre Birimleri", "IconMousepad", "Mousepad", name, "Speed / White • 470x420x3mm", _priceService.GetPriceFormatted("mousepad"), "https://wraithesports.com/products/wraith-spirit-of-aim-mousepad?variant=47478471262401", "wraithesports.com ↗");
     }
 
     private HardwareItem GetHeadsetItem()

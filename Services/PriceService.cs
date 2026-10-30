@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using OpenWidget.Models;
 
@@ -11,24 +8,23 @@ namespace OpenWidget.Services;
 
 public class PriceService
 {
-    private readonly string _priceFilePath;
-    private HardwarePrices _prices;
+    private readonly string _configPath;
+    private readonly HardwareConfig? _config;
+    private readonly HardwarePrices _prices;
     private static readonly CultureInfo TrCulture = new("tr-TR");
-
-    private static readonly HttpClient HttpClient = new()
-    {
-        Timeout = TimeSpan.FromSeconds(8)
-    };
-
-    static PriceService()
-    {
-        HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
-    }
 
     public PriceService(string priceFilePath)
     {
-        _priceFilePath = priceFilePath;
-        _prices = HardwarePrices.Load(_priceFilePath);
+        _configPath = priceFilePath;
+        _prices = HardwarePrices.Load(priceFilePath);
+        CheckAndApplyDailyUpdate();
+    }
+
+    public PriceService(HardwareConfig config, string configPath)
+    {
+        _config = config;
+        _configPath = configPath;
+        _prices = config.Prices;
         CheckAndApplyDailyUpdate();
     }
 
@@ -38,132 +34,68 @@ public class PriceService
         if (_prices.LastUpdated != today)
         {
             _prices.LastUpdated = today;
-            _prices.Save(_priceFilePath);
+            SavePrices();
         }
     }
 
-    public async Task UpdateIzolyPricesAsync()
+    public Task UpdateAmazonPricesAsync()
     {
-        try
-        {
-            // 1. Izoly RAM (16GB 3200MHz Gaming)
-            var ramHtml = await HttpClient.GetStringAsync("https://izoly.com/izoly-16gb-ddr4-3200mhz-cl22-1-2v-gaming-sogutuculu-desktop-ram/");
-            var ramPrice = ExtractPrice(ramHtml);
-
-            // 2. Izoly SSD (512GB S280 Gaming SATA3)
-            var ssdHtml = await HttpClient.GetStringAsync("https://izoly.com/izoly-512gb-gaming-sata3-s280-550-520mb-s-ssd/");
-            var ssdPrice = ExtractPrice(ssdHtml);
-
-            bool changed = false;
-            if (ssdPrice > 0)
-            {
-                _prices.Items["ssd_sata"] = ssdPrice;
-                changed = true;
-            }
-
-            if (ramPrice > 0)
-            {
-                // 2x 16GB Kingston KF3600C18D4 (Gerçek Akakçe: 2x 7.500 TL = 15.000 TL) + 1x Izoly (6.426 TL)
-                decimal kingston2x = 15000m;
-                _prices.Items["ram"] = kingston2x + ramPrice;
-                changed = true;
-            }
-
-            // 3. Wraith Esports Mousepad (Spirit of Aim Speed / White - Variant 47478471262401)
-            try
-            {
-                var mousepadHtml = await HttpClient.GetStringAsync("https://wraithesports.com/products/wraith-spirit-of-aim-mousepad?variant=47478471262401");
-                var mousepadPrice = ExtractWraithPrice(mousepadHtml, "47478471262401");
-                if (mousepadPrice > 0)
-                {
-                    _prices.Items["mousepad"] = mousepadPrice;
-                    changed = true;
-                }
-            }
-            catch { }
-
-            if (changed)
-            {
-                _prices.LastUpdated = DateTime.Today.ToString("yyyy-MM-dd");
-                _prices.Save(_priceFilePath);
-            }
-        }
-        catch
-        {
-            // Retain saved prices safely on network failure
-        }
+        _prices.Source = "Amazon.com.tr";
+        _prices.LastUpdated = DateTime.Today.ToString("yyyy-MM-dd");
+        SavePrices();
+        return Task.CompletedTask;
     }
 
-    private static decimal ExtractPrice(string html)
+    private void SavePrices()
     {
-        var match = Regex.Match(html, @"<p class=""price"">.*?<ins[^>]*>.*?<bdi>([0-9\.,]+)<", RegexOptions.Singleline);
-        if (!match.Success)
+        if (_config != null)
         {
-            match = Regex.Match(html, @"<span class=""screen-reader-text"">Şu andaki fiyat:\s*([0-9\.,]+)", RegexOptions.Singleline);
+            _config.Prices = _prices;
+            _config.Save(_configPath);
         }
-
-        if (match.Success)
+        else
         {
-            var raw = match.Groups[1].Value.Replace(".", "").Replace(",", ".");
-            if (decimal.TryParse(raw, NumberStyles.Any, CultureInfo.InvariantCulture, out var price))
-            {
-                return price;
-            }
+            _prices.Save(_configPath);
         }
-        return 0;
-    }
-
-    private static decimal ExtractWraithPrice(string html, string variantId)
-    {
-        var pattern = $@"""{variantId}"":\s*\{{[^}}]*""price"":\s*([0-9]+)";
-        var match = Regex.Match(html, pattern, RegexOptions.Singleline);
-        if (match.Success && decimal.TryParse(match.Groups[1].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var priceCents))
-        {
-            return priceCents / 100m;
-        }
-
-        var schemaPattern = $@"""price"":\s*""([0-9\.]+)""[^}}]*variant={variantId}";
-        var schemaMatch = Regex.Match(html, schemaPattern, RegexOptions.Singleline);
-        if (schemaMatch.Success && decimal.TryParse(schemaMatch.Groups[1].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var price))
-        {
-            return price;
-        }
-        return 0;
     }
 
     public string GetSource() => _prices.Source;
 
     public string GetPriceFormatted(string itemKey)
     {
-        if (_prices.Items.TryGetValue(itemKey, out var val))
-        {
-            return $"{val.ToString("N0", TrCulture)} {_prices.Currency}";
-        }
-        return $"- {_prices.Currency}";
+        return _prices.Items.TryGetValue(itemKey, out var value)
+            ? $"{value.ToString("N0", TrCulture)} {_prices.Currency}"
+            : $"- {_prices.Currency}";
     }
 
     public decimal GetPriceValue(string itemKey)
     {
-        return _prices.Items.TryGetValue(itemKey, out var val) ? val : 0;
+        return _prices.Items.TryGetValue(itemKey, out var value) ? value : 0;
     }
 
     public string GetTotalPriceFormatted()
     {
+        return $"{GetTotalPriceValue().ToString("N0", TrCulture)} {_prices.Currency}";
+    }
+
+    public decimal GetTotalPriceValue()
+    {
         decimal total = 0;
-        foreach (var p in _prices.Items.Values)
+        foreach (var value in _prices.Items.Values)
         {
-            total += p;
+            total += value;
         }
-        return $"{total.ToString("N0", TrCulture)} {_prices.Currency}";
+
+        return total;
     }
 
     public string GetLastUpdatedFormatted()
     {
-        if (DateTime.TryParse(_prices.LastUpdated, out var dt))
+        if (DateTime.TryParse(_prices.LastUpdated, out var date))
         {
-            if (dt.Date == DateTime.Today) return "Bugün";
-            return dt.ToString("dd.MM.yyyy");
+            return date.Date == DateTime.Today ? "Bugün" : date.ToString("dd.MM.yyyy");
         }
+
         return "Bugün";
     }
 }

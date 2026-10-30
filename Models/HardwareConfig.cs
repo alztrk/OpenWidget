@@ -1,4 +1,5 @@
 using System.IO;
+using System.Collections.Generic;
 using System.Text.Json;
 
 namespace OpenWidget.Models;
@@ -14,7 +15,7 @@ public class PeripheralsConfig
 {
     public string? Keyboard { get; set; } = "Corsair K55 RGB PRO XT";
     public string? Mouse { get; set; } = "ROG Harpe Ace Aim Lab";
-    public string? Mousepad { get; set; } = "Wraith Spirit of Aim";
+    public string? Mousepad { get; set; }
     public string? Headset { get; set; } = "Razer Kraken Kitty V2 BT";
     public string? Microphone { get; set; } = "Razer Seiren V3 Chroma";
     public string? Monitor { get; set; }
@@ -61,6 +62,42 @@ public class WidgetSelectionConfig
     public bool ShowQuickActions { get; set; } = true;
 }
 
+public class HardwareVisibilityConfig
+{
+    public bool CoreSystem { get; set; } = true;
+    public bool Storage { get; set; } = true;
+    public bool Peripherals { get; set; } = true;
+    public bool CoolingAndPower { get; set; } = true;
+    public bool Accessories { get; set; } = true;
+}
+
+public class ManualHardwareItem
+{
+    public string Name { get; set; } = string.Empty;
+    public string Category { get; set; } = HardwareCategory.Accessories;
+    public decimal Price { get; set; }
+    public string AmazonUrl { get; set; } = string.Empty;
+}
+
+public static class HardwareCategory
+{
+    public const string CoreSystem = "CoreSystem";
+    public const string Storage = "Storage";
+    public const string Peripherals = "Peripherals";
+    public const string CoolingAndPower = "CoolingAndPower";
+    public const string Accessories = "Accessories";
+
+    public static string Normalize(string? category) => category switch
+    {
+        "Sistem" or CoreSystem => CoreSystem,
+        "Depolama" or Storage => Storage,
+        "Çevre Birimleri" or Peripherals => Peripherals,
+        "Soğutma ve Güç" or CoolingAndPower => CoolingAndPower,
+        "Aksesuar" or Accessories => Accessories,
+        _ => Accessories
+    };
+}
+
 public class TelemetryWidgetConfig
 {
     public bool Enabled { get; set; } = true;
@@ -86,6 +123,9 @@ public class HardwareConfig
     public WidgetSelectionConfig Widgets { get; set; } = new();
     public TelemetryWidgetConfig TelemetryWidget { get; set; } = new();
     public FinanceWidgetConfig FinanceWidget { get; set; } = new();
+    public HardwarePrices Prices { get; set; } = HardwarePrices.GetDefaults();
+    public HardwareVisibilityConfig HardwareVisibility { get; set; } = new();
+    public List<ManualHardwareItem> ManualHardware { get; set; } = new();
 
     public static HardwareConfig Load(string path)
     {
@@ -98,6 +138,11 @@ public class HardwareConfig
                 var config = JsonSerializer.Deserialize<HardwareConfig>(json, options);
                 if (config != null)
                 {
+                    foreach (var item in config.ManualHardware)
+                    {
+                        item.Category = HardwareCategory.Normalize(item.Category);
+                    }
+
                     // Sync legacy flags if present
                     if (!config.TelemetryWidget.Enabled) config.Widgets.ShowTelemetry = false;
                     if (!config.FinanceWidget.Enabled) config.Widgets.ShowFinance = false;

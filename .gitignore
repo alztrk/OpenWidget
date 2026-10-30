@@ -20,6 +20,8 @@ bld/
 *.suo
 *.userosscache
 *.sln.docstates
+config.json
+**/config.json
 
 ## Resharper / Rider
 _ReSharper*/
