@@ -82,9 +82,9 @@ public partial class ClipboardWidget : UserControl
         TxtEmptyState.Visibility = count == 0 ? Visibility.Visible : Visibility.Collapsed;
         ListClipboard.Visibility = count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
-        string unit = LocalizationService.CurrentLanguage == "en"
-            ? (count == 1 ? "item" : "items")
-            : "öğe";
+        string unit = count == 1
+            ? LocalizationService.Get("ClipboardItem")
+            : LocalizationService.Get("ClipboardItems");
         TxtItemCount.Text = $"{count} {unit}";
     }
 

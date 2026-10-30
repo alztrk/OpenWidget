@@ -32,32 +32,33 @@
         <!-- Status Badges & Uptime on Right -->
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
             <!-- Game Mode Idle Badge -->
-            <Border Background="#2034D399"
-                    BorderBrush="#4034D399"
+            <Border Background="{StaticResource HeaderGameModeBackgroundBrush}"
+                    BorderBrush="{StaticResource HeaderGameModeBorderBrush}"
                     BorderThickness="1"
                     CornerRadius="4"
                     Padding="5,1.5"
                     Margin="0,0,8,0"
                     Visibility="{Binding Telemetry.IsGamingMode, Converter={StaticResource BoolToVis}}">
                 <TextBlock x:Name="TxtGameMode"
-                           Text="Oyun Modu"
+                           Text=""
                            FontSize="10"
                            FontWeight="SemiBold"
                            Foreground="{StaticResource AccentGreenBrush}"
                            VerticalAlignment="Center" />
             </Border>
 
-            <TextBlock x:Name="TxtUptimePrefix"
-                       Text="Açık: "
-                       FontSize="11"
-                       Foreground="{StaticResource TextSecondaryBrush}"
-                       VerticalAlignment="Center" />
-
             <TextBlock Text="{Binding Telemetry.UptimeText}"
                        FontSize="11"
                        Foreground="{StaticResource TextSecondaryBrush}"
                        VerticalAlignment="Center"
                        HorizontalAlignment="Right" />
+
+            <TextBlock x:Name="TxtUptimePrefix"
+                       Text=""
+                       FontSize="11"
+                       Foreground="{StaticResource TextSecondaryBrush}"
+                       VerticalAlignment="Center"
+                       Margin="4,0,0,0" />
         </StackPanel>
     </DockPanel>
 </UserControl>

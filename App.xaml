@@ -11,9 +11,9 @@
             </ResourceDictionary.MergedDictionaries>
 
             <Style TargetType="ToolTip">
-                <Setter Property="Background" Value="#E60B0F19" />
-                <Setter Property="Foreground" Value="#F8FAFC" />
-                <Setter Property="BorderBrush" Value="#25FFFFFF" />
+                <Setter Property="Background" Value="{StaticResource TooltipBackgroundBrush}" />
+                <Setter Property="Foreground" Value="{StaticResource TooltipForegroundBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource TooltipBorderBrush}" />
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="Padding" Value="8,4" />
                 <Setter Property="FontSize" Value="11.5" />

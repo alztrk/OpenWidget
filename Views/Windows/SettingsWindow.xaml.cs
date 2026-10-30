@@ -89,6 +89,8 @@ public partial class SettingsWindow : Window
         ChkAutoStart.IsChecked = AutoStartService.IsAutoStartEnabled();
         ChkAlwaysOnTop.IsChecked = _config.Widget.AlwaysOnTop;
         ChkGameMode.IsChecked = _config.Widget.AutoGameMode;
+        ChkModularCards.IsChecked = _config.Widget.UseModularCards;
+        ChkClipboardHeight.IsChecked = _config.Widget.LimitClipboardHeight;
         ChkHardwareCore.IsChecked = _config.HardwareVisibility.CoreSystem;
         ChkHardwareStorage.IsChecked = _config.HardwareVisibility.Storage;
         ChkHardwarePeripherals.IsChecked = _config.HardwareVisibility.Peripherals;
@@ -125,6 +127,7 @@ public partial class SettingsWindow : Window
                 Source = item.Url != null && manualUrls.Contains(item.Url)
                     ? LocalizationService.Get("HardwareSourceConfig")
                     : LocalizationService.Get("HardwareSourceDetected"),
+                PriceStatus = GetPriceStatusLabel(HardwareScanner.GetHardwareKey(item)),
                 Key = HardwareScanner.GetHardwareKey(item),
                 Link = item.Url ?? string.Empty
             })
@@ -149,6 +152,7 @@ public partial class SettingsWindow : Window
                 Url = item.AmazonUrl,
                 IsManual = true,
                 Source = LocalizationService.Get("HardwareSourceConfig"),
+                PriceStatus = LocalizationService.Get("PriceStatusManual"),
                 Key = manualKey,
                 Link = item.AmazonUrl
             });
@@ -169,15 +173,29 @@ public partial class SettingsWindow : Window
         };
     }
 
+    private string GetPriceStatusLabel(string key)
+    {
+        var status = _config.Prices.Entries.TryGetValue(key, out var entry)
+            ? entry.Status
+            : PriceStatuses.Estimated;
+
+        return status switch
+        {
+            PriceStatuses.Live => LocalizationService.Get("PriceStatusLive"),
+            PriceStatuses.Stale => LocalizationService.Get("PriceStatusStale"),
+            PriceStatuses.Estimated => LocalizationService.Get("PriceStatusEstimated"),
+            PriceStatuses.Manual => LocalizationService.Get("PriceStatusManual"),
+            _ => LocalizationService.Get("PriceStatusUnavailable")
+        };
+    }
+
     private void UpdateCityDisplay()
     {
         if (TxtSelectedCity == null) return;
 
         if (string.Equals(_selectedCity, "auto", StringComparison.OrdinalIgnoreCase))
         {
-            TxtSelectedCity.Text = LocalizationService.CurrentLanguage == "en"
-                ? "Auto Detect (IP)"
-                : "Otomatik Algıla (IP)";
+            TxtSelectedCity.Text = LocalizationService.Get("AutoDetectIp");
         }
         else
         {
@@ -203,10 +221,8 @@ public partial class SettingsWindow : Window
         LblAddHardwareHelp.Text = LocalizationService.Get("AddHardwareHelp");
         LblHardwareName.Text = LocalizationService.Get("HardwareNameLabel");
         LblHardwareCategory.Text = LocalizationService.Get("HardwareCategoryLabel");
-        LblHardwareUrl.Text = LocalizationService.Get("HardwareUrlLabel");
-        LblHardwarePrice.Text = LocalizationService.Get("HardwarePriceLabel");
         TxtCurrentVersion.Text = string.Format(
-            CultureInfo.CurrentCulture,
+            LocalizationService.GetCulture(),
             LocalizationService.Get("UpdateVersionLabel"),
             UpdateCheckService.CurrentVersion);
 
@@ -217,7 +233,7 @@ public partial class SettingsWindow : Window
         LblAccent.Text = LocalizationService.Get("AccentThemeLabel");
 
         BtnReset.Content = LocalizationService.Get("ResetDefaultsBtn");
-        BtnCancel.Content = LocalizationService.CurrentLanguage == "en" ? "Cancel" : "Vazgeç";
+        BtnCancel.Content = LocalizationService.Get("Cancel");
         BtnSave.Content = LocalizationService.Get("SaveAndApplyBtn");
 
         UpdateCityDisplay();
@@ -352,6 +368,8 @@ public partial class SettingsWindow : Window
         ChkAutoStart.IsChecked = true;
         ChkAlwaysOnTop.IsChecked = false;
         ChkGameMode.IsChecked = true;
+        ChkModularCards.IsChecked = false;
+        ChkClipboardHeight.IsChecked = true;
         ChkHardwareCore.IsChecked = true;
         ChkHardwareStorage.IsChecked = true;
         ChkHardwarePeripherals.IsChecked = true;
@@ -365,29 +383,26 @@ public partial class SettingsWindow : Window
     private void BtnAddHardware_Click(object sender, RoutedEventArgs e)
     {
         var name = TxtHardwareName.Text.Trim();
-        var url = TxtHardwareUrl.Text.Trim();
-        if (string.IsNullOrWhiteSpace(name) ||
-            !Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
-            !string.Equals(uri.Host, "www.amazon.com.tr", StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(uri.Host, "amazon.com.tr", StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrWhiteSpace(name))
         {
-            MessageBox.Show("Ürün adı ve geçerli bir Amazon.com.tr bağlantısı girin.", "OpenWidget", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(
+                LocalizationService.CurrentLanguage == "en"
+                    ? "Enter a product name."
+                    : "Ürün adı girin.",
+                "OpenWidget",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
             return;
         }
 
         var category = HardwareCategory.Normalize((CmbHardwareCategory.SelectedItem as ComboBoxItem)?.Tag?.ToString());
-        decimal.TryParse(TxtHardwarePrice.Text.Trim(), NumberStyles.Number, CultureInfo.GetCultureInfo("tr-TR"), out var price);
         _config.ManualHardware.Add(new ManualHardwareItem
         {
             Name = name,
-            Category = category,
-            Price = price,
-            AmazonUrl = uri.ToString()
+            Category = category
         });
         RefreshHardwareLists();
         TxtHardwareName.Clear();
-        TxtHardwareUrl.Clear();
-        TxtHardwarePrice.Clear();
     }
 
     private void BtnRemoveHardwareCard_Click(object sender, RoutedEventArgs e)
@@ -417,38 +432,7 @@ public partial class SettingsWindow : Window
             return;
         }
 
-        var link = item.Link.Trim();
-        if (!Uri.TryCreate(link, UriKind.Absolute, out var uri) ||
-            (uri.Host is not "amazon.com.tr" and not "www.amazon.com.tr"))
-        {
-            MessageBox.Show(
-                LocalizationService.CurrentLanguage == "en"
-                    ? "Enter a valid Amazon.com.tr link."
-                    : "Geçerli bir Amazon.com.tr bağlantısı girin.",
-                "OpenWidget",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-            return;
-        }
-
-        var manual = item.IsManual
-            ? _config.ManualHardware.FirstOrDefault(manualItem =>
-                string.Equals(
-                    $"{HardwareCategory.Normalize(manualItem.Category)}:{manualItem.Name}",
-                    item.Key,
-                    StringComparison.OrdinalIgnoreCase))
-            : null;
-        if (manual != null)
-        {
-            manual.AmazonUrl = uri.ToString();
-        }
-        else
-        {
-            _config.HardwareLinks[item.Key] = uri.ToString();
-        }
-
-        item.Link = uri.ToString();
-        RefreshHardwareLists();
+        return;
     }
 
     private void BtnClose_Click(object sender, RoutedEventArgs e)
@@ -500,6 +484,8 @@ public partial class SettingsWindow : Window
         _config.Widget.PinToDesktop = ChkPinToDesktop.IsChecked == true;
         _config.Widget.AlwaysOnTop = ChkPinToDesktop.IsChecked == true ? false : (ChkAlwaysOnTop.IsChecked == true);
         _config.Widget.AutoGameMode = ChkGameMode.IsChecked == true;
+        _config.Widget.UseModularCards = ChkModularCards.IsChecked == true;
+        _config.Widget.LimitClipboardHeight = ChkClipboardHeight.IsChecked == true;
         _config.HardwareVisibility.CoreSystem = ChkHardwareCore.IsChecked == true;
         _config.HardwareVisibility.Storage = ChkHardwareStorage.IsChecked == true;
         _config.HardwareVisibility.Peripherals = ChkHardwarePeripherals.IsChecked == true;
@@ -521,9 +507,7 @@ public partial class SettingsWindow : Window
     private async void BtnCheckUpdate_Click(object sender, RoutedEventArgs e)
     {
         BtnCheckUpdate.IsEnabled = false;
-        TxtUpdateStatus.Text = LocalizationService.CurrentLanguage == "en"
-            ? "Checking for updates..."
-            : "Güncellemeler denetleniyor...";
+        TxtUpdateStatus.Text = LocalizationService.Get("CheckingUpdates");
 
         var result = await UpdateCheckService.CheckForUpdatesAsync();
 
@@ -531,11 +515,11 @@ public partial class SettingsWindow : Window
 
         if (result.IsUpdateAvailable)
         {
-            TxtUpdateStatus.Text = LocalizationService.CurrentLanguage == "en"
-                ? $"New version available: v{result.LatestVersion}!"
-                : $"Yeni sürüm mevcut: v{result.LatestVersion}!";
+            TxtUpdateStatus.Text = string.Format(
+                LocalizationService.Get("LatestVersionAvailable"),
+                result.LatestVersion);
 
-            BtnCheckUpdate.Content = LocalizationService.CurrentLanguage == "en" ? "Download ↗" : "İndir ↗";
+            BtnCheckUpdate.Content = LocalizationService.Get("DownloadUpdate");
             BtnCheckUpdate.Click -= BtnCheckUpdate_Click;
             BtnCheckUpdate.Click += (s, args) =>
             {
@@ -552,15 +536,13 @@ public partial class SettingsWindow : Window
         }
         else if (result.IsSuccess)
         {
-            TxtUpdateStatus.Text = LocalizationService.CurrentLanguage == "en"
-                ? "You have the latest version installed."
-                : "En güncel sürümü kullanıyorsunuz.";
+            TxtUpdateStatus.Text = LocalizationService.Get("LatestVersionInstalled");
         }
         else
         {
-            TxtUpdateStatus.Text = LocalizationService.CurrentLanguage == "en"
-                ? $"Check failed: {result.ErrorMessage ?? "Offline"}"
-                : $"Bağlantı kurulamadı: {result.ErrorMessage ?? "Çevrimdışı"}";
+            TxtUpdateStatus.Text = string.Format(
+                LocalizationService.Get("UpdateCheckFailed"),
+                result.ErrorMessage ?? LocalizationService.Get("Offline"));
         }
     }
 }

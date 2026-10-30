@@ -36,9 +36,8 @@ OpenWidget is a standalone desktop system and information widget for Windows 10 
 
 ## Run the Release
 
-1. Download the latest `OpenWidget-windows-x64.zip` from the [GitHub Releases](https://github.com/alztrk/OpenWidget/releases) page.
-2. Extract the ZIP archive to a folder.
-3. Run `OpenWidget.exe`. Installation is not required.
+1. Download the latest `OpenWidget.exe` asset from the [GitHub Releases](https://github.com/alztrk/OpenWidget/releases) page.
+2. Save it in a folder you control and run it. Installation is not required.
 4. The widget appears in the upper-right area of the desktop. Use `Ctrl + Shift + W` to toggle its visibility.
 5. Right-click the widget to configure modules, position, theme, auto-start, and desktop behavior.
 
@@ -63,6 +62,8 @@ The output is written to `dist\OpenWidget.exe`.
 ## Configuration and Data Files
 
 - `%LOCALAPPDATA%\OpenWidget\config.json`: User preferences, enabled widgets, theme, city, hardware visibility, prices, and manually added Amazon products.
+- `PriceProvider`: Optional backend API settings. When disabled or unconfigured, prices are labeled as estimated/stale and are never presented as live Amazon prices.
+- A configured backend should return `GET /prices?keys=...` as a JSON array containing `key`, `value`, `currency`, and optional `productId`/`productUrl` fields.
 - `%APPDATA%\OpenWidget\clipboard-history.json`: Persistent clipboard history.
 - `%APPDATA%\OpenWidget\scratchpad.txt`: Scratchpad contents.
 - `%APPDATA%\OpenWidget\crash.log`: Unexpected error log.

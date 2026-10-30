@@ -23,7 +23,7 @@ public class HardwareSpecs
 
     public string TotalPriceFormatted { get; set; } = "0 ₺";
     public string LastUpdatedText { get; set; } = "Bugün";
-    public string PriceSource { get; set; } = "Amazon.com.tr";
+    public string PriceSource { get; set; } = PriceStatuses.Estimated;
 }
 
 public sealed class SettingsHardwareItem
@@ -34,6 +34,7 @@ public sealed class SettingsHardwareItem
     public string? Url { get; init; }
     public bool IsManual { get; init; }
     public string Source { get; init; } = string.Empty;
+    public string PriceStatus { get; init; } = string.Empty;
     public string Key { get; init; } = string.Empty;
     public string Link { get; set; } = string.Empty;
 }

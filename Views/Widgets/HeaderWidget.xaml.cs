@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -52,11 +51,7 @@ public partial class HeaderWidget : UserControl
         var now = DateTime.Now;
         TxtClock.Text = now.ToString("HH:mm");
 
-        var culture = LocalizationService.CurrentLanguage == "en"
-            ? CultureInfo.InvariantCulture
-            : new CultureInfo("tr-TR");
-
-        TxtDate.Text = now.ToString("d MMMM dddd", culture);
+        TxtDate.Text = now.ToString("d MMMM dddd", LocalizationService.GetCulture());
     }
 
     private void UpdateTexts()

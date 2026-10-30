@@ -45,7 +45,7 @@ public class WeatherService
     public string GetCurrentWeather()
     {
         if (!string.IsNullOrEmpty(_cachedWeather)) return _cachedWeather;
-        return LocalizationService.CurrentLanguage == "en" ? "Updating weather..." : "Hava durumu güncelleniyor...";
+        return LocalizationService.Get("WeatherUpdating");
     }
 
     public async Task<string> FetchLatestAsync()
@@ -144,7 +144,7 @@ public class WeatherService
                                 var dateStr = times[i].GetString();
                                 if (DateTime.TryParse(dateStr, out var dt))
                                 {
-                                    var culture = LocalizationService.CurrentLanguage == "en" ? CultureInfo.InvariantCulture : new CultureInfo("tr-TR");
+                                    var culture = LocalizationService.GetCulture();
                                     dayName = dt.ToString("dddd", culture);
                                     if (dayName.Length > 0)
                                     {

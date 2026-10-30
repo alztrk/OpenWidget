@@ -90,6 +90,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private static extern bool ShowWindow(IntPtr hWnd, int command);
 
     private HardwareConfig _config = new();
+    private readonly IConfigStore _configStore = new JsonConfigStore();
     private HardwareSpecs _specs = new();
     private TelemetrySpecs _telemetry = new();
     private FinanceSpecs _finance = new();
@@ -120,7 +121,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     public WeatherDetailsModel Weather => _weatherService?.GetDetails() ?? new WeatherDetailsModel();
     public string CompactWeatherText => _weatherService != null && !string.IsNullOrWhiteSpace(_weatherService.GetDetails().City)
         ? $"{_weatherService.GetDetails().City} {_weatherService.GetDetails().TempFormatted}"
-        : (LocalizationService.CurrentLanguage == "en" ? "Weather updating..." : "Hava durumu...");
+        : LocalizationService.Get("WeatherUpdating");
 
     public HardwareSpecs Specs
     {
@@ -166,6 +167,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     public bool IsCompactViewVisible => _config.Widget.IsCompact;
     public bool IsFullViewVisible => !_config.Widget.IsCompact;
+    public bool IsSingleCardLayoutVisible => !_config.Widget.UseModularCards;
+    public bool IsModularLayoutVisible => _config.Widget.UseModularCards;
+    public double ClipboardMaxHeight => _config.Widget.LimitClipboardHeight
+        ? Math.Max(120, _config.Widget.ClipboardHeight)
+        : double.PositiveInfinity;
 
     public string CompactCpuText => GetCompactTelemetryText("cpu", "CPU");
     public string CompactGpuText => GetCompactTelemetryText("gpu", "GPU");
@@ -302,7 +308,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         if (File.Exists(_configPath))
         {
-            _config = HardwareConfig.Load(_configPath);
+            _config = _configStore.Load(_configPath, LoadMigratedConfig);
         }
         else
         {
@@ -333,7 +339,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         try
         {
-            _config.Save(_configPath);
+            _configStore.Save(_configPath, _config);
         }
         catch (Exception ex)
         {
@@ -363,7 +369,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             config.Prices = HardwarePrices.Load(sourcePricePath);
         }
 
-        config.Prices.Source = "Amazon.com.tr";
+        config.Prices.Source = PriceStatuses.Estimated;
         config.Peripherals.Mousepad = null;
         return config;
     }
@@ -379,6 +385,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsHardwareVisible)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsQuickActionsVisible)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsCompactViewVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSingleCardLayoutVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsModularLayoutVisible)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ClipboardMaxHeight)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsFullViewVisible)));
     }
 
@@ -793,8 +802,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             _priceService ??= new PriceService(_config, _configPath);
             _priceService.CheckAndApplyDailyUpdate();
-
-            await _priceService.UpdateAmazonPricesAsync();
+            if (_priceService.ShouldUpdate())
+            {
+                var updateResult = await _priceService.UpdatePricesAsync();
+                if (!updateResult.Succeeded && !updateResult.WasSkipped)
+                {
+                    Debug.WriteLine(updateResult.Message);
+                }
+            }
 
             var scanner = new HardwareScanner(_config, _priceService);
             var result = await Task.Run(() => scanner.Scan());

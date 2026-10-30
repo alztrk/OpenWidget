@@ -44,6 +44,9 @@ public class WidgetConfig
     public bool AutoGameMode { get; set; } = true;
     public bool IsLocked { get; set; } = false;
     public bool IsCompact { get; set; } = false;
+    public bool UseModularCards { get; set; } = false;
+    public bool LimitClipboardHeight { get; set; } = true;
+    public double ClipboardHeight { get; set; } = 220;
     public bool OnlyShowOnDesktop { get; set; } = false;
     public string Language { get; set; } = "tr";
     public string City { get; set; } = "auto";
@@ -124,6 +127,7 @@ public class HardwareConfig
     public TelemetryWidgetConfig TelemetryWidget { get; set; } = new();
     public FinanceWidgetConfig FinanceWidget { get; set; } = new();
     public HardwarePrices Prices { get; set; } = HardwarePrices.GetDefaults();
+    public PriceProviderConfig PriceProvider { get; set; } = new();
     public HardwareVisibilityConfig HardwareVisibility { get; set; } = new();
     public List<ManualHardwareItem> ManualHardware { get; set; } = new();
     public List<string> HiddenHardware { get; set; } = new();
@@ -151,6 +155,7 @@ public class HardwareConfig
                     return config;
                 }
             }
+
         }
         catch { }
 
@@ -184,4 +189,12 @@ public class HardwareConfig
             System.Diagnostics.Debug.WriteLine($"Error saving config to {path}: {ex.Message}");
         }
     }
+}
+
+public class PriceProviderConfig
+{
+    public bool Enabled { get; set; }
+    public string Endpoint { get; set; } = string.Empty;
+    public int TimeoutSeconds { get; set; } = 15;
+    public int MaxAgeHours { get; set; } = 24;
 }

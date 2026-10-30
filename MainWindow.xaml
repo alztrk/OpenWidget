@@ -22,6 +22,22 @@
         Deactivated="Window_Deactivated">
 
     <Window.Resources>
+        <Style x:Key="WidgetCardWrapper" TargetType="Border">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsModularLayoutVisible}" Value="True">
+                    <Setter Property="Background" Value="{StaticResource SectionBgBrush}" />
+                    <Setter Property="BorderBrush" Value="{StaticResource MasterHudBorderBrush}" />
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="Padding" Value="8" />
+                    <Setter Property="Margin" Value="0,0,8,8" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
         <converters:IconKeyToGeometryConverter x:Key="IconConverter" />
         <converters:KeyToBrushConverter x:Key="BrushConverter" />
         <converters:StringToVisibilityConverter x:Key="StringToVis" />
@@ -153,32 +169,34 @@
 
                 <!-- Scrollable Body with smooth modern scrollbar -->
                 <ScrollViewer x:Name="MainScrollViewer"
+                              Visibility="{Binding IsSingleCardLayoutVisible, Converter={StaticResource BoolToVis}}"
                               VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled"
                               Focusable="False">
                     <StackPanel Margin="0,0,2,0">
                         <!-- 2. Weather Details Card -->
-                        <widgets:WeatherWidget Visibility="{Binding IsWeatherVisible, Converter={StaticResource BoolToVis}}" />
+                        <Border Style="{StaticResource WidgetCardWrapper}"><widgets:WeatherWidget Visibility="{Binding IsWeatherVisible, Converter={StaticResource BoolToVis}}" /></Border>
 
                         <!-- 3. System Telemetry -->
-                        <widgets:TelemetryWidget Visibility="{Binding IsTelemetryVisible, Converter={StaticResource BoolToVis}}" />
+                        <Border Style="{StaticResource WidgetCardWrapper}"><widgets:TelemetryWidget Visibility="{Binding IsTelemetryVisible, Converter={StaticResource BoolToVis}}" /></Border>
 
                         <!-- 4. Market Finance -->
-                        <widgets:FinanceWidget Visibility="{Binding IsFinanceVisible, Converter={StaticResource BoolToVis}}" />
+                        <Border Style="{StaticResource WidgetCardWrapper}"><widgets:FinanceWidget Visibility="{Binding IsFinanceVisible, Converter={StaticResource BoolToVis}}" /></Border>
 
                         <!-- 5. Media Controller -->
-                        <widgets:MediaWidget x:Name="MediaControlWidget" Visibility="{Binding IsMediaVisible, Converter={StaticResource BoolToVis}}" />
+                        <Border Style="{StaticResource WidgetCardWrapper}"><widgets:MediaWidget x:Name="MediaControlWidget" Visibility="{Binding IsMediaVisible, Converter={StaticResource BoolToVis}}" /></Border>
 
                         <!-- 6. Clipboard History -->
-                        <widgets:ClipboardWidget x:Name="ClipboardControlWidget" Visibility="{Binding IsClipboardVisible, Converter={StaticResource BoolToVis}}" />
+                        <Border Style="{StaticResource WidgetCardWrapper}"><widgets:ClipboardWidget x:Name="ClipboardControlWidget" MaxHeight="{Binding ClipboardMaxHeight}" Visibility="{Binding IsClipboardVisible, Converter={StaticResource BoolToVis}}" /></Border>
 
                         <!-- 7. Hardware Components -->
-                        <widgets:HardwareWidget Visibility="{Binding IsHardwareVisible, Converter={StaticResource BoolToVis}}" />
+                        <Border Style="{StaticResource WidgetCardWrapper}"><widgets:HardwareWidget Visibility="{Binding IsHardwareVisible, Converter={StaticResource BoolToVis}}" /></Border>
 
                         <!-- 8. Quick Actions Toolbar -->
-                        <widgets:QuickActionsWidget Visibility="{Binding IsQuickActionsVisible, Converter={StaticResource BoolToVis}}" />
+                        <Border Style="{StaticResource WidgetCardWrapper}"><widgets:QuickActionsWidget Visibility="{Binding IsQuickActionsVisible, Converter={StaticResource BoolToVis}}" /></Border>
                     </StackPanel>
                 </ScrollViewer>
+
             </DockPanel>
 
             <!-- 2. COMPACT MINI HUD BAR -->
@@ -206,13 +224,13 @@
 
                 <!-- Mini Telemetry Badges (CPU • GPU • RAM) -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0">
-                    <Border Background="#1A38BDF8" CornerRadius="4" Padding="5,1.5" Margin="2,0">
+                    <Border Background="{StaticResource TelemetryCpuBadgeBrush}" CornerRadius="4" Padding="5,1.5" Margin="2,0">
                         <TextBlock Text="{Binding CompactCpuText}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" />
                     </Border>
-                    <Border Background="#1A34D399" CornerRadius="4" Padding="5,1.5" Margin="2,0">
+                    <Border Background="{StaticResource TelemetryGpuBadgeBrush}" CornerRadius="4" Padding="5,1.5" Margin="2,0">
                         <TextBlock Text="{Binding CompactGpuText}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource AccentGreenBrush}" />
                     </Border>
-                    <Border Background="#1AFBBF24" CornerRadius="4" Padding="5,1.5" Margin="2,0">
+                    <Border Background="{StaticResource TelemetryRamBadgeBrush}" CornerRadius="4" Padding="5,1.5" Margin="2,0">
                         <TextBlock Text="{Binding CompactRamText}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource AccentAmberBrush}" />
                     </Border>
                 </StackPanel>

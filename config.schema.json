@@ -11,6 +11,7 @@
     "TelemetryWidget": { "$ref": "#/$defs/enabledLayout" },
     "FinanceWidget": { "$ref": "#/$defs/enabledLayout" },
     "Prices": { "$ref": "#/$defs/prices" },
+    "PriceProvider": { "$ref": "#/$defs/priceProvider" },
     "HardwareVisibility": { "$ref": "#/$defs/hardwareVisibility" },
     "ManualHardware": {
       "type": "array",
@@ -65,7 +66,10 @@
         "AutoGameMode": { "type": "boolean" },
         "IsLocked": { "type": "boolean" },
         "IsCompact": { "type": "boolean" },
-        "Language": { "type": "string", "enum": ["tr", "en"] },
+        "UseModularCards": { "type": "boolean" },
+        "LimitClipboardHeight": { "type": "boolean" },
+        "ClipboardHeight": { "type": "number", "minimum": 120, "maximum": 2000 },
+        "Language": { "type": "string", "enum": ["tr", "en", "de", "fr", "es", "it", "pt", "ja", "ru"] },
         "City": { "type": "string" },
         "AccentTheme": { "type": "string" }
       }
@@ -86,13 +90,40 @@
     "prices": {
       "type": "object",
       "properties": {
-        "Source": { "const": "Amazon.com.tr" },
+        "Source": { "type": "string" },
         "LastUpdated": { "type": "string", "format": "date" },
         "Currency": { "type": "string" },
         "Items": {
           "type": "object",
           "additionalProperties": { "type": "number", "minimum": 0 }
+        },
+        "Entries": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/priceEntry" }
         }
+      }
+    },
+    "priceEntry": {
+      "type": "object",
+      "required": ["Value", "Status"],
+      "properties": {
+        "Value": { "type": "number", "minimum": 0 },
+        "Currency": { "type": "string" },
+        "Source": { "type": "string" },
+        "Status": { "type": "string", "enum": ["Estimated", "Manual", "Live", "Stale", "Unavailable"] },
+        "ProductId": { "type": ["string", "null"] },
+        "ProductUrl": { "type": ["string", "null"], "format": "uri" },
+        "LastCheckedUtc": { "type": ["string", "null"], "format": "date-time" },
+        "LastSuccessfulUpdateUtc": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "priceProvider": {
+      "type": "object",
+      "properties": {
+        "Enabled": { "type": "boolean" },
+        "Endpoint": { "type": "string", "format": "uri" },
+        "TimeoutSeconds": { "type": "integer", "minimum": 5, "maximum": 60 },
+        "MaxAgeHours": { "type": "integer", "minimum": 1, "maximum": 168 }
       }
     },
     "hardwareVisibility": {

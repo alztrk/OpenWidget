@@ -92,9 +92,8 @@ OpenWidget, Windows 10 ve Windows 11 için geliştirilmiş, masaüstünde doğru
 
 ### GitHub Release ile Çalıştırma
 
-1. [Releases sayfasından](https://github.com/alztrk/OpenWidget/releases) en son `OpenWidget-windows-x64.zip` dosyasını indirin.
-2. ZIP dosyasını Windows üzerinde boş bir klasöre çıkarın.
-3. `OpenWidget.exe` dosyasını çalıştırın. Kurulum gerekmez; uygulama taşınabilir olarak çalışır.
+1. [Releases sayfasından](https://github.com/alztrk/OpenWidget/releases) en son `OpenWidget.exe` dosyasını indirin.
+2. Dosyayı kontrolünüzdeki bir klasöre kaydedip çalıştırın. Kurulum gerekmez; uygulama taşınabilir olarak çalışır.
 4. Widget görünmüyorsa sistem tepsisinde ayrı bir simge aramayın; pencere masaüstünde sağ üstte açılır. Varsayılan global kısayol `Ctrl + Shift + W` ile görünürlüğü açıp kapatabilirsiniz.
 5. Widget'a sağ tıklayarak kartları, konumu, tema ayarlarını, otomatik başlatmayı ve masaüstü davranışını değiştirebilirsiniz.
 
@@ -121,6 +120,8 @@ powershell -ExecutionPolicy Bypass -File ".\scripts\publish-portable.ps1"
 ## Yapılandırma ve Veri Dosyaları
 
 * `%LOCALAPPDATA%\OpenWidget\config.json`: Kullanıcı tercihleri, aktif kartlar, tema, şehir, donanım görünürlüğü, fiyatlar ve manuel Amazon ürünleri.
+* `PriceProvider`: İsteğe bağlı backend API ayarlarıdır. Devre dışı veya yapılandırılmamışsa fiyatlar tahmini/eski olarak etiketlenir ve hiçbir zaman canlı Amazon fiyatı gibi gösterilmez.
+* Yapılandırılmış backend, `GET /prices?keys=...` isteğine `key`, `value`, `currency` ve isteğe bağlı `productId`/`productUrl` alanlarını içeren JSON diziyle yanıt vermelidir.
 * `%APPDATA%\OpenWidget\clipboard-history.json`: Kalıcı pano geçmişi kayıtları.
 * `%APPDATA%\OpenWidget\scratchpad.txt`: Hızlı not defteri içeriği.
 * `%APPDATA%\OpenWidget\crash.log`: Olası beklenmeyen çökme ve hata kayıtları.

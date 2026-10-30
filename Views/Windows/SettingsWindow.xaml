@@ -298,6 +298,13 @@
                         <ComboBox x:Name="CmbLanguage" Grid.Column="1" Style="{StaticResource ComponentComboBox}" VerticalAlignment="Center" PreviewMouseLeftButtonDown="ComponentComboBox_PreviewMouseLeftButtonDown">
                             <ComboBoxItem Content="Türkçe" Tag="tr" IsSelected="True" />
                             <ComboBoxItem Content="English" Tag="en" />
+                            <ComboBoxItem Content="Deutsch" Tag="de" />
+                            <ComboBoxItem Content="Français" Tag="fr" />
+                            <ComboBoxItem Content="Español" Tag="es" />
+                            <ComboBoxItem Content="Italiano" Tag="it" />
+                            <ComboBoxItem Content="Português" Tag="pt" />
+                            <ComboBoxItem Content="日本語" Tag="ja" />
+                            <ComboBoxItem Content="Русский" Tag="ru" />
                         </ComboBox>
                     </Grid>
                 </Border>
@@ -725,14 +732,11 @@
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
-                                            <StackPanel Margin="0,0,10,0">
+                                            <StackPanel Grid.ColumnSpan="2" Margin="0,0,10,0">
                                                 <TextBlock Text="{Binding Name}" Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
                                                 <TextBlock Text="{Binding Category}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" />
-                                                <TextBox Text="{Binding Link, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ComponentTextBox}" Height="28" Margin="0,5,0,0" ToolTip="Amazon.com.tr bağlantısı" />
                                             </StackPanel>
-                                            <TextBlock Grid.Column="1" Text="{Binding Price}" Margin="12,0" Foreground="{StaticResource PriceBrush}" VerticalAlignment="Center" />
                                             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                                <Button Content="Güncelle" Tag="{Binding}" Style="{StaticResource ComponentActionButton}" MinWidth="72" Padding="8,0" Margin="0,0,6,0" Click="BtnUpdateHardwareLink_Click" />
                                                 <Button Content="Sil" Tag="{Binding}" Style="{StaticResource ComponentActionButton}" MinWidth="48" Padding="8,0" Click="BtnRemoveHardwareCard_Click" />
                                             </StackPanel>
                                         </Grid>
@@ -769,20 +773,6 @@
                                 </ComboBox>
                             </StackPanel>
                             <Button Grid.Column="2" Content="Ekle" Style="{StaticResource ComponentActionButton}" VerticalAlignment="Bottom" Click="BtnAddHardware_Click" />
-                        </Grid>
-                        <Grid Margin="0,8,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="125" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                                <TextBlock x:Name="LblHardwareUrl" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="2,0,0,3" />
-                                <TextBox x:Name="TxtHardwareUrl" Style="{StaticResource ComponentTextBox}" ToolTip="Amazon ürün bağlantısı" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="1">
-                                <TextBlock x:Name="LblHardwarePrice" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="2,0,0,3" />
-                                <TextBox x:Name="TxtHardwarePrice" Style="{StaticResource ComponentTextBox}" ToolTip="Fiyat (TL)" />
-                            </StackPanel>
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -828,6 +818,20 @@
                             <StackPanel>
                                 <TextBlock Text="Oyun Modu (Otomatik Rölanti)" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                                 <TextBlock Text="Tam ekran oyunlarda telemetri yenilemesini düşürür" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </CheckBox>
+                        <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
+                        <CheckBox x:Name="ChkModularCards" Style="{StaticResource ComponentToggle}">
+                            <StackPanel>
+                                <TextBlock Text="Modüler kart düzeni" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Text="Widget bölümlerini ayrı kartlar halinde gösterir" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </CheckBox>
+                        <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
+                        <CheckBox x:Name="ChkClipboardHeight" Style="{StaticResource ComponentToggle}">
+                            <StackPanel>
+                                <TextBlock Text="Pano kartı yüksekliğini sınırla" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Text="Kapalı olduğunda pano geçmişi tüm içeriğiyle açılır" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
                             </StackPanel>
                         </CheckBox>
                     </StackPanel>

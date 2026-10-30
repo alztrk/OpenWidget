@@ -23,7 +23,6 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="18" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
                     <!-- Icon -->
@@ -46,14 +45,6 @@
                                TextTrimming="CharacterEllipsis"
                                Margin="0,0,8,0" />
 
-                    <!-- Price -->
-                    <TextBlock Grid.Column="2"
-                               Text="{Binding PriceFormatted}"
-                               FontSize="11.5"
-                               FontWeight="Medium"
-                               Foreground="{StaticResource PriceBrush}"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Right" />
                 </Grid>
             </Border>
         </DataTemplate>
@@ -76,12 +67,6 @@
                       Margin="8,0,0,0"
                       VerticalAlignment="Center" />
             </StackPanel>
-            <TextBlock Text="{Binding Specs.TotalPriceFormatted}"
-                       HorizontalAlignment="Right"
-                       FontSize="12"
-                       FontWeight="SemiBold"
-                       Foreground="{StaticResource AccentGreenBrush}"
-                       VerticalAlignment="Center" />
         </Grid>
 
         <StackPanel x:Name="ContentPanel">

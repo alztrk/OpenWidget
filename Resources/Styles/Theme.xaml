@@ -36,6 +36,17 @@
     <Color x:Key="AccentAmberColor">#FBBF24</Color>
     <SolidColorBrush x:Key="AccentAmberBrush" Color="{StaticResource AccentAmberColor}" />
 
+    <Color x:Key="TelemetryCpuBadgeColor">#1A38BDF8</Color>
+    <SolidColorBrush x:Key="TelemetryCpuBadgeBrush" Color="{StaticResource TelemetryCpuBadgeColor}" />
+    <Color x:Key="TelemetryGpuBadgeColor">#1A34D399</Color>
+    <SolidColorBrush x:Key="TelemetryGpuBadgeBrush" Color="{StaticResource TelemetryGpuBadgeColor}" />
+    <Color x:Key="TelemetryRamBadgeColor">#1AFBBF24</Color>
+    <SolidColorBrush x:Key="TelemetryRamBadgeBrush" Color="{StaticResource TelemetryRamBadgeColor}" />
+    <Color x:Key="HeaderGameModeBackgroundColor">#2034D399</Color>
+    <SolidColorBrush x:Key="HeaderGameModeBackgroundBrush" Color="{StaticResource HeaderGameModeBackgroundColor}" />
+    <Color x:Key="HeaderGameModeBorderColor">#4034D399</Color>
+    <SolidColorBrush x:Key="HeaderGameModeBorderBrush" Color="{StaticResource HeaderGameModeBorderColor}" />
+
     <Color x:Key="TrackBgColor">#1AFFFFFF</Color>
     <SolidColorBrush x:Key="TrackBgBrush" Color="{StaticResource TrackBgColor}" />
 
@@ -51,6 +62,12 @@
 
     <Color x:Key="DividerColor">#1CFFFFFF</Color>
     <SolidColorBrush x:Key="DividerBrush" Color="{StaticResource DividerColor}" />
+    <Color x:Key="TooltipBackgroundColor">#E60B0F19</Color>
+    <SolidColorBrush x:Key="TooltipBackgroundBrush" Color="{StaticResource TooltipBackgroundColor}" />
+    <Color x:Key="TooltipForegroundColor">#F8FAFC</Color>
+    <SolidColorBrush x:Key="TooltipForegroundBrush" Color="{StaticResource TooltipForegroundColor}" />
+    <Color x:Key="TooltipBorderColor">#25FFFFFF</Color>
+    <SolidColorBrush x:Key="TooltipBorderBrush" Color="{StaticResource TooltipBorderColor}" />
 
     <!-- Backward compatibility aliases -->
     <SolidColorBrush x:Key="GlassBgBrush" Color="{StaticResource MasterHudBgColor}" />

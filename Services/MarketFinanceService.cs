@@ -207,8 +207,7 @@ public class MarketFinanceService
 
     private static FinanceSpecs CreateDefaultSpecs()
     {
-        var isEn = LocalizationService.CurrentLanguage == "en";
-        var specs = new FinanceSpecs { LastUpdatedText = isEn ? "Updating..." : "Güncelleniyor..." };
+        var specs = new FinanceSpecs { LastUpdatedText = LocalizationService.Get("Updating") };
         specs.Currencies.Add(new FinanceItem("usd", "IconDollar", LocalizationService.Get("Dollar"), "-- ₺", "%0,00", "Neutral"));
         specs.Currencies.Add(new FinanceItem("eur", "IconEuro", LocalizationService.Get("Euro"), "-- ₺", "%0,00", "Neutral"));
         specs.Gold.Add(new FinanceItem("gram_altin", "IconGoldBar", LocalizationService.Get("GramGold"), "-- ₺", "%0,00", "Neutral"));
