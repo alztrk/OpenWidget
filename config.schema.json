@@ -15,6 +15,11 @@
     "ManualHardware": {
       "type": "array",
       "items": { "$ref": "#/$defs/manualHardware" }
+    },
+    "HiddenHardware": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Stable category and item keys hidden from the detected hardware list."
     }
   },
   "$defs": {

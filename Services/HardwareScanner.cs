@@ -174,6 +174,8 @@ public class HardwareScanner
                 "amazon.com.tr ↗"));
         }
 
+        RemoveHiddenHardware(specs);
+
         // Summary Values
         var total = _priceService.GetTotalPriceValue() + manualTotal;
         specs.TotalPriceFormatted = $"{total.ToString("N0", CultureInfo.GetCultureInfo("tr-TR"))} ₺";
@@ -182,6 +184,18 @@ public class HardwareScanner
 
         return specs;
     }
+
+    private void RemoveHiddenHardware(HardwareSpecs specs)
+    {
+        var hidden = _config.HiddenHardware.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        specs.CoreSystem.RemoveAll(item => hidden.Contains(GetHardwareKey(item)));
+        specs.Storage.RemoveAll(item => hidden.Contains(GetHardwareKey(item)));
+        specs.Peripherals.RemoveAll(item => hidden.Contains(GetHardwareKey(item)));
+        specs.CoolingAndPower.RemoveAll(item => hidden.Contains(GetHardwareKey(item)));
+        specs.Accessories.RemoveAll(item => hidden.Contains(GetHardwareKey(item)));
+    }
+
+    public static string GetHardwareKey(HardwareItem item) => $"{item.Category}:{item.Value}";
 
     private HardwareItem GetCpuItem()
     {

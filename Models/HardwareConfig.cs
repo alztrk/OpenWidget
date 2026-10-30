@@ -126,6 +126,7 @@ public class HardwareConfig
     public HardwarePrices Prices { get; set; } = HardwarePrices.GetDefaults();
     public HardwareVisibilityConfig HardwareVisibility { get; set; } = new();
     public List<ManualHardwareItem> ManualHardware { get; set; } = new();
+    public List<string> HiddenHardware { get; set; } = new();
 
     public static HardwareConfig Load(string path)
     {

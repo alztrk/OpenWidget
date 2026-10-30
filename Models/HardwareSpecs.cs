@@ -34,4 +34,5 @@ public sealed class SettingsHardwareItem
     public string? Url { get; init; }
     public bool IsManual { get; init; }
     public string Source { get; init; } = string.Empty;
+    public string Key { get; init; } = string.Empty;
 }

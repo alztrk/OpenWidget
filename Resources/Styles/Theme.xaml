@@ -4,6 +4,8 @@
     <!-- Modern 2026 Minimal Acrylic Dark Glass Theme -->
     <Color x:Key="MasterHudBgColor">#78080C14</Color>
     <SolidColorBrush x:Key="MasterHudBgBrush" Color="{StaticResource MasterHudBgColor}" />
+    <Color x:Key="SettingsDialogBgColor">#F0090D16</Color>
+    <SolidColorBrush x:Key="SettingsDialogBgBrush" Color="{StaticResource SettingsDialogBgColor}" />
 
     <Color x:Key="MasterHudBorderColor">#1CFFFFFF</Color>
     <SolidColorBrush x:Key="MasterHudBorderBrush" Color="{StaticResource MasterHudBorderColor}" />
@@ -13,6 +15,10 @@
 
     <Color x:Key="SectionBorderColor">#1CFFFFFF</Color>
     <SolidColorBrush x:Key="SectionBorderBrush" Color="{StaticResource SectionBorderColor}" />
+    <Color x:Key="ComponentInputBgColor">#FF151D2B</Color>
+    <SolidColorBrush x:Key="ComponentInputBgBrush" Color="{StaticResource ComponentInputBgColor}" />
+    <Color x:Key="ComponentActionBgColor">#FF1B2638</Color>
+    <SolidColorBrush x:Key="ComponentActionBgBrush" Color="{StaticResource ComponentActionBgColor}" />
 
     <!-- Palette -->
     <Color x:Key="AccentColor">#38BDF8</Color>

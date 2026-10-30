@@ -99,8 +99,6 @@ public partial class SettingsWindow : Window
 
     private void RefreshHardwareLists()
     {
-        ListManualHardware.ItemsSource = null;
-        ListManualHardware.ItemsSource = _config.ManualHardware;
         ListHardware.ItemsSource = BuildHardwareItems();
     }
 
@@ -109,22 +107,25 @@ public partial class SettingsWindow : Window
         var manualUrls = _config.ManualHardware
             .Select(item => item.AmazonUrl)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var hiddenHardware = _config.HiddenHardware.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var items = _hardwareSpecs.CoreSystem
             .Concat(_hardwareSpecs.Storage)
             .Concat(_hardwareSpecs.Peripherals)
             .Concat(_hardwareSpecs.CoolingAndPower)
             .Concat(_hardwareSpecs.Accessories)
+            .Where(item => !hiddenHardware.Contains(HardwareScanner.GetHardwareKey(item)))
             .Select(item => new SettingsHardwareItem
             {
                 Name = item.Value,
-                Category = item.Category,
+                Category = GetCategoryLabel(item.Category),
                 Price = item.PriceFormatted ?? "-",
                 Url = item.Url,
                 IsManual = item.Url != null && manualUrls.Contains(item.Url),
                 Source = item.Url != null && manualUrls.Contains(item.Url)
                     ? LocalizationService.Get("HardwareSourceConfig")
-                    : LocalizationService.Get("HardwareSourceDetected")
+                    : LocalizationService.Get("HardwareSourceDetected"),
+                Key = HardwareScanner.GetHardwareKey(item)
             })
             .ToList();
 
@@ -142,7 +143,8 @@ public partial class SettingsWindow : Window
                 Price = item.Price > 0 ? $"{item.Price:N0} ₺" : "-",
                 Url = item.AmazonUrl,
                 IsManual = true,
-                Source = LocalizationService.Get("HardwareSourceConfig")
+                Source = LocalizationService.Get("HardwareSourceConfig"),
+                Key = $"{HardwareCategory.Normalize(item.Category)}:{item.Name}"
             });
         }
 
@@ -333,6 +335,7 @@ public partial class SettingsWindow : Window
         ChkHardwareCooling.IsChecked = true;
         ChkHardwareAccessories.IsChecked = true;
         _config.ManualHardware.Clear();
+        _config.HiddenHardware.Clear();
         RefreshHardwareLists();
     }
 
@@ -364,11 +367,22 @@ public partial class SettingsWindow : Window
         TxtHardwarePrice.Clear();
     }
 
-    private void BtnRemoveHardware_Click(object sender, RoutedEventArgs e)
+    private void BtnRemoveHardwareCard_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button button && button.Tag is ManualHardwareItem item)
+        if (sender is Button button && button.Tag is SettingsHardwareItem item)
         {
-            _config.ManualHardware.Remove(item);
+            var manual = _config.ManualHardware.FirstOrDefault(manualItem =>
+                string.Equals(manualItem.AmazonUrl, item.Url, StringComparison.OrdinalIgnoreCase));
+            if (manual != null)
+            {
+                _config.ManualHardware.Remove(manual);
+            }
+            else if (!string.IsNullOrWhiteSpace(item.Key) &&
+                     !_config.HiddenHardware.Contains(item.Key, StringComparer.OrdinalIgnoreCase))
+            {
+                _config.HiddenHardware.Add(item.Key);
+            }
+
             RefreshHardwareLists();
         }
     }

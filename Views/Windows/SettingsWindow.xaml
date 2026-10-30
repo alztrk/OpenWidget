@@ -6,8 +6,8 @@
         SizeToContent="Height"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
-        AllowsTransparency="True"
-        Background="Transparent"
+        AllowsTransparency="False"
+        Background="{StaticResource SettingsDialogBgBrush}"
         ResizeMode="NoResize"
         ShowInTaskbar="True"
         FontFamily="Roboto, Segoe UI Variable Text, Segoe UI, sans-serif"
@@ -242,7 +242,7 @@
 
     <!-- Frosted Acrylic Master Dialog Container -->
     <Border x:Name="MasterDialogBorder"
-            Background="{StaticResource MasterHudBgBrush}"
+            Background="{StaticResource SettingsDialogBgBrush}"
             BorderBrush="{StaticResource MasterHudBorderBrush}"
             BorderThickness="1"
             CornerRadius="16"
@@ -279,7 +279,7 @@
             </DockPanel>
 
             <!-- Navigation Tabs (Pill Bar) -->
-            <Border Background="#12FFFFFF" CornerRadius="9" Padding="4" Margin="0,0,0,18">
+            <Border Background="{StaticResource SectionBgBrush}" CornerRadius="9" Padding="4" Margin="0,0,0,18">
                 <UniformGrid Columns="4">
                     <RadioButton x:Name="TabBtnGeneral" Content="Genel" Style="{StaticResource PillTabStyle}" IsChecked="True" Checked="Tab_Checked" />
                     <RadioButton x:Name="TabBtnWidgets" Content="Widgetlar" Style="{StaticResource PillTabStyle}" Checked="Tab_Checked" />
@@ -468,7 +468,7 @@
                                                     <DataTemplate>
                                                         <StackPanel Margin="0,2,0,8">
                                                             <!-- Country Category Header -->
-                                                            <Border Background="#12FFFFFF"
+                                                            <Border Background="{StaticResource SectionBgBrush}"
                                                                     CornerRadius="5"
                                                                     Padding="8,5"
                                                                     Margin="0,0,0,3">
@@ -724,7 +724,8 @@
                             <ItemsControl x:Name="ListHardware">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Margin="0,3">
+                                        <Border Style="{StaticResource ComponentCard}" Padding="10" Margin="0,3">
+                                        <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="Auto" />
@@ -735,8 +736,12 @@
                                                 <TextBlock Text="{Binding Category}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" />
                                             </StackPanel>
                                             <TextBlock Grid.Column="1" Text="{Binding Price}" Margin="12,0" Foreground="{StaticResource PriceBrush}" VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="2" Text="{Binding Source}" Foreground="{StaticResource AccentBrush}" FontSize="10" VerticalAlignment="Center" />
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Source}" Foreground="{StaticResource AccentBrush}" FontSize="10" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                                <Button Content="Sil" Tag="{Binding}" Style="{StaticResource ComponentActionButton}" MinWidth="48" Padding="8,0" Click="BtnRemoveHardwareCard_Click" />
+                                            </StackPanel>
                                         </Grid>
+                                        </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -772,27 +777,13 @@
                             <TextBox x:Name="TxtHardwareUrl" Style="{StaticResource ComponentTextBox}" Margin="0,0,8,0" ToolTip="Amazon ürün bağlantısı" />
                             <TextBox x:Name="TxtHardwarePrice" Grid.Column="1" Style="{StaticResource ComponentTextBox}" ToolTip="Fiyat (TL)" />
                         </Grid>
-                        <ItemsControl x:Name="ListManualHardware" Margin="0,12,0,0">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="0,3">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Text="{Binding Name}" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
-                                        <Button Grid.Column="1" Content="Sil" Tag="{Binding}" Style="{StaticResource GhostBtnStyle}" Height="26" MinWidth="50" Padding="8,0" Click="BtnRemoveHardware_Click" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
                     </StackPanel>
                 </Border>
             </StackPanel>
 
             <!-- ================= TAB 4: SİSTEM & PERFORMANS ================= -->
             <StackPanel x:Name="PanelSystem" Visibility="Collapsed" Margin="0,0,0,18">
-                <Border Background="#0EFFFFFF" BorderBrush="{StaticResource MasterHudBorderBrush}" BorderThickness="1" CornerRadius="9" Padding="18,10">
+                <Border Style="{StaticResource ComponentCard}" Padding="18,10">
                     <StackPanel>
                         <CheckBox x:Name="ChkLockPosition" Style="{StaticResource ModernToggleSwitch}">
                             <StackPanel>
