@@ -30,6 +30,6 @@ public class UpdateCheckServiceTests
         Assert.Equal("1.2.0", result.CurrentVersion);
         Assert.Equal("1.3.0", result.LatestVersion);
         Assert.Equal("New features added", result.ReleaseNotes);
-        Assert.Equal("https://github.com/alicanatasever/OpenWidget/releases/v1.3.0", result.ReleaseUrl);
+        Assert.Equal("https://github.com/alztrk/OpenWidget/releases/v1.3.0", result.ReleaseUrl);
     }
 }

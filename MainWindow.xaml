@@ -17,7 +17,8 @@
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
         RenderOptions.ClearTypeHint="Enabled"
-        Loaded="Window_Loaded">
+        Loaded="Window_Loaded"
+        ContentRendered="Window_ContentRendered">
 
     <Window.Resources>
         <converters:IconKeyToGeometryConverter x:Key="IconConverter" />

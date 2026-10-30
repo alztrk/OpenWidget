@@ -17,9 +17,9 @@ public record UpdateCheckResult(
 
 public static class UpdateCheckService
 {
-    public const string CurrentVersion = "1.2.0";
-    private const string GitHubReleasesApi = "https://api.github.com/repos/alicanatasever/OpenWidget/releases/latest";
-    public const string ProjectUrl = "https://github.com/alicanatasever/OpenWidget";
+    public const string CurrentVersion = "1.3.0";
+    private const string GitHubReleasesApi = "https://api.github.com/repos/alztrk/OpenWidget/releases/latest";
+    public const string ProjectUrl = "https://github.com/alztrk/OpenWidget";
 
     private static readonly HttpClient HttpClient = new()
     {

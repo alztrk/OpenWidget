@@ -4,6 +4,19 @@ OpenWidget, Windows 10 ve Windows 11 için geliştirilmiş, masaüstünde doğru
 
 ---
 
+## Proje Yapısı
+
+* `Views/Widgets/`: Ana panelde gösterilen widget görünümleri.
+* `Views/Windows/`: Uygulama içindeki bağımsız pencere görünümleri.
+* `Resources/Styles/`: Paylaşılan WPF stilleri ve tema kaynakları.
+* `Models/`: Uygulama veri modelleri.
+* `Services/`: Donanım, sistem, ağ ve uygulama servisleri.
+* `Converters/`: XAML değer dönüştürücüleri.
+* `Utils/`: Ortak yardımcı sınıflar.
+* `tests/`: Birim testleri.
+
+---
+
 ## Genel Özellikler
 
 * **Masaüstü Entegrasyonu:** Diğer pencerelerin üzerine çıkmadan arka planda masaüstü düzeyinde çalışır (`Topmost = false`, `WS_EX_TOOLWINDOW`). Görev çubuğunda simge oluşturmaz ve odak çalmaz (`WS_EX_NOACTIVATE`).
@@ -70,6 +83,36 @@ OpenWidget, Windows 10 ve Windows 11 için geliştirilmiş, masaüstünde doğru
 
 * **İşletim Sistemi:** Windows 10 (Sürüm 2004 / Derleme 19041 veya üstü) ya da Windows 11 (x64)
 * **Çalışma Zamanı:** .NET 10.0 Windows Masaüstü Çalışma Zamanı (Taşınabilir derlemede dahili gelir)
+
+---
+
+## Kullanım
+
+### GitHub Release ile Çalıştırma
+
+1. [Releases sayfasından](https://github.com/alztrk/OpenWidget/releases) en son `OpenWidget-windows-x64.zip` dosyasını indirin.
+2. ZIP dosyasını Windows üzerinde boş bir klasöre çıkarın.
+3. `OpenWidget.exe` dosyasını çalıştırın. Kurulum gerekmez; uygulama taşınabilir olarak çalışır.
+4. Widget görünmüyorsa sistem tepsisinde ayrı bir simge aramayın; pencere masaüstünde sağ üstte açılır. Varsayılan global kısayol `Ctrl + Shift + W` ile görünürlüğü açıp kapatabilirsiniz.
+5. Widget'a sağ tıklayarak kartları, konumu, tema ayarlarını, otomatik başlatmayı ve masaüstü davranışını değiştirebilirsiniz.
+
+Windows SmartScreen uyarısı yayıncı sertifikası bulunmadığı için gösterilebilir. Dosyayı yalnızca bu depodaki resmi [Releases](https://github.com/alztrk/OpenWidget/releases) sayfasından indirdiğinizden emin olun.
+
+### Kaynaktan Çalıştırma
+
+`.NET 10 SDK` yüklü bir Windows ortamında:
+
+```powershell
+dotnet run --project OpenWidget.csproj
+```
+
+Bağımsız taşınabilir `.exe` üretmek için:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File ".\scripts\publish-portable.ps1"
+```
+
+Çıktı `dist\OpenWidget.exe` konumuna yazılır.
 
 ---
 

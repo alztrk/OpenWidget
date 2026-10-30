@@ -56,7 +56,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
-    private static readonly IntPtr HWND_BOTTOM = new IntPtr(1);
+    private static readonly IntPtr HWND_TOP = IntPtr.Zero;
     private const uint SWP_NOSIZE = 0x0001;
     private const uint SWP_NOMOVE = 0x0002;
     private const uint SWP_NOACTIVATE = 0x0010;
@@ -383,9 +383,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void ApplyDesktopPinning()
     {
         var handle = new WindowInteropHelper(this).Handle;
-        if (handle != IntPtr.Zero && _config.Widget.PinToDesktop)
+        if (handle != IntPtr.Zero)
         {
-            SetWindowPos(handle, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+            SetWindowPos(handle, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
         }
     }
 
@@ -437,6 +437,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
+        Visibility = Visibility.Visible;
         PositionWidget();
         ApplyLockState();
         ApplyDesktopPinning();
@@ -532,6 +533,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             Left = Math.Round(workArea.Right - Width - rightMargin);
             Top = Math.Round(workArea.Top + topMargin);
         }
+    }
+
+    private void Window_ContentRendered(object? sender, EventArgs e)
+    {
+        PositionWidget();
+        ApplyDesktopPinning();
     }
 
     private void MasterBorder_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
