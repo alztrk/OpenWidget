@@ -32,6 +32,7 @@
         <ContextMenu x:Name="MainContextMenu"
                      Style="{StaticResource ModernContextMenuStyle}"
                      StaysOpen="False"
+                     Opened="MainContextMenu_Opened"
                      Closed="MainContextMenu_Closed">
             <MenuItem x:Name="MenuHeader" Header="Saat &amp; Sistem Durumu" IsCheckable="True" Click="MenuHeader_Click">
                 <MenuItem.Icon>

@@ -76,9 +76,15 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private const uint SWP_NOACTIVATE = 0x0010;
     private const uint SWP_SHOWWINDOW = 0x0040;
     private const int SW_SHOWNOACTIVATE = 4;
+    private const short KEY_PRESSED = unchecked((short)0x8000);
+    private const int VK_LBUTTON = 0x01;
+    private const int VK_RBUTTON = 0x02;
 
     [DllImport("user32.dll")]
     private static extern bool IsWindowVisible(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern short GetAsyncKeyState(int virtualKey);
 
     [DllImport("user32.dll")]
     private static extern bool ShowWindow(IntPtr hWnd, int command);
@@ -102,6 +108,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private DispatcherTimer? _telemetryTimer;
     private DispatcherTimer? _financeTimer;
     private DispatcherTimer? _desktopStateTimer;
+    private DispatcherTimer? _contextMenuTimer;
 
     private bool _isGamingThrottled = false;
     private int _gamingThrottleCounter = 0;
@@ -914,8 +921,33 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         CloseContextMenu();
     }
 
+    private void MainContextMenu_Opened(object? sender, RoutedEventArgs e)
+    {
+        _contextMenuTimer ??= new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+        _contextMenuTimer.Tick -= ContextMenuTimer_Tick;
+        _contextMenuTimer.Tick += ContextMenuTimer_Tick;
+        _contextMenuTimer.Start();
+    }
+
+    private void ContextMenuTimer_Tick(object? sender, EventArgs e)
+    {
+        if (MainContextMenu?.IsOpen != true)
+        {
+            _contextMenuTimer?.Stop();
+            return;
+        }
+
+        var mouseDown = (GetAsyncKeyState(VK_LBUTTON) & KEY_PRESSED) != 0 ||
+                        (GetAsyncKeyState(VK_RBUTTON) & KEY_PRESSED) != 0;
+        if (mouseDown && !MainContextMenu.IsMouseOver)
+        {
+            CloseContextMenu();
+        }
+    }
+
     private void MainContextMenu_Closed(object? sender, RoutedEventArgs e)
     {
+        _contextMenuTimer?.Stop();
         CloseContextMenu();
     }
 
@@ -1025,6 +1057,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         Microsoft.Win32.SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
         _telemetryTimer?.Stop();
         _financeTimer?.Stop();
+        _contextMenuTimer?.Stop();
         _telemetryService?.Dispose();
         _mediaService?.Dispose();
         try { _clipboardService.Cleanup(handle); } catch { }

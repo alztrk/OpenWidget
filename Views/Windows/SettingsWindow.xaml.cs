@@ -201,6 +201,10 @@ public partial class SettingsWindow : Window
         LblCurrentHardwareHelp.Text = LocalizationService.Get("CurrentHardwareHelp");
         LblAddHardware.Text = LocalizationService.Get("AddHardwareLabel");
         LblAddHardwareHelp.Text = LocalizationService.Get("AddHardwareHelp");
+        LblHardwareName.Text = LocalizationService.Get("HardwareNameLabel");
+        LblHardwareCategory.Text = LocalizationService.Get("HardwareCategoryLabel");
+        LblHardwareUrl.Text = LocalizationService.Get("HardwareUrlLabel");
+        LblHardwarePrice.Text = LocalizationService.Get("HardwarePriceLabel");
         TxtCurrentVersion.Text = string.Format(
             CultureInfo.CurrentCulture,
             LocalizationService.Get("UpdateVersionLabel"),
@@ -427,8 +431,13 @@ public partial class SettingsWindow : Window
             return;
         }
 
-        var manual = _config.ManualHardware.FirstOrDefault(manualItem =>
-            string.Equals(manualItem.AmazonUrl, item.Url, StringComparison.OrdinalIgnoreCase));
+        var manual = item.IsManual
+            ? _config.ManualHardware.FirstOrDefault(manualItem =>
+                string.Equals(
+                    $"{HardwareCategory.Normalize(manualItem.Category)}:{manualItem.Name}",
+                    item.Key,
+                    StringComparison.OrdinalIgnoreCase))
+            : null;
         if (manual != null)
         {
             manual.AmazonUrl = uri.ToString();
