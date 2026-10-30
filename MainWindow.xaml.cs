@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
@@ -14,8 +12,6 @@ using System.Windows.Threading;
 using OpenWidget.Models;
 using OpenWidget.Services;
 using OpenWidget.Utils;
-using OpenWidget.Widgets;
-using OpenWidget.Windows;
 
 namespace OpenWidget;
 
@@ -114,9 +110,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private DispatcherTimer? _financeTimer;
     private DispatcherTimer? _desktopStateTimer;
     private DispatcherTimer? _contextMenuTimer;
-    private readonly Dictionary<string, ModularWidgetWindow> _modularWindows = new();
-    private bool _modularLayoutApplied;
-    private bool _modularWindowsPositioned;
 
     private bool _isGamingThrottled = false;
     private int _gamingThrottleCounter = 0;
@@ -239,17 +232,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void ToggleWidgetVisibility()
     {
-        if (_config.Widget.UseModularCards && !_config.Widget.IsCompact)
-        {
-            var anyVisible = _modularWindows.Values.Any(window => window.Visibility == Visibility.Visible);
-            foreach (var window in _modularWindows.Values)
-            {
-                window.Visibility = anyVisible ? Visibility.Hidden : Visibility.Visible;
-            }
-
-            return;
-        }
-
         if (Visibility == Visibility.Visible)
         {
             Visibility = Visibility.Hidden;
@@ -407,155 +389,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsModularLayoutVisible)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ClipboardMaxHeight)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsFullViewVisible)));
-        ApplyModularLayout();
-    }
-
-    private void ApplyModularLayout()
-    {
-        if (!_config.Widget.UseModularCards || _config.Widget.IsCompact)
-        {
-            foreach (var window in _modularWindows.Values)
-            {
-                window.Hide();
-            }
-
-            Visibility = Visibility.Visible;
-            _modularLayoutApplied = false;
-            return;
-        }
-
-        Visibility = Visibility.Hidden;
-        EnsureModularWindows();
-        UpdateModularWindowVisibility();
-
-        foreach (var window in _modularWindows.Values)
-        {
-            window.UpdateWindowState(
-                _config.Widget.IsLocked,
-                _config.Widget.AlwaysOnTop,
-                _config.Widget.Opacity);
-            if (!window.IsVisible)
-            {
-                window.Show();
-            }
-        }
-
-        _modularLayoutApplied = true;
-        ArrangeModularWindows();
-    }
-
-    private void EnsureModularWindows()
-    {
-        if (_modularWindows.Count > 0)
-        {
-            return;
-        }
-
-        AddModularWindow("header", LocalizationService.Get("MenuHeader"), new HeaderWidget());
-        AddModularWindow("weather", LocalizationService.Get("MenuWeather"), new WeatherWidget());
-        AddModularWindow("clipboard", LocalizationService.Get("MenuClipboard"), new ClipboardWidget
-        {
-            MaxHeight = ClipboardMaxHeight
-        });
-        AddModularWindow("telemetry", LocalizationService.Get("MenuTelemetry"), new TelemetryWidget());
-        AddModularWindow("finance", LocalizationService.Get("MenuFinance"), new FinanceWidget());
-        AddModularWindow("media", LocalizationService.Get("MenuMedia"), new MediaWidget());
-        AddModularWindow("hardware", LocalizationService.Get("MenuHardware"), new HardwareWidget());
-        AddModularWindow("quick-actions", LocalizationService.Get("MenuQuickActions"), new QuickActionsWidget());
-    }
-
-    private void AddModularWindow(string key, string title, FrameworkElement content)
-    {
-        content.DataContext = this;
-        var window = new ModularWidgetWindow(
-            title,
-            content,
-            MainContextMenu,
-            _config.Widget.IsLocked,
-            _config.Widget.AlwaysOnTop);
-        window.Closed += (_, _) => _modularWindows.Remove(key);
-        _modularWindows[key] = window;
-    }
-
-    private void UpdateModularWindowVisibility()
-    {
-        SetModularVisibility("header", IsHeaderVisible);
-        SetModularVisibility("weather", IsWeatherVisible);
-        SetModularVisibility("clipboard", IsClipboardVisible);
-        SetModularVisibility("telemetry", IsTelemetryVisible);
-        SetModularVisibility("finance", IsFinanceVisible);
-        SetModularVisibility("media", IsMediaVisible);
-        SetModularVisibility("hardware", IsHardwareVisible);
-        SetModularVisibility("quick-actions", IsQuickActionsVisible);
-
-        if (_modularWindows.TryGetValue("clipboard", out var clipboardWindow) &&
-            clipboardWindow.Content is Border { Child: ClipboardWidget clipboard })
-        {
-            clipboard.MaxHeight = ClipboardMaxHeight;
-        }
-    }
-
-    private void SetModularVisibility(string key, bool isVisible)
-    {
-        if (_modularWindows.TryGetValue(key, out var window))
-        {
-            window.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
-        }
-    }
-
-    private void ArrangeModularWindows()
-    {
-        if (!_modularLayoutApplied || _modularWindows.Count == 0 || _modularWindowsPositioned)
-        {
-            return;
-        }
-
-        var workArea = WindowPlacementHelper.GetWindowWorkArea(new WindowInteropHelper(this).Handle);
-        var left = _config.Widget.CustomLeft ?? workArea.Right - 820;
-        var top = _config.Widget.CustomTop ?? workArea.Top + 24;
-        var index = 0;
-        var rowTop = top;
-        var rowHeight = 0d;
-
-        foreach (var window in _modularWindows.Values)
-        {
-            if (window.Visibility != Visibility.Visible)
-            {
-                continue;
-            }
-
-            window.UpdateLayout();
-            var column = index % 2;
-            if (column == 0 && index > 0)
-            {
-                rowTop += Math.Max(180, rowHeight) + 16;
-                rowHeight = 0;
-            }
-
-            var targetLeft = left + column * 390;
-            var targetTop = rowTop;
-            var maxLeft = Math.Max(workArea.Left, workArea.Right - Math.Max(280, window.ActualWidth));
-            var maxTop = Math.Max(workArea.Top, workArea.Bottom - Math.Max(140, window.ActualHeight));
-            window.Left = Math.Clamp(targetLeft, workArea.Left, maxLeft);
-            window.Top = Math.Clamp(targetTop, workArea.Top, maxTop);
-            rowHeight = Math.Max(rowHeight, window.ActualHeight);
-
-            index++;
-        }
-
-        _modularWindowsPositioned = true;
-    }
-
-    private void HideModularWindows()
-    {
-        foreach (var window in _modularWindows.Values.ToList())
-        {
-            window.Close();
-        }
-
-        _modularWindows.Clear();
-        _modularLayoutApplied = false;
-        _modularWindowsPositioned = false;
     }
 
     private void ApplyLockState()
@@ -572,15 +405,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         if (handle != IntPtr.Zero)
         {
             SetWindowPos(handle, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
-        }
-
-        foreach (var window in _modularWindows.Values)
-        {
-            var modularHandle = new WindowInteropHelper(window).Handle;
-            if (modularHandle != IntPtr.Zero)
-            {
-                SetWindowPos(modularHandle, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
-            }
         }
     }
 
@@ -691,11 +515,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void OnDisplaySettingsChanged(object? sender, EventArgs e)
     {
-        Dispatcher.Invoke(() =>
-        {
-            PositionWidget();
-            ArrangeModularWindows();
-        });
+        Dispatcher.Invoke(PositionWidget);
     }
 
     private void UpdateDesktopVisibility()
@@ -703,10 +523,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         if (_config.Widget.AlwaysOnTop)
         {
             Topmost = true;
-            foreach (var window in _modularWindows.Values)
-            {
-                window.Topmost = true;
-            }
             return;
         }
 
@@ -715,17 +531,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         if (isDesktopForeground)
         {
-            if (_config.Widget.UseModularCards && !_config.Widget.IsCompact)
-            {
-                foreach (var window in _modularWindows.Values.Where(window => window.IsVisible))
-                {
-                    BringWidgetAboveDesktop(new WindowInteropHelper(window).Handle);
-                }
-            }
-            else
-            {
-                BringWidgetAboveDesktop(handle: new WindowInteropHelper(this).Handle);
-            }
+            BringWidgetAboveDesktop(handle: new WindowInteropHelper(this).Handle);
         }
     }
 
@@ -1095,7 +901,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         SaveConfig();
         if (menuItem != null) menuItem.IsChecked = isChecked;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        UpdateModularWindowVisibility();
     }
 
     private void MenuGameMode_Click(object sender, RoutedEventArgs e)
@@ -1208,7 +1013,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         RefreshTelemetry();
         _ = RefreshFinanceLiveAsync();
         _ = RefreshHardwareSpecsAsync();
-        ApplyModularLayout();
     }
 
     private async void MenuRefresh_Click(object sender, RoutedEventArgs e)
@@ -1260,7 +1064,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     protected override void OnClosed(EventArgs e)
     {
-        HideModularWindows();
         var handle = new WindowInteropHelper(this).Handle;
         if (handle != IntPtr.Zero)
         {
