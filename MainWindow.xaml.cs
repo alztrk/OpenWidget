@@ -909,6 +909,24 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
+    private void Window_Deactivated(object? sender, EventArgs e)
+    {
+        CloseContextMenu();
+    }
+
+    private void MainContextMenu_Closed(object? sender, RoutedEventArgs e)
+    {
+        CloseContextMenu();
+    }
+
+    private void CloseContextMenu()
+    {
+        if (MainContextMenu?.IsOpen == true)
+        {
+            MainContextMenu.IsOpen = false;
+        }
+    }
+
     private void MenuSettings_Click(object sender, RoutedEventArgs e)
     {
         var settingsWin = new Windows.SettingsWindow(_config, Specs, OnSettingsSaved);

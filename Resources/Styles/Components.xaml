@@ -20,7 +20,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
                     <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="7" Padding="{TemplateBinding Padding}">
-                        <ScrollViewer x:Name="PART_ContentHost" />
+                        <ScrollViewer x:Name="PART_ContentHost" VerticalAlignment="Center" />
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
@@ -40,9 +40,8 @@
                     <Grid>
                         <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="7" />
                         <ContentPresenter Margin="{TemplateBinding Padding}" VerticalAlignment="Center" Content="{TemplateBinding SelectionBoxItem}" />
-                        <ToggleButton IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}" HorizontalAlignment="Right" Width="28" Background="Transparent" BorderThickness="0">
-                            <Path Data="M 0 0 L 4 4 L 8 0" Stroke="{StaticResource TextSecondaryBrush}" StrokeThickness="1.5" HorizontalAlignment="Center" />
-                        </ToggleButton>
+                        <ToggleButton IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}" HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Opacity="0" />
+                        <Path Data="M 0 0 L 4 4 L 8 0" Stroke="{StaticResource TextSecondaryBrush}" StrokeThickness="1.5" HorizontalAlignment="Right" Margin="0,0,10,0" IsHitTestVisible="False" />
                         <Popup IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom" AllowsTransparency="True" Focusable="False">
                             <Border Background="{StaticResource SettingsDialogBgBrush}" BorderBrush="{StaticResource SectionBorderBrush}" BorderThickness="1" CornerRadius="7" Padding="4">
                                 <ScrollViewer MaxHeight="240">

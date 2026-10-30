@@ -252,12 +252,6 @@
             <!-- Title Bar -->
             <DockPanel Margin="0,0,0,18">
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
-                    <Border Background="#1C38BDF8" CornerRadius="7" Padding="7" Margin="0,0,12,0">
-                        <Path Data="{StaticResource GeoPerformance}"
-                              Fill="{StaticResource AccentBrush}"
-                              Stretch="Uniform"
-                              Width="14" Height="14" />
-                    </Border>
                     <TextBlock x:Name="TxtTitle"
                                Text="OpenWidget Ayarlar"
                                FontSize="14.5"
@@ -301,7 +295,7 @@
                             <TextBlock x:Name="LblLanguage" Text="Arayüz Dili" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                             <TextBlock Text="Widget ve sistem sağ tık menülerinin dili" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,3,0,0" />
                         </StackPanel>
-                        <ComboBox x:Name="CmbLanguage" Grid.Column="1" Style="{StaticResource ComponentComboBox}" VerticalAlignment="Center">
+                        <ComboBox x:Name="CmbLanguage" Grid.Column="1" Style="{StaticResource ComponentComboBox}" VerticalAlignment="Center" PreviewMouseLeftButtonDown="ComponentComboBox_PreviewMouseLeftButtonDown">
                             <ComboBoxItem Content="Türkçe" Tag="tr" IsSelected="True" />
                             <ComboBoxItem Content="English" Tag="en" />
                         </ComboBox>
@@ -604,7 +598,7 @@
                             <TextBlock x:Name="LblAccent" Text="Vurgu Rengi Teması" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                             <TextBlock Text="Sistem grafikleri ve buton vurguları" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,3,0,0" />
                         </StackPanel>
-                        <ComboBox x:Name="CmbAccent" Grid.Column="1" Style="{StaticResource ComponentComboBox}" VerticalAlignment="Center">
+                        <ComboBox x:Name="CmbAccent" Grid.Column="1" Style="{StaticResource ComponentComboBox}" VerticalAlignment="Center" PreviewMouseLeftButtonDown="ComponentComboBox_PreviewMouseLeftButtonDown">
                             <ComboBoxItem Content="Sky (Mavi)" Tag="Sky" IsSelected="True" />
                             <ComboBoxItem Content="Emerald (Yeşil)" Tag="Emerald" />
                             <ComboBoxItem Content="Amber (Sarı)" Tag="Amber" />
@@ -761,7 +755,7 @@
                                 <ColumnDefinition Width="105" />
                             </Grid.ColumnDefinitions>
                             <TextBox x:Name="TxtHardwareName" Grid.Column="0" Style="{StaticResource ComponentTextBox}" Margin="0,0,8,0" ToolTip="Ürün adı" />
-                            <ComboBox x:Name="CmbHardwareCategory" Grid.Column="1" Style="{StaticResource ComponentComboBox}" Margin="0,0,8,0">
+                            <ComboBox x:Name="CmbHardwareCategory" Grid.Column="1" Style="{StaticResource ComponentComboBox}" Margin="0,0,8,0" PreviewMouseLeftButtonDown="ComponentComboBox_PreviewMouseLeftButtonDown">
                                 <ComboBoxItem x:Name="HardwareCategoryAccessories" Tag="Accessories" IsSelected="True" />
                                 <ComboBoxItem x:Name="HardwareCategoryCoreSystem" Tag="CoreSystem" />
                                 <ComboBoxItem x:Name="HardwareCategoryStorage" Tag="Storage" />

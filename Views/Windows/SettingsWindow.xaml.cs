@@ -246,6 +246,15 @@ public partial class SettingsWindow : Window
         }
     }
 
+    private void ComponentComboBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is ComboBox comboBox && !comboBox.IsDropDownOpen)
+        {
+            comboBox.IsDropDownOpen = true;
+            e.Handled = true;
+        }
+    }
+
     private void BtnOpacityPreset_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag != null && double.TryParse(btn.Tag.ToString(), out var presetValue))

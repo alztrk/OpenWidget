@@ -18,7 +18,8 @@
         TextOptions.TextRenderingMode="ClearType"
         RenderOptions.ClearTypeHint="Enabled"
         Loaded="Window_Loaded"
-        ContentRendered="Window_ContentRendered">
+        ContentRendered="Window_ContentRendered"
+        Deactivated="Window_Deactivated">
 
     <Window.Resources>
         <converters:IconKeyToGeometryConverter x:Key="IconConverter" />
@@ -28,7 +29,10 @@
     </Window.Resources>
 
     <Window.ContextMenu>
-        <ContextMenu Style="{StaticResource ModernContextMenuStyle}">
+        <ContextMenu x:Name="MainContextMenu"
+                     Style="{StaticResource ModernContextMenuStyle}"
+                     StaysOpen="False"
+                     Closed="MainContextMenu_Closed">
             <MenuItem x:Name="MenuHeader" Header="Saat &amp; Sistem Durumu" IsCheckable="True" Click="MenuHeader_Click">
                 <MenuItem.Icon>
                     <Path Data="{StaticResource GeoPerformance}" Fill="{StaticResource TextSecondaryBrush}" Stretch="Uniform" Width="13" Height="13" />
