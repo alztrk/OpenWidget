@@ -22,7 +22,7 @@ public class UpdateCheckServiceTests
             CurrentVersion: "1.2.0",
             LatestVersion: "1.3.0",
             ReleaseNotes: "New features added",
-            ReleaseUrl: "https://github.com/alicanatasever/OpenWidget/releases/v1.3.0"
+            ReleaseUrl: "https://github.com/alztrk/OpenWidget/releases/v1.3.0"
         );
 
         Assert.True(result.IsSuccess);

@@ -1,171 +1,104 @@
 # OpenWidget
 
-OpenWidget, Windows 10 ve Windows 11 için geliştirilmiş, masaüstünde doğrudan çalışan, modern akrilik arayüze sahip bağımsız bir sistem ve bilgi widget'ıdır. Sistem telemetrisi, hava durumu, kalıcı pano geçmişi, çoklu oturumlu medya denetimi, finans verileri ve donanım envanterini tek bir panelde bir araya getirir.
+OpenWidget is a standalone desktop system and information widget for Windows 10 and Windows 11. It combines system telemetry, weather, clipboard history, media controls, financial data, and hardware inventory in a modern acrylic interface.
+
+[Türkçe README](README.tr.md) · [Releases](https://github.com/alztrk/OpenWidget/releases)
 
 ---
 
-## Proje Yapısı
+## Features
 
-* `Views/Widgets/`: Ana panelde gösterilen widget görünümleri.
-* `Views/Windows/`: Uygulama içindeki bağımsız pencere görünümleri.
-* `Resources/Styles/`: Paylaşılan WPF stilleri ve tema kaynakları.
-* `Models/`: Uygulama veri modelleri.
-* `Services/`: Donanım, sistem, ağ ve uygulama servisleri.
-* `Converters/`: XAML değer dönüştürücüleri.
-* `Utils/`: Ortak yardımcı sınıflar.
-* `tests/`: Birim testleri.
+- **Desktop integration:** Runs as a borderless desktop widget without a taskbar button or focus stealing.
+- **Global hotkey:** Press `Ctrl + Shift + W` to show or hide the widget.
+- **Multi-monitor and DPI support:** Detects the active monitor and keeps the widget within the work area.
+- **Single-instance protection:** Prevents multiple copies from running at the same time.
+- **Responsive layout:** Adjusts its maximum height to the available display area and enables scrolling when needed.
+- **Compact HUD mode:** Switches to a compact single-line view.
+- **Game mode:** Reduces background telemetry activity when a full-screen application or game is detected.
+- **Persistent configuration:** Synchronizes settings between `%APPDATA%\OpenWidget` and the portable application directory.
 
----
+## Included Modules
 
-## Genel Özellikler
+1. **Header:** Clock, date, uptime, and game-mode status.
+2. **Weather:** Current conditions and a three-day forecast through Open-Meteo.
+3. **Telemetry:** CPU, GPU, VRAM, RAM, disk, and network metrics.
+4. **Finance:** Currency, gold, and cryptocurrency prices with local caching.
+5. **Media:** Windows Media Session controls, session switching, album artwork, and application-specific volume control.
+6. **Clipboard:** Persistent text, image thumbnail, and copied-file history.
+7. **Hardware:** Hardware detection and tracked reference prices.
+8. **Quick actions:** Shortcuts for Windows tools, persistent scratchpad, and volume mixer access.
 
-* **Masaüstü Entegrasyonu:** Diğer pencerelerin üzerine çıkmadan arka planda masaüstü düzeyinde çalışır (`Topmost = false`, `WS_EX_TOOLWINDOW`). Görev çubuğunda simge oluşturmaz ve odak çalmaz (`WS_EX_NOACTIVATE`).
-* **Global Kısayol Tuşu (`Ctrl + Shift + W`):** Herhangi bir tam ekran uygulama veya oyun çalışırken widget'ı tek tuşla ekranda gizler ya da tekrar görünür kılar.
-* **Çoklu Monitör ve Dinamik DPI Uyumluluğu:** Çoklu ekran kurulumlarında pencerenin hangi monitörde olduğunu Win32 `MonitorFromPoint` ile algılar, `WM_DPICHANGED` mesajlarını yakalayarak çözünürlük veya ölçek değiştiğinde ekrandan taşmayı önler.
-* **Tek Kopya (Single Instance) Koruması:** Sistem genelinde adlandırılmış `Mutex` koruması sayesinde uygulamanın kazara birden fazla kez açılması ve kaynak çakışmaları engellenir.
-* **Dinamik Çözünürlük ve Taşma Koruması:** Ekran çalışma alanı yüksekliğine göre otomatik azami boyut hesaplar. Çok sayıda kart açık olduğunda modern dikey kaydırma çubuğu devreye girer.
-* **Kompakt HUD Modu:** Tek satırlık mini çubuk görünümüne geçerek ekran alanını korur.
-* **Oyun Modu:** Tam ekran oyun veya uygulama algılandığında arka plan telemetri sorgularını otomatik olarak rölantiye alır ve RAM kullanımını düşürür.
-* **Kalıcı Yapılandırma:** Ayarlar hem `%APPDATA%\OpenWidget\hardware-config.json` altında hem de taşınabilir dizinde senkronize saklanır; derleme veya yeniden başlatmalarda sıfırlanmaz.
+## Requirements
 
----
+- Windows 10 version 2004 (build 19041) or later, or Windows 11
+- Windows x64
+- No separate .NET runtime is required when using the portable release
 
-## Modüller ve Kartlar
+## Run the Release
 
-1. **Saat ve Sistem Durumu (Header)**
-   * Dijital saat ve tarih göstergesi.
-   * Windows çalışma süresi (Uptime).
-   * Oyun modu bildirim rozeti.
+1. Download the latest `OpenWidget-windows-x64.zip` from the [GitHub Releases](https://github.com/alztrk/OpenWidget/releases) page.
+2. Extract the ZIP archive to a folder.
+3. Run `OpenWidget.exe`. Installation is not required.
+4. The widget appears in the upper-right area of the desktop. Use `Ctrl + Shift + W` to toggle its visibility.
+5. Right-click the widget to configure modules, position, theme, auto-start, and desktop behavior.
 
-2. **Detaylı Hava Durumu (Weather)**
-   * Open-Meteo API entegrasyonu (API anahtarı gerektirmez).
-   * Anlık sıcaklık, hissedilen sıcaklık ve durum ikonu.
-   * Nem oranı, rüzgar hızı ve yağış miktarı metrikleri.
-   * 3 günlük hava durumu tahmini.
-   * Ayarlar üzerinden dünya çapında şehir seçimi veya IP tabanlı otomatik konum.
+Windows SmartScreen may show a warning because the executable is not signed with a publisher certificate. Only download releases from the official [Releases](https://github.com/alztrk/OpenWidget/releases) page.
 
-3. **Sistem Telemetrisi (Telemetry)**
-   * CPU çekirdek sayısı ve anlık saat hızı (GHz) tespiti.
-   * GPU ve VRAM anlık kullanım oranları ile GPU sıcaklığı.
-   * RAM kullanım oranı ve boş bellek miktarı.
-   * Disk (NVMe/SATA SSD) ve ağ (anlık gecikme ping ve indirme/yükleme hızları) etkinlik göstergeleri.
+## Run from Source
 
-4. **Canlı Piyasa ve Finans (Finance)**
-   * Dolar (USD/TRY), Euro (EUR/TRY), Gram Altın (GA/TRY), Çeyrek Altın.
-   * Kripto para birimleri (Bitcoin, Ethereum).
-   * 60 saniyelik yerel önbellek ile anlık piyasa takibi; ağ yoksa sahte veri yerine açık yüklenme/çevrimdışı durumu.
-
-5. **Medya Oynatıcı ve Ses Denetimi (Media)**
-   * Windows Media Session (SMTC) entegrasyonu (Spotify, Chrome, Firefox, VLC vb.).
-   * Çoklu oturum yöneticisi: Birden fazla oynatıcı açıkken önceki/sonraki butonlarıyla oturumlar arasında anında geçiş.
-   * Şarkı/video başlığı, sanatçı bilgisi ve albüm kapağı.
-   * Oynat, duraklat, parça geçiş kontrolleri ve gerçek zamanlı şarkı süresi çubuğu.
-   * Oynatılan tarayıcıya/uygulamaya özel bağımsız ses denetimi kaydırıcısı ve sessize alma.
-
-6. **Kalıcı Pano Geçmişi (Clipboard)**
-   * Windows Pano Olay Dinleyicisi (`WM_CLIPBOARDUPDATE`).
-   * Kopyalanan son metinlerin otomatik listelenmesi ve `%APPDATA%\OpenWidget\clipboard-history.json` üzerinde kalıcı saklanması.
-   * Metinlerin yanı sıra kopyalanan görseller için küçük resim (thumbnail) ve kopyalanan dosyalar için dosya adı/ikonu desteği.
-   * Tek tıkla ilgili metni panoya yeniden kopyalama ve pano temizleme butonu.
-
-7. **Donanım Bileşenleri ve Fiyatlandırma (Hardware)**
-   * WMI ve Windows API tabanlı donanım tespiti (CPU, GPU, Anakart, RAM, SSD, Çevre Birimleri).
-   * Günlük takip edilen referans parça piyasa fiyatları ve toplam sistem değeri özeti.
-
-8. **Hızlı Araçlar (Quick Actions)**
-   * Görev Yöneticisi, Aygıt Yöneticisi ve Ağ Ayarları kısayolları.
-   * Asenkron kilit korumalı kalıcı hızlı not defteri (Scratchpad).
-   * Windows ses karıştırıcısı hızlı erişimi.
-
----
-
-## Sistem Gereksinimleri
-
-* **İşletim Sistemi:** Windows 10 (Sürüm 2004 / Derleme 19041 veya üstü) ya da Windows 11 (x64)
-* **Çalışma Zamanı:** .NET 10.0 Windows Masaüstü Çalışma Zamanı (Taşınabilir derlemede dahili gelir)
-
----
-
-## Kullanım
-
-### GitHub Release ile Çalıştırma
-
-1. [Releases sayfasından](https://github.com/alztrk/OpenWidget/releases) en son `OpenWidget-windows-x64.zip` dosyasını indirin.
-2. ZIP dosyasını Windows üzerinde boş bir klasöre çıkarın.
-3. `OpenWidget.exe` dosyasını çalıştırın. Kurulum gerekmez; uygulama taşınabilir olarak çalışır.
-4. Widget görünmüyorsa sistem tepsisinde ayrı bir simge aramayın; pencere masaüstünde sağ üstte açılır. Varsayılan global kısayol `Ctrl + Shift + W` ile görünürlüğü açıp kapatabilirsiniz.
-5. Widget'a sağ tıklayarak kartları, konumu, tema ayarlarını, otomatik başlatmayı ve masaüstü davranışını değiştirebilirsiniz.
-
-Windows SmartScreen uyarısı yayıncı sertifikası bulunmadığı için gösterilebilir. Dosyayı yalnızca bu depodaki resmi [Releases](https://github.com/alztrk/OpenWidget/releases) sayfasından indirdiğinizden emin olun.
-
-### Kaynaktan Çalıştırma
-
-`.NET 10 SDK` yüklü bir Windows ortamında:
+With the .NET 10 SDK installed on Windows:
 
 ```powershell
 dotnet run --project OpenWidget.csproj
 ```
 
-Bağımsız taşınabilir `.exe` üretmek için:
+To create a self-contained portable executable:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File ".\scripts\publish-portable.ps1"
 ```
 
-Çıktı `dist\OpenWidget.exe` konumuna yazılır.
+The output is written to `dist\OpenWidget.exe`.
 
----
+## Configuration and Data Files
 
-## Yapılandırma ve Veri Dosyaları
+- `%APPDATA%\OpenWidget\hardware-config.json`: User preferences, enabled widgets, theme, city, and position.
+- `%APPDATA%\OpenWidget\clipboard-history.json`: Persistent clipboard history.
+- `%APPDATA%\OpenWidget\scratchpad.txt`: Scratchpad contents.
+- `%APPDATA%\OpenWidget\crash.log`: Unexpected error log.
+- `hardware-prices.json`: Tracked hardware reference prices.
+- `finance-cache.json`: Cached finance data.
+- `weather-cache.json`: Cached weather data.
 
-* `%APPDATA%\OpenWidget\hardware-config.json`: Kullanıcı tercihleri, aktif kartlar, tema, şehir ve konum ayarları.
-* `%APPDATA%\OpenWidget\clipboard-history.json`: Kalıcı pano geçmişi kayıtları.
-* `%APPDATA%\OpenWidget\scratchpad.txt`: Hızlı not defteri içeriği.
-* `%APPDATA%\OpenWidget\crash.log`: Olası beklenmeyen çökme ve hata kayıtları.
-* `hardware-prices.json`: Donanım bileşenlerinin takip edilen referans fiyat listesi.
-* `finance-cache.json`: Finans verilerinin yerel önbelleği.
-* `weather-cache.json`: Hava durumu verilerinin son güncel önbelleği.
+## Project Structure
 
----
+- `Views/Widgets/`: Widget views shown in the main panel.
+- `Views/Windows/`: Standalone application windows.
+- `Resources/Styles/`: Shared WPF styles and theme resources.
+- `Models/`: Application data models.
+- `Services/`: Hardware, system, network, and application services.
+- `Converters/`: XAML value converters.
+- `Utils/`: Shared helper classes.
+- `tests/`: Unit tests.
 
-## Derleme, Test ve Paketleme
+## Build and Test
 
-### Birim Testlerini Çalıştırma
-
-Projede yapılandırma, şehir dizini, fiyatlandırma servisi, pano modelleri, pencere yerleşimi ve sürüm denetimi için 23 adet xUnit birim testi yer alır:
+Run the unit tests:
 
 ```powershell
 dotnet test OpenWidget.sln
 ```
 
-### Geliştirme Derlemesi
+Build a Release configuration:
 
 ```powershell
 dotnet build OpenWidget.sln -c Release
 ```
 
-### Tek Dosya Taşınabilir (Self-Contained Portable) Paketleme
+## CI
 
-Tüm bağımlılıkları içeren, kuruluma ihtiyaç duymayan tek bir `.exe` üretmek için:
+GitHub Actions runs on pushes and pull requests targeting `master` or `main`. It restores dependencies, builds the solution, runs the unit tests, and publishes a self-contained Windows x64 artifact.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File "D:\projects\OpenWidget\scripts\publish-portable.ps1"
-```
+## License
 
-Çıktı `D:\projects\OpenWidget\dist\OpenWidget.exe` adresinde oluşturulur.
-
----
-
-## CI / CD İş Akışı
-
-Depo ana dalına (`master` / `main`) yapılan her gönderimde (push) veya çekme isteğinde (PR) [GitHub Actions](.github/workflows/build.yml) devreye girerek:
-1. .NET 10 ortamını hazırlar.
-2. Bağımlılıkları geri yükler ve çözümü derler.
-3. Birim testlerini (`dotnet test`) çalıştırır.
-4. Tek dosya taşınabilir `OpenWidget.exe` dosyasını derleyip yapay nesne (artifact) olarak sunar.
-
----
-
-## Lisans
-
-Bu proje [MIT Lisansı](LICENSE) altında lisanslanmıştır.
+OpenWidget is available under the [MIT License](LICENSE).
