@@ -16,6 +16,15 @@
         <Setter Property="Background" Value="{StaticResource ComponentInputBgBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource SectionBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="7" Padding="{TemplateBinding Padding}">
+                        <ScrollViewer x:Name="PART_ContentHost" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style x:Key="ComponentComboBox" TargetType="ComboBox">
@@ -24,6 +33,27 @@
         <Setter Property="Background" Value="{StaticResource ComponentInputBgBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource SectionBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="10,0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBox">
+                    <Grid>
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="7" />
+                        <ContentPresenter Margin="{TemplateBinding Padding}" VerticalAlignment="Center" Content="{TemplateBinding SelectionBoxItem}" />
+                        <ToggleButton IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}" HorizontalAlignment="Right" Width="28" Background="Transparent" BorderThickness="0">
+                            <Path Data="M 0 0 L 4 4 L 8 0" Stroke="{StaticResource TextSecondaryBrush}" StrokeThickness="1.5" HorizontalAlignment="Center" />
+                        </ToggleButton>
+                        <Popup IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom" AllowsTransparency="True" Focusable="False">
+                            <Border Background="{StaticResource SettingsDialogBgBrush}" BorderBrush="{StaticResource SectionBorderBrush}" BorderThickness="1" CornerRadius="7" Padding="4">
+                                <ScrollViewer MaxHeight="240">
+                                    <ItemsPresenter />
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style x:Key="ComponentActionButton" TargetType="Button">
@@ -34,5 +64,63 @@
         <Setter Property="Background" Value="{StaticResource ComponentActionBgBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource SectionBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="ButtonBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="7" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.82" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.65" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ComponentToggle" TargetType="CheckBox">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid Margin="0,5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ContentPresenter VerticalAlignment="Center" Margin="0,0,24,0" />
+                        <Border x:Name="Track" Grid.Column="1" Width="40" Height="22" Background="{StaticResource TrackBgBrush}" BorderBrush="{StaticResource SectionBorderBrush}" BorderThickness="1" CornerRadius="11">
+                            <Ellipse x:Name="Thumb" Width="16" Height="16" Fill="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Left" Margin="3,0,0,0" />
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Track" Property="Background" Value="{StaticResource AccentBrush}" />
+                            <Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right" />
+                            <Setter TargetName="Thumb" Property="Margin" Value="0,0,3,0" />
+                            <Setter TargetName="Thumb" Property="Fill" Value="{StaticResource SettingsDialogBgBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ComponentPrimaryButton" TargetType="Button" BasedOn="{StaticResource ComponentActionButton}">
+        <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource SettingsDialogBgBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="ComponentSubtleButton" TargetType="Button" BasedOn="{StaticResource ComponentActionButton}">
+        <Setter Property="Background" Value="{StaticResource ComponentInputBgBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
     </Style>
 </ResourceDictionary>

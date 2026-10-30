@@ -20,6 +20,14 @@
       "type": "array",
       "items": { "type": "string", "minLength": 1 },
       "description": "Stable category and item keys hidden from the detected hardware list."
+    },
+    "HardwareLinks": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^https://(www\\.)?amazon\\.com\\.tr/"
+      },
+      "description": "Amazon.com.tr links overridden for detected hardware items."
     }
   },
   "$defs": {

@@ -127,6 +127,7 @@ public class HardwareConfig
     public HardwareVisibilityConfig HardwareVisibility { get; set; } = new();
     public List<ManualHardwareItem> ManualHardware { get; set; } = new();
     public List<string> HiddenHardware { get; set; } = new();
+    public Dictionary<string, string> HardwareLinks { get; set; } = new();
 
     public static HardwareConfig Load(string path)
     {

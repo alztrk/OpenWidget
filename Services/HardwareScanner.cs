@@ -175,6 +175,7 @@ public class HardwareScanner
         }
 
         RemoveHiddenHardware(specs);
+        ApplyConfiguredLinks(specs);
 
         // Summary Values
         var total = _priceService.GetTotalPriceValue() + manualTotal;
@@ -196,6 +197,28 @@ public class HardwareScanner
     }
 
     public static string GetHardwareKey(HardwareItem item) => $"{item.Category}:{item.Value}";
+
+    private void ApplyConfiguredLinks(HardwareSpecs specs)
+    {
+        ApplyConfiguredLinks(specs.CoreSystem);
+        ApplyConfiguredLinks(specs.Storage);
+        ApplyConfiguredLinks(specs.Peripherals);
+        ApplyConfiguredLinks(specs.CoolingAndPower);
+        ApplyConfiguredLinks(specs.Accessories);
+    }
+
+    private void ApplyConfiguredLinks(List<HardwareItem> items)
+    {
+        for (var index = 0; index < items.Count; index++)
+        {
+            var item = items[index];
+            var key = GetHardwareKey(item);
+            if (_config.HardwareLinks.TryGetValue(key, out var link))
+            {
+                items[index] = item with { Url = link, LinkDisplay = "amazon.com.tr ↗" };
+            }
+        }
+    }
 
     private HardwareItem GetCpuItem()
     {

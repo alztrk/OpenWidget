@@ -125,14 +125,19 @@ public partial class SettingsWindow : Window
                 Source = item.Url != null && manualUrls.Contains(item.Url)
                     ? LocalizationService.Get("HardwareSourceConfig")
                     : LocalizationService.Get("HardwareSourceDetected"),
-                Key = HardwareScanner.GetHardwareKey(item)
+                Key = HardwareScanner.GetHardwareKey(item),
+                Link = item.Url ?? string.Empty
             })
             .ToList();
 
         foreach (var item in _config.ManualHardware)
         {
-            if (items.Any(existing => string.Equals(existing.Url, item.AmazonUrl, StringComparison.OrdinalIgnoreCase)))
+            var manualKey = $"{HardwareCategory.Normalize(item.Category)}:{item.Name}";
+            var existing = items.FirstOrDefault(existingItem =>
+                string.Equals(existingItem.Key, manualKey, StringComparison.OrdinalIgnoreCase));
+            if (existing != null)
             {
+                existing.Link = item.AmazonUrl;
                 continue;
             }
 
@@ -144,7 +149,8 @@ public partial class SettingsWindow : Window
                 Url = item.AmazonUrl,
                 IsManual = true,
                 Source = LocalizationService.Get("HardwareSourceConfig"),
-                Key = $"{HardwareCategory.Normalize(item.Category)}:{item.Name}"
+                Key = manualKey,
+                Link = item.AmazonUrl
             });
         }
 
@@ -195,6 +201,10 @@ public partial class SettingsWindow : Window
         LblCurrentHardwareHelp.Text = LocalizationService.Get("CurrentHardwareHelp");
         LblAddHardware.Text = LocalizationService.Get("AddHardwareLabel");
         LblAddHardwareHelp.Text = LocalizationService.Get("AddHardwareHelp");
+        TxtCurrentVersion.Text = string.Format(
+            CultureInfo.CurrentCulture,
+            LocalizationService.Get("UpdateVersionLabel"),
+            UpdateCheckService.CurrentVersion);
 
         LblLanguage.Text = LocalizationService.Get("LanguageLabel");
         LblCity.Text = LocalizationService.Get("CityLabel");
@@ -385,6 +395,42 @@ public partial class SettingsWindow : Window
 
             RefreshHardwareLists();
         }
+    }
+
+    private void BtnUpdateHardwareLink_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not SettingsHardwareItem item)
+        {
+            return;
+        }
+
+        var link = item.Link.Trim();
+        if (!Uri.TryCreate(link, UriKind.Absolute, out var uri) ||
+            (uri.Host is not "amazon.com.tr" and not "www.amazon.com.tr"))
+        {
+            MessageBox.Show(
+                LocalizationService.CurrentLanguage == "en"
+                    ? "Enter a valid Amazon.com.tr link."
+                    : "Geçerli bir Amazon.com.tr bağlantısı girin.",
+                "OpenWidget",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        var manual = _config.ManualHardware.FirstOrDefault(manualItem =>
+            string.Equals(manualItem.AmazonUrl, item.Url, StringComparison.OrdinalIgnoreCase));
+        if (manual != null)
+        {
+            manual.AmazonUrl = uri.ToString();
+        }
+        else
+        {
+            _config.HardwareLinks[item.Key] = uri.ToString();
+        }
+
+        item.Link = uri.ToString();
+        RefreshHardwareLists();
     }
 
     private void BtnClose_Click(object sender, RoutedEventArgs e)

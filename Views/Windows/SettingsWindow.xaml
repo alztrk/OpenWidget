@@ -51,7 +51,7 @@
         </Style>
 
         <!-- Modern Toggle Switch (Checkbox Template) -->
-        <Style x:Key="ModernToggleSwitch" TargetType="CheckBox">
+        <Style x:Key="LegacyToggleSwitch" TargetType="CheckBox">
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -270,7 +270,7 @@
                 <Button DockPanel.Dock="Right"
                         Width="28" Height="28"
                         HorizontalAlignment="Right"
-                        Style="{StaticResource GhostBtnStyle}"
+                        Style="{StaticResource ComponentActionButton}"
                         Padding="0"
                         MinWidth="28"
                         Click="BtnClose_Click">
@@ -301,7 +301,7 @@
                             <TextBlock x:Name="LblLanguage" Text="Arayüz Dili" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                             <TextBlock Text="Widget ve sistem sağ tık menülerinin dili" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,3,0,0" />
                         </StackPanel>
-                        <ComboBox x:Name="CmbLanguage" Grid.Column="1" Style="{StaticResource ModernComboBoxStyle}" VerticalAlignment="Center">
+                        <ComboBox x:Name="CmbLanguage" Grid.Column="1" Style="{StaticResource ComponentComboBox}" VerticalAlignment="Center">
                             <ComboBoxItem Content="Türkçe" Tag="tr" IsSelected="True" />
                             <ComboBoxItem Content="English" Tag="en" />
                         </ComboBox>
@@ -604,7 +604,7 @@
                             <TextBlock x:Name="LblAccent" Text="Vurgu Rengi Teması" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                             <TextBlock Text="Sistem grafikleri ve buton vurguları" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,3,0,0" />
                         </StackPanel>
-                        <ComboBox x:Name="CmbAccent" Grid.Column="1" Style="{StaticResource ModernComboBoxStyle}" VerticalAlignment="Center">
+                        <ComboBox x:Name="CmbAccent" Grid.Column="1" Style="{StaticResource ComponentComboBox}" VerticalAlignment="Center">
                             <ComboBoxItem Content="Sky (Mavi)" Tag="Sky" IsSelected="True" />
                             <ComboBoxItem Content="Emerald (Yeşil)" Tag="Emerald" />
                             <ComboBoxItem Content="Amber (Sarı)" Tag="Amber" />
@@ -637,7 +637,7 @@
             <StackPanel x:Name="PanelWidgets" Visibility="Collapsed" Margin="0,0,0,18">
                 <Border Style="{StaticResource ComponentCard}" Padding="18,10">
                     <StackPanel>
-                        <CheckBox x:Name="ChkHeader" Style="{StaticResource ModernToggleSwitch}">
+                        <CheckBox x:Name="ChkHeader" Style="{StaticResource ComponentToggle}">
                             <StackPanel>
                                 <TextBlock Text="Saat &amp; Sistem Durumu Çubuğu" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                                 <TextBlock Text="Canlı saat, tarih, oyun modu ve açık kalma süresi çubuğu" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
@@ -645,7 +645,7 @@
                         </CheckBox>
                         <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
 
-                        <CheckBox x:Name="ChkWeather" Style="{StaticResource ModernToggleSwitch}">
+                        <CheckBox x:Name="ChkWeather" Style="{StaticResource ComponentToggle}">
                             <StackPanel>
                                 <TextBlock Text="Detaylı Hava Durumu Kartı" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                                 <TextBlock Text="Anlık sıcaklık, hissedilen, nem, rüzgar ve 3 günlük tahmin" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
@@ -653,7 +653,7 @@
                         </CheckBox>
                         <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
 
-                        <CheckBox x:Name="ChkTelemetry" Style="{StaticResource ModernToggleSwitch}">
+                        <CheckBox x:Name="ChkTelemetry" Style="{StaticResource ComponentToggle}">
                             <StackPanel>
                                 <TextBlock Text="Sistem Telemetrisi" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                                 <TextBlock Text="İşlemci, Ekran Kartı, RAM, Ağ trafiği ve Disk doluluğu" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
@@ -661,7 +661,7 @@
                         </CheckBox>
                         <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
 
-                        <CheckBox x:Name="ChkFinance" Style="{StaticResource ModernToggleSwitch}">
+                        <CheckBox x:Name="ChkFinance" Style="{StaticResource ComponentToggle}">
                             <StackPanel>
                                 <TextBlock Text="Canlı Piyasa &amp; Kripto" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                                 <TextBlock Text="Dolar, Euro, Gram Altın, Bitcoin ve Ethereum kurları" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
@@ -669,7 +669,7 @@
                         </CheckBox>
                         <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
 
-                        <CheckBox x:Name="ChkMedia" Style="{StaticResource ModernToggleSwitch}">
+                        <CheckBox x:Name="ChkMedia" Style="{StaticResource ComponentToggle}">
                             <StackPanel>
                                 <TextBlock Text="Medya Oynatıcı (Now Playing)" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                                 <TextBlock Text="Spotify, YouTube ve tarayıcı ses oturumu kontrolleri" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
@@ -677,7 +677,7 @@
                         </CheckBox>
                         <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
 
-                        <CheckBox x:Name="ChkClipboard" Style="{StaticResource ModernToggleSwitch}">
+                        <CheckBox x:Name="ChkClipboard" Style="{StaticResource ComponentToggle}">
                             <StackPanel>
                                 <TextBlock Text="Windows Pano Geçmişi Kartı" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                                 <TextBlock Text="Son kopyalanan metinleri listeleyen ve tek tıkla geri yükleyen pano kartı" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
@@ -685,7 +685,7 @@
                         </CheckBox>
                         <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
 
-                        <CheckBox x:Name="ChkHardware" Style="{StaticResource ModernToggleSwitch}">
+                        <CheckBox x:Name="ChkHardware" Style="{StaticResource ComponentToggle}">
                             <StackPanel>
                                 <TextBlock Text="Donanım Özellikleri &amp; Fiyatlar" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                                 <TextBlock Text="Sistem bileşen listesi ve anlık donanım fiyat özeti" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
@@ -693,7 +693,7 @@
                         </CheckBox>
                         <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
 
-                        <CheckBox x:Name="ChkQuickActions" Style="{StaticResource ModernToggleSwitch}">
+                        <CheckBox x:Name="ChkQuickActions" Style="{StaticResource ComponentToggle}">
                             <StackPanel>
                                 <TextBlock Text="Hızlı Araç Çubuğu" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                                 <TextBlock Text="Görev yöneticisi, ses, terminal ve bellek temizleme kısayolları" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
@@ -708,11 +708,11 @@
                 <Border Style="{StaticResource ComponentCard}" Padding="18,10">
                     <StackPanel>
                         <TextBlock x:Name="LblHardwareCategories" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6" />
-                        <CheckBox x:Name="ChkHardwareCore" Content="İşlemci, ekran kartı, anakart ve RAM" Style="{StaticResource ModernToggleSwitch}" />
-                        <CheckBox x:Name="ChkHardwareStorage" Content="Depolama" Style="{StaticResource ModernToggleSwitch}" />
-                        <CheckBox x:Name="ChkHardwarePeripherals" Content="Çevre birimleri" Style="{StaticResource ModernToggleSwitch}" />
-                        <CheckBox x:Name="ChkHardwareCooling" Content="Soğutma ve güç" Style="{StaticResource ModernToggleSwitch}" />
-                        <CheckBox x:Name="ChkHardwareAccessories" Content="Aksesuarlar" Style="{StaticResource ModernToggleSwitch}" />
+                        <CheckBox x:Name="ChkHardwareCore" Content="İşlemci, ekran kartı, anakart ve RAM" Style="{StaticResource ComponentToggle}" />
+                        <CheckBox x:Name="ChkHardwareStorage" Content="Depolama" Style="{StaticResource ComponentToggle}" />
+                        <CheckBox x:Name="ChkHardwarePeripherals" Content="Çevre birimleri" Style="{StaticResource ComponentToggle}" />
+                        <CheckBox x:Name="ChkHardwareCooling" Content="Soğutma ve güç" Style="{StaticResource ComponentToggle}" />
+                        <CheckBox x:Name="ChkHardwareAccessories" Content="Aksesuarlar" Style="{StaticResource ComponentToggle}" />
                     </StackPanel>
                 </Border>
 
@@ -731,13 +731,14 @@
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
-                                            <StackPanel>
+                                            <StackPanel Margin="0,0,10,0">
                                                 <TextBlock Text="{Binding Name}" Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
                                                 <TextBlock Text="{Binding Category}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" />
+                                                <TextBox Text="{Binding Link, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ComponentTextBox}" Height="28" Margin="0,5,0,0" ToolTip="Amazon.com.tr bağlantısı" />
                                             </StackPanel>
                                             <TextBlock Grid.Column="1" Text="{Binding Price}" Margin="12,0" Foreground="{StaticResource PriceBrush}" VerticalAlignment="Center" />
                                             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Source}" Foreground="{StaticResource AccentBrush}" FontSize="10" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                                <Button Content="Güncelle" Tag="{Binding}" Style="{StaticResource ComponentActionButton}" MinWidth="72" Padding="8,0" Margin="0,0,6,0" Click="BtnUpdateHardwareLink_Click" />
                                                 <Button Content="Sil" Tag="{Binding}" Style="{StaticResource ComponentActionButton}" MinWidth="48" Padding="8,0" Click="BtnRemoveHardwareCard_Click" />
                                             </StackPanel>
                                         </Grid>
@@ -785,7 +786,7 @@
             <StackPanel x:Name="PanelSystem" Visibility="Collapsed" Margin="0,0,0,18">
                 <Border Style="{StaticResource ComponentCard}" Padding="18,10">
                     <StackPanel>
-                        <CheckBox x:Name="ChkLockPosition" Style="{StaticResource ModernToggleSwitch}">
+                        <CheckBox x:Name="ChkLockPosition" Style="{StaticResource ComponentToggle}">
                             <StackPanel>
                                 <TextBlock Text="Widget Konumunu Kilitle" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                                 <TextBlock Text="Masaüstünde kazara sürüklenmeyi tamamen engeller" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
@@ -793,7 +794,7 @@
                         </CheckBox>
                         <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
 
-                        <CheckBox x:Name="ChkPinToDesktop" Style="{StaticResource ModernToggleSwitch}">
+                        <CheckBox x:Name="ChkPinToDesktop" Style="{StaticResource ComponentToggle}">
                             <StackPanel>
                                 <TextBlock Text="Masaüstü Arkasına Sabitle" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                                 <TextBlock Text="Pencerelerin en arkasında kalır, işlerinizi engellemez" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
@@ -801,7 +802,7 @@
                         </CheckBox>
                         <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
 
-                        <CheckBox x:Name="ChkAlwaysOnTop" Style="{StaticResource ModernToggleSwitch}">
+                        <CheckBox x:Name="ChkAlwaysOnTop" Style="{StaticResource ComponentToggle}">
                             <StackPanel>
                                 <TextBlock Text="Her Zaman Üstte Tut" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                                 <TextBlock Text="Diğer pencerelerin her zaman önünde görünür" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
@@ -809,7 +810,7 @@
                         </CheckBox>
                         <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
 
-                        <CheckBox x:Name="ChkAutoStart" Style="{StaticResource ModernToggleSwitch}">
+                        <CheckBox x:Name="ChkAutoStart" Style="{StaticResource ComponentToggle}">
                             <StackPanel>
                                 <TextBlock Text="Windows ile Birlikte Başlat" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                                 <TextBlock Text="Bilgisayar açılışında arka planda otomatik başlar" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
@@ -817,7 +818,7 @@
                         </CheckBox>
                         <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
 
-                        <CheckBox x:Name="ChkGameMode" Style="{StaticResource ModernToggleSwitch}">
+                        <CheckBox x:Name="ChkGameMode" Style="{StaticResource ComponentToggle}">
                             <StackPanel>
                                 <TextBlock Text="Oyun Modu (Otomatik Rölanti)" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
                                 <TextBlock Text="Tam ekran oyunlarda telemetri yenilemesini düşürür" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
@@ -835,7 +836,7 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="OpenWidget v1.2.0" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock x:Name="TxtCurrentVersion" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
                                 <Border Background="#2038BDF8" CornerRadius="4" Padding="6,1" Margin="8,0,0,0">
                                     <TextBlock Text="Portable" FontSize="10" FontWeight="Medium" Foreground="{StaticResource AccentBrush}" />
                                 </Border>
@@ -846,7 +847,7 @@
                         <Button x:Name="BtnCheckUpdate"
                                 Grid.Column="1"
                                 Content="Güncellemeleri Denetle"
-                                Style="{StaticResource GhostBtnStyle}"
+                                Style="{StaticResource ComponentActionButton}"
                                 Height="32"
                                 MinWidth="130"
                                 Padding="12,0"
@@ -862,18 +863,18 @@
                     <Button x:Name="BtnReset"
                             Content="Varsayılana Sıfırla"
                             DockPanel.Dock="Left"
-                            Style="{StaticResource SubtleResetBtnStyle}"
+                            Style="{StaticResource ComponentSubtleButton}"
                             Click="BtnReset_Click" />
 
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
                         <Button x:Name="BtnCancel"
                                 Content="Vazgeç"
-                                Style="{StaticResource GhostBtnStyle}"
+                                Style="{StaticResource ComponentActionButton}"
                                 Margin="0,0,12,0"
                                 Click="BtnClose_Click" />
                         <Button x:Name="BtnSave"
                                 Content="Kaydet ve Uygula"
-                                Style="{StaticResource PrimaryBtnStyle}"
+                                Style="{StaticResource ComponentPrimaryButton}"
                                 Click="BtnSave_Click" />
                     </StackPanel>
                 </DockPanel>
