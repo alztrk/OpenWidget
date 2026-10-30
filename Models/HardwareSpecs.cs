@@ -25,3 +25,13 @@ public class HardwareSpecs
     public string LastUpdatedText { get; set; } = "Bugün";
     public string PriceSource { get; set; } = "Amazon.com.tr";
 }
+
+public sealed class SettingsHardwareItem
+{
+    public string Name { get; init; } = string.Empty;
+    public string Category { get; init; } = string.Empty;
+    public string Price { get; init; } = string.Empty;
+    public string? Url { get; init; }
+    public bool IsManual { get; init; }
+    public string Source { get; init; } = string.Empty;
+}

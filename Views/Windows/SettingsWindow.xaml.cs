@@ -15,13 +15,15 @@ public partial class SettingsWindow : Window
 {
     private readonly HardwareConfig _config;
     private readonly Action<HardwareConfig> _onSave;
+    private readonly HardwareSpecs _hardwareSpecs;
     private string _selectedCity = "auto";
     private bool _isClosing;
 
-    public SettingsWindow(HardwareConfig config, Action<HardwareConfig> onSave)
+    public SettingsWindow(HardwareConfig config, HardwareSpecs hardwareSpecs, Action<HardwareConfig> onSave)
     {
         InitializeComponent();
         _config = config;
+        _hardwareSpecs = hardwareSpecs;
         _onSave = onSave;
 
         LoadValues();
@@ -92,7 +94,71 @@ public partial class SettingsWindow : Window
         ChkHardwarePeripherals.IsChecked = _config.HardwareVisibility.Peripherals;
         ChkHardwareCooling.IsChecked = _config.HardwareVisibility.CoolingAndPower;
         ChkHardwareAccessories.IsChecked = _config.HardwareVisibility.Accessories;
+        RefreshHardwareLists();
+    }
+
+    private void RefreshHardwareLists()
+    {
+        ListManualHardware.ItemsSource = null;
         ListManualHardware.ItemsSource = _config.ManualHardware;
+        ListHardware.ItemsSource = BuildHardwareItems();
+    }
+
+    private List<SettingsHardwareItem> BuildHardwareItems()
+    {
+        var manualUrls = _config.ManualHardware
+            .Select(item => item.AmazonUrl)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var items = _hardwareSpecs.CoreSystem
+            .Concat(_hardwareSpecs.Storage)
+            .Concat(_hardwareSpecs.Peripherals)
+            .Concat(_hardwareSpecs.CoolingAndPower)
+            .Concat(_hardwareSpecs.Accessories)
+            .Select(item => new SettingsHardwareItem
+            {
+                Name = item.Value,
+                Category = item.Category,
+                Price = item.PriceFormatted ?? "-",
+                Url = item.Url,
+                IsManual = item.Url != null && manualUrls.Contains(item.Url),
+                Source = item.Url != null && manualUrls.Contains(item.Url)
+                    ? LocalizationService.Get("HardwareSourceConfig")
+                    : LocalizationService.Get("HardwareSourceDetected")
+            })
+            .ToList();
+
+        foreach (var item in _config.ManualHardware)
+        {
+            if (items.Any(existing => string.Equals(existing.Url, item.AmazonUrl, StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
+
+            items.Add(new SettingsHardwareItem
+            {
+                Name = item.Name,
+                Category = GetCategoryLabel(item.Category),
+                Price = item.Price > 0 ? $"{item.Price:N0} ₺" : "-",
+                Url = item.AmazonUrl,
+                IsManual = true,
+                Source = LocalizationService.Get("HardwareSourceConfig")
+            });
+        }
+
+        return items;
+    }
+
+    private static string GetCategoryLabel(string category)
+    {
+        return HardwareCategory.Normalize(category) switch
+        {
+            HardwareCategory.CoreSystem => LocalizationService.Get("HardwareCategoryCoreSystem"),
+            HardwareCategory.Storage => LocalizationService.Get("HardwareCategoryStorage"),
+            HardwareCategory.Peripherals => LocalizationService.Get("HardwareCategoryPeripherals"),
+            HardwareCategory.CoolingAndPower => LocalizationService.Get("HardwareCategoryCoolingAndPower"),
+            _ => LocalizationService.Get("HardwareCategoryAccessories")
+        };
     }
 
     private void UpdateCityDisplay()
@@ -122,6 +188,11 @@ public partial class SettingsWindow : Window
         HardwareCategoryStorage.Content = LocalizationService.Get("HardwareCategoryStorage");
         HardwareCategoryPeripherals.Content = LocalizationService.Get("HardwareCategoryPeripherals");
         HardwareCategoryCoolingAndPower.Content = LocalizationService.Get("HardwareCategoryCoolingAndPower");
+        LblHardwareCategories.Text = LocalizationService.Get("HardwareCategoriesLabel");
+        LblCurrentHardware.Text = LocalizationService.Get("CurrentHardwareLabel");
+        LblCurrentHardwareHelp.Text = LocalizationService.Get("CurrentHardwareHelp");
+        LblAddHardware.Text = LocalizationService.Get("AddHardwareLabel");
+        LblAddHardwareHelp.Text = LocalizationService.Get("AddHardwareHelp");
 
         LblLanguage.Text = LocalizationService.Get("LanguageLabel");
         LblCity.Text = LocalizationService.Get("CityLabel");
@@ -262,8 +333,7 @@ public partial class SettingsWindow : Window
         ChkHardwareCooling.IsChecked = true;
         ChkHardwareAccessories.IsChecked = true;
         _config.ManualHardware.Clear();
-        ListManualHardware.ItemsSource = null;
-        ListManualHardware.ItemsSource = _config.ManualHardware;
+        RefreshHardwareLists();
     }
 
     private void BtnAddHardware_Click(object sender, RoutedEventArgs e)
@@ -288,8 +358,7 @@ public partial class SettingsWindow : Window
             Price = price,
             AmazonUrl = uri.ToString()
         });
-        ListManualHardware.ItemsSource = null;
-        ListManualHardware.ItemsSource = _config.ManualHardware;
+        RefreshHardwareLists();
         TxtHardwareName.Clear();
         TxtHardwareUrl.Clear();
         TxtHardwarePrice.Clear();
@@ -300,8 +369,7 @@ public partial class SettingsWindow : Window
         if (sender is Button button && button.Tag is ManualHardwareItem item)
         {
             _config.ManualHardware.Remove(item);
-            ListManualHardware.ItemsSource = null;
-            ListManualHardware.ItemsSource = _config.ManualHardware;
+            RefreshHardwareLists();
         }
     }
 

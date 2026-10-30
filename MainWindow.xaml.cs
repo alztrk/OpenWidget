@@ -911,7 +911,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void MenuSettings_Click(object sender, RoutedEventArgs e)
     {
-        var settingsWin = new Windows.SettingsWindow(_config, OnSettingsSaved);
+        var settingsWin = new Windows.SettingsWindow(_config, Specs, OnSettingsSaved);
         settingsWin.Owner = this;
         settingsWin.ShowDialog();
     }
