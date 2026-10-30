@@ -11,6 +11,7 @@ namespace OpenWidget.Services;
 
 public class MarketFinanceService
 {
+    private const decimal GramsPerTroyOunce = 31.1034768m;
     private readonly string _cacheFilePath;
     private FinanceSpecs _cachedSpecs = new();
     private string _currency = "TRY";
@@ -172,16 +173,10 @@ public class MarketFinanceService
                 specs.Currencies.Add(CreateItem("eur", "IconEuro", LocalizationService.Get("Euro"), eur, currency, rates));
             }
 
-            // 3. Gram Altın
+            // 3. Ons Altın (the provider exposes the source price per gram)
             if (root.TryGetProperty("gram-altin", out var gram))
             {
-                specs.Gold.Add(CreateItem("gram_altin", "IconGoldBar", LocalizationService.Get("GramGold"), gram, currency, rates));
-            }
-
-            // 4. Çeyrek Altın
-            if (root.TryGetProperty("ceyrek-altin", out var ceyrek))
-            {
-                specs.Gold.Add(CreateItem("ceyrek_altin", "IconGoldQuarter", LocalizationService.Get("QuarterGold"), ceyrek, currency, rates));
+                specs.Gold.Add(CreateOunceGoldItem(gram, currency, rates));
             }
         }
         catch { }
@@ -244,7 +239,7 @@ public class MarketFinanceService
 
         // Format clean price
         string valFormatted = $"{selling} {GetCurrencySymbol(currency)}";
-        if (decimal.TryParse(selling.Replace(".", "").Replace(",", "."), NumberStyles.Any, CultureInfo.InvariantCulture, out var num))
+        if (TryParseMarketDecimal(selling, out var num))
         {
             num *= rates.TryGetValue(currency, out var conversion) ? conversion : 1m;
             valFormatted = FormatCurrency(num, currency);
@@ -260,14 +255,51 @@ public class MarketFinanceService
         );
     }
 
+    private static FinanceItem CreateOunceGoldItem(JsonElement element, string currency, IReadOnlyDictionary<string, decimal> rates)
+    {
+        var selling = element.TryGetProperty("Selling", out var value) ? value.GetString() ?? "0" : "0";
+        var change = element.TryGetProperty("Change", out var changeValue)
+            ? changeValue.GetString() ?? "%0,00"
+            : "%0,00";
+        var direction = change.Contains("-") ? "Down"
+            : !change.Contains("0,00") && !change.Contains("0.00") ? "Up"
+            : "Neutral";
+        var formatted = $"-- {GetCurrencySymbol(currency)}";
+
+        if (TryParseMarketDecimal(selling, out var gramPrice))
+        {
+            var converted = gramPrice * GramsPerTroyOunce;
+            converted *= rates.TryGetValue(currency, out var rate) ? rate : 1m;
+            formatted = FormatCurrency(converted, currency);
+        }
+
+        return new FinanceItem("ounce_gold", "IconGoldBar", LocalizationService.Get("OunceGold"), formatted, change, direction);
+    }
+
+    private static bool TryParseMarketDecimal(string value, out decimal result)
+    {
+        var normalized = value.Trim();
+        if (normalized.Contains(',') && normalized.Contains('.'))
+        {
+            normalized = normalized.LastIndexOf(',') > normalized.LastIndexOf('.')
+                ? normalized.Replace(".", string.Empty).Replace(',', '.')
+                : normalized.Replace(",", string.Empty);
+        }
+        else if (normalized.Contains(','))
+        {
+            normalized = normalized.Replace(',', '.');
+        }
+
+        return decimal.TryParse(normalized, NumberStyles.Number, CultureInfo.InvariantCulture, out result);
+    }
+
     private static FinanceSpecs CreateDefaultSpecs()
     {
         var specs = new FinanceSpecs { LastUpdatedText = LocalizationService.Get("Updating") };
         var symbol = GetCurrencySymbol("TRY");
         specs.Currencies.Add(new FinanceItem("usd", "IconDollar", LocalizationService.Get("Dollar"), $"-- {symbol}", "%0,00", "Neutral"));
         specs.Currencies.Add(new FinanceItem("eur", "IconEuro", LocalizationService.Get("Euro"), $"-- {symbol}", "%0,00", "Neutral"));
-        specs.Gold.Add(new FinanceItem("gram_altin", "IconGoldBar", LocalizationService.Get("GramGold"), $"-- {symbol}", "%0,00", "Neutral"));
-        specs.Gold.Add(new FinanceItem("ceyrek_altin", "IconGoldQuarter", LocalizationService.Get("QuarterGold"), $"-- {symbol}", "%0,00", "Neutral"));
+        specs.Gold.Add(new FinanceItem("ounce_gold", "IconGoldBar", LocalizationService.Get("OunceGold"), $"-- {symbol}", "%0,00", "Neutral"));
         specs.Crypto.Add(new FinanceItem("btc", "IconBitcoin", LocalizationService.Get("Bitcoin"), "$--", "%0,00", "Neutral"));
         specs.Crypto.Add(new FinanceItem("eth", "IconEthereum", LocalizationService.Get("Ethereum"), "$--", "%0,00", "Neutral"));
         return specs;

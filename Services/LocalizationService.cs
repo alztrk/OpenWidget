@@ -143,6 +143,7 @@ public static class LocalizationService
         ["Euro"] = ("Euro (EUR)", "Euro (EUR)"),
         ["GramGold"] = ("Gram Altın", "Gram Gold"),
         ["QuarterGold"] = ("Çeyrek Altın", "Quarter Gold"),
+        ["OunceGold"] = ("Ons Altın", "Gold Ounce"),
         ["Bitcoin"] = ("Bitcoin (BTC)", "Bitcoin (BTC)"),
         ["Ethereum"] = ("Ethereum (ETH)", "Ethereum (ETH)"),
 
