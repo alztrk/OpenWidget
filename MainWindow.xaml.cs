@@ -30,6 +30,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     [DllImport("user32.dll")]
     private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetForegroundWindow();
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern int GetClassName(IntPtr hWnd, char[] className, int maxCount);
+
     private const int WM_HOTKEY = 0x0312;
     private const int WM_DPICHANGED = 0x02E0;
     private const int HOTKEY_ID_TOGGLE = 9001;
@@ -82,6 +88,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private DispatcherTimer? _telemetryTimer;
     private DispatcherTimer? _financeTimer;
+    private DispatcherTimer? _desktopStateTimer;
 
     private bool _isGamingThrottled = false;
     private int _gamingThrottleCounter = 0;
@@ -445,6 +452,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         NotifyAllWidgetVisibilities();
 
         Microsoft.Win32.SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
+        _desktopStateTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
+        _desktopStateTimer.Tick += (s, args) => UpdateDesktopVisibility();
+        _desktopStateTimer.Start();
+        UpdateDesktopVisibility();
 
         // Ensure auto-start on boot is registered
         if (!AutoStartService.IsAutoStartEnabled())
@@ -493,6 +504,46 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void OnDisplaySettingsChanged(object? sender, EventArgs e)
     {
         Dispatcher.Invoke(PositionWidget);
+    }
+
+    private void UpdateDesktopVisibility()
+    {
+        if (_config.Widget.AlwaysOnTop)
+        {
+            Topmost = true;
+            return;
+        }
+
+        var foregroundWindow = GetForegroundWindow();
+        var isDesktopForeground = IsDesktopShellWindow(foregroundWindow);
+        if (Topmost != isDesktopForeground)
+        {
+            Topmost = isDesktopForeground;
+        }
+
+        if (isDesktopForeground)
+        {
+            ApplyDesktopPinning();
+        }
+    }
+
+    private static bool IsDesktopShellWindow(IntPtr handle)
+    {
+        if (handle == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        var className = new char[256];
+        var length = GetClassName(handle, className, className.Length);
+        if (length <= 0)
+        {
+            return false;
+        }
+
+        var name = new string(className, 0, length);
+        return string.Equals(name, "Progman", StringComparison.Ordinal)
+            || string.Equals(name, "WorkerW", StringComparison.Ordinal);
     }
 
     public void PositionWidget()
