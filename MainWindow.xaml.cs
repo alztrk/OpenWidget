@@ -33,6 +33,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     [DllImport("user32.dll")]
     private static extern IntPtr GetForegroundWindow();
 
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetShellWindow();
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetDesktopWindow();
+
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     private static extern int GetClassName(IntPtr hWnd, char[] className, int maxCount);
 
@@ -63,9 +69,19 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
     private static readonly IntPtr HWND_TOP = IntPtr.Zero;
+    private static readonly IntPtr HWND_TOPMOST = new(-1);
+    private static readonly IntPtr HWND_NOTOPMOST = new(-2);
     private const uint SWP_NOSIZE = 0x0001;
     private const uint SWP_NOMOVE = 0x0002;
     private const uint SWP_NOACTIVATE = 0x0010;
+    private const uint SWP_SHOWWINDOW = 0x0040;
+    private const int SW_SHOWNOACTIVATE = 4;
+
+    [DllImport("user32.dll")]
+    private static extern bool IsWindowVisible(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern bool ShowWindow(IntPtr hWnd, int command);
 
     private HardwareConfig _config = new();
     private HardwareSpecs _specs = new();
@@ -392,7 +408,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         var handle = new WindowInteropHelper(this).Handle;
         if (handle != IntPtr.Zero)
         {
-            SetWindowPos(handle, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+            SetWindowPos(handle, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
         }
     }
 
@@ -516,14 +532,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         var foregroundWindow = GetForegroundWindow();
         var isDesktopForeground = IsDesktopShellWindow(foregroundWindow);
-        if (Topmost != isDesktopForeground)
-        {
-            Topmost = isDesktopForeground;
-        }
 
         if (isDesktopForeground)
         {
-            ApplyDesktopPinning();
+            BringWidgetAboveDesktop(handle: new WindowInteropHelper(this).Handle);
         }
     }
 
@@ -532,6 +544,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         if (handle == IntPtr.Zero)
         {
             return false;
+        }
+
+        if (handle == GetShellWindow() || handle == GetDesktopWindow())
+        {
+            return true;
         }
 
         var className = new char[256];
@@ -543,7 +560,26 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         var name = new string(className, 0, length);
         return string.Equals(name, "Progman", StringComparison.Ordinal)
-            || string.Equals(name, "WorkerW", StringComparison.Ordinal);
+            || string.Equals(name, "WorkerW", StringComparison.Ordinal)
+            || string.Equals(name, "ApplicationManager_DesktopShellWindow", StringComparison.Ordinal)
+            || string.Equals(name, "Windows.UI.Core.CoreWindow", StringComparison.Ordinal);
+    }
+
+    private static void BringWidgetAboveDesktop(IntPtr handle)
+    {
+        if (handle == IntPtr.Zero)
+        {
+            return;
+        }
+
+        if (!IsWindowVisible(handle))
+        {
+            ShowWindow(handle, SW_SHOWNOACTIVATE);
+        }
+
+        const uint flags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW;
+        SetWindowPos(handle, HWND_TOPMOST, 0, 0, 0, 0, flags);
+        SetWindowPos(handle, HWND_NOTOPMOST, 0, 0, 0, 0, flags);
     }
 
     public void PositionWidget()
