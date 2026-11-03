@@ -24,6 +24,8 @@ public record MediaTrackInfo(
 
 public class MediaSessionService : IDisposable
 {
+    private const ulong MaxThumbnailBytes = 4UL * 1024 * 1024;
+
     private static readonly HttpClient _httpClient = new()
     {
         Timeout = TimeSpan.FromSeconds(5)
@@ -268,10 +270,13 @@ public class MediaSessionService : IDisposable
                     try
                     {
                         using var streamRef = await props.Thumbnail.OpenReadAsync();
-                        using var stream = streamRef.AsStreamForRead();
-                        using var ms = new MemoryStream();
-                        await stream.CopyToAsync(ms);
-                        thumbBytes = ms.ToArray();
+                        if (streamRef.Size <= MaxThumbnailBytes)
+                        {
+                            using var stream = streamRef.AsStreamForRead();
+                            using var ms = new MemoryStream((int)streamRef.Size);
+                            await stream.CopyToAsync(ms);
+                            thumbBytes = ms.ToArray();
+                        }
                     }
                     catch { }
                 }

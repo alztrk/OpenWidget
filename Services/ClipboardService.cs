@@ -15,6 +15,7 @@ namespace OpenWidget.Services;
 public class ClipboardService
 {
     public const int WM_CLIPBOARDUPDATE = 0x031D;
+    private const int MaxHistoryItems = 15;
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -186,7 +187,7 @@ public class ClipboardService
                 Items.Insert(0, item);
 
                 // Cap items at 15 to keep widget fast and lightweight
-                while (Items.Count > 15)
+                while (Items.Count > MaxHistoryItems)
                 {
                     Items.RemoveAt(Items.Count - 1);
                 }
@@ -274,9 +275,10 @@ public class ClipboardService
                 if (list != null)
                 {
                     Items.Clear();
-                    foreach (var item in list)
+                    var itemCount = Math.Min(list.Count, MaxHistoryItems);
+                    for (var index = 0; index < itemCount; index++)
                     {
-                        Items.Add(item);
+                        Items.Add(list[index]);
                     }
                 }
             }

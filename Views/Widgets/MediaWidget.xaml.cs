@@ -134,6 +134,7 @@ public partial class MediaWidget : UserControl
                 var bmp = new BitmapImage();
                 using var ms = new MemoryStream(info.ThumbnailBytes);
                 bmp.BeginInit();
+                bmp.DecodePixelWidth = 96;
                 bmp.CacheOption = BitmapCacheOption.OnLoad;
                 bmp.StreamSource = ms;
                 bmp.EndInit();
