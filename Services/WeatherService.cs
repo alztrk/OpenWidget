@@ -55,20 +55,25 @@ public class WeatherService
             double latitude = 41.0082;
             double longitude = 28.9784;
             string displayCity = "İstanbul";
+            string district = string.Empty;
+            string region = string.Empty;
 
             if (string.Equals(_currentCityConfig, "auto", StringComparison.OrdinalIgnoreCase))
             {
                 // Auto-detect via IP
                 try
                 {
-                    var geoJson = await HttpClient.GetStringAsync("http://ip-api.com/json/?fields=city,lat,lon");
+                    var geoJson = await HttpClient.GetStringAsync("http://ip-api.com/json/?fields=city,lat,lon,regionName,district");
                     using var geoDoc = JsonDocument.Parse(geoJson);
                     var root = geoDoc.RootElement;
                     if (root.TryGetProperty("lat", out var latProp) && root.TryGetProperty("lon", out var lonProp))
                     {
                         latitude = latProp.GetDouble();
                         longitude = lonProp.GetDouble();
-                        displayCity = root.TryGetProperty("city", out var cityProp) ? (cityProp.GetString() ?? "İstanbul") : "İstanbul";
+                        var city = root.TryGetProperty("city", out var cityProp) ? cityProp.GetString() : null;
+                        district = root.TryGetProperty("district", out var districtProp) ? districtProp.GetString() ?? string.Empty : string.Empty;
+                        region = root.TryGetProperty("regionName", out var regionProp) ? regionProp.GetString() ?? string.Empty : string.Empty;
+                        displayCity = WeatherLocationFormatter.Format(city, district, region);
                     }
                 }
                 catch
@@ -78,10 +83,17 @@ public class WeatherService
             }
             else
             {
-                // Geocode city name via Open-Meteo Geocoding API
+                // Geocode city or district name via Open-Meteo Geocoding API
                 try
                 {
-                    var geoUrl = $"https://geocoding-api.open-meteo.com/v1/search?name={Uri.EscapeDataString(_currentCityConfig)}&count=1&format=json";
+                    var searchName = _currentCityConfig;
+                    var comma = searchName.IndexOf(',');
+                    if (comma > 0)
+                    {
+                        searchName = searchName[..comma].Trim();
+                    }
+
+                    var geoUrl = $"https://geocoding-api.open-meteo.com/v1/search?name={Uri.EscapeDataString(searchName)}&count=1&format=json";
                     var geoJson = await HttpClient.GetStringAsync(geoUrl);
                     using var geoDoc = JsonDocument.Parse(geoJson);
                     if (geoDoc.RootElement.TryGetProperty("results", out var results) && results.GetArrayLength() > 0)
@@ -89,7 +101,10 @@ public class WeatherService
                         var first = results[0];
                         latitude = first.GetProperty("latitude").GetDouble();
                         longitude = first.GetProperty("longitude").GetDouble();
-                        displayCity = first.GetProperty("name").GetString() ?? _currentCityConfig;
+                        var name = first.TryGetProperty("name", out var nameProp) ? nameProp.GetString() : searchName;
+                        district = first.TryGetProperty("admin2", out var admin2Prop) ? admin2Prop.GetString() ?? string.Empty : string.Empty;
+                        region = first.TryGetProperty("admin1", out var admin1Prop) ? admin1Prop.GetString() ?? string.Empty : string.Empty;
+                        displayCity = WeatherLocationFormatter.Format(name, district, region, _currentCityConfig);
                     }
                     else
                     {
@@ -176,6 +191,8 @@ public class WeatherService
                 _currentDetails = new WeatherDetailsModel
                 {
                     City = displayCity,
+                    District = district,
+                    Region = region,
                     Temperature = temp,
                     FeelsLike = apparentTemp,
                     RelativeHumidity = humidity,

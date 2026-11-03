@@ -28,7 +28,7 @@
             </StackPanel>
 
             <TextBlock x:Name="TxtCity"
-                       Text="{Binding Weather.City}"
+                       Text="{Binding Weather.LocationText}"
                        FontSize="11"
                        FontWeight="Medium"
                        Foreground="{StaticResource AccentBrush}"

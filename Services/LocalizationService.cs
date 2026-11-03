@@ -181,7 +181,7 @@ public static class LocalizationService
         ["LanguageLabel"] = ("Arayüz Dili", "Interface Language"),
         ["CityLabel"] = ("Hava Durumu Konumu", "Weather Location"),
         ["CityAutoPlaceholder"] = ("Otomatik (IP Konumu)", "Auto (IP Geolocation)"),
-        ["CityHelp"] = ("Şehir adı girin veya boş bırakarak otomatik algılatın.", "Type a city name or leave blank for auto IP detection."),
+        ["CityHelp"] = ("İl veya ilçe seçin; hava kartında ilçe de görünür.", "Pick a city or district; the weather card also shows the district."),
         ["OpacityLabel"] = ("Pencere Şeffaflığı / Opaklık", "Window Transparency / Opacity"),
         ["AccentThemeLabel"] = ("Vurgu Rengi Teması", "Accent Color Theme"),
         ["WidgetsGroupLabel"] = ("Görüntülenecek Bölümler", "Visible Sections"),

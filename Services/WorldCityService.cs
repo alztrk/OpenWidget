@@ -297,20 +297,50 @@ public static class WorldCityService
         }
     ];
 
-    public static List<CountryCityGroup> GetAll() => Directory;
+    private static IReadOnlyList<string> _turkishDistricts = [];
+
+    public static void SetTurkishDistricts(IEnumerable<string>? districts)
+    {
+        _turkishDistricts = districts?
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Select(name => name.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList()
+            ?? [];
+    }
+
+    public static List<CountryCityGroup> GetAll() => GetDirectoryWithDistricts();
+
+    private static List<CountryCityGroup> GetDirectoryWithDistricts()
+    {
+        return Directory.Select(group =>
+        {
+            if (group.CountryCode != "TR" || _turkishDistricts.Count == 0)
+            {
+                return group;
+            }
+
+            var merged = group.Cities
+                .Concat(_turkishDistricts)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            return group.CloneWith(merged);
+        }).ToList();
+    }
 
     public static List<CountryCityGroup> Filter(string? query)
     {
+        var source = GetDirectoryWithDistricts();
         if (string.IsNullOrWhiteSpace(query))
         {
-            return Directory;
+            return source;
         }
 
         var cleanQuery = query.Trim();
         var culture = new CultureInfo("tr-TR");
         var result = new List<CountryCityGroup>();
 
-        foreach (var group in Directory)
+        foreach (var group in source)
         {
             var isCountryMatch = culture.CompareInfo.IndexOf(group.CountryName, cleanQuery, CompareOptions.IgnoreCase) >= 0;
             if (isCountryMatch)

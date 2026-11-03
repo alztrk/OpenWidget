@@ -17,6 +17,9 @@ public class WeatherForecastDay
 public class WeatherDetailsModel
 {
     public string City { get; set; } = "İstanbul";
+    public string District { get; set; } = string.Empty;
+    public string Region { get; set; } = string.Empty;
+    public string LocationText => string.IsNullOrWhiteSpace(City) ? "İstanbul" : City;
     public double Temperature { get; set; } = 17.0;
     public double FeelsLike { get; set; } = 16.0;
     public int RelativeHumidity { get; set; } = 75;

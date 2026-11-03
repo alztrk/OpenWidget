@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -33,6 +34,7 @@ public partial class SettingsWindow : Window
     private void Window_Loaded(object sender, RoutedEventArgs e)
     {
         AnimationHelper.AnimateWindowEntrance(this, MasterDialogBorder, Opacity);
+        _ = LoadTurkishDistrictsAsync();
     }
 
     private void LoadValues()
@@ -303,6 +305,28 @@ public partial class SettingsWindow : Window
             BtnCityDropdown.IsChecked = true;
 
             Dispatcher.BeginInvoke(() => TxtCitySearch.Focus(), System.Windows.Threading.DispatcherPriority.Input);
+            _ = LoadTurkishDistrictsAsync();
+        }
+    }
+
+    private async Task LoadTurkishDistrictsAsync()
+    {
+        try
+        {
+            var districts = await TurkishDistrictService.GetDistrictsAsync();
+            if (districts.Count == 0)
+            {
+                return;
+            }
+
+            WorldCityService.SetTurkishDistricts(districts);
+            if (PopupCityDirectory?.IsOpen == true && ListCountryGroups != null)
+            {
+                ListCountryGroups.ItemsSource = WorldCityService.Filter(TxtCitySearch?.Text);
+            }
+        }
+        catch
+        {
         }
     }
 
