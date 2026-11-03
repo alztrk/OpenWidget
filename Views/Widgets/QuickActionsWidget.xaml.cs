@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -20,6 +21,8 @@ public partial class QuickActionsWidget : UserControl
     private bool _isLoadingNotes = false;
     private Window? _hostWindow;
     private HwndSource? _hwndSource;
+    private MasterVolumeModel? _masterVolumeModel;
+    private List<AudioSessionModel> _audioSessionModels = new();
 
     public QuickActionsWidget()
     {
@@ -37,6 +40,8 @@ public partial class QuickActionsWidget : UserControl
             LocalizationService.LanguageChanged -= OnLanguageChanged;
             _saveNotesTimer.Stop();
             DetachOutsideClickHandlers();
+            PopupVolumeMixer.IsOpen = false;
+            DisposeAudioMixerState();
         };
     }
 
@@ -120,14 +125,39 @@ public partial class QuickActionsWidget : UserControl
 
     private void RefreshAudioMixer()
     {
+        DisposeAudioMixerState();
+
         try
         {
             var (master, sessions) = AudioMixerService.GetAudioState();
+            _masterVolumeModel = master;
+            _audioSessionModels = sessions;
             MasterDeviceCard.DataContext = master;
             ListAppSessions.ItemsSource = sessions;
             TxtNoApps.Visibility = sessions.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
         catch { }
+    }
+
+    private void PopupVolumeMixer_Closed(object? sender, EventArgs e)
+    {
+        DisposeAudioMixerState();
+    }
+
+    private void DisposeAudioMixerState()
+    {
+        MasterDeviceCard.DataContext = null;
+        ListAppSessions.ItemsSource = null;
+
+        _masterVolumeModel?.Dispose();
+        _masterVolumeModel = null;
+
+        foreach (var session in _audioSessionModels)
+        {
+            session.Dispose();
+        }
+
+        _audioSessionModels.Clear();
     }
 
     private void BtnRefreshMixer_Click(object sender, RoutedEventArgs e)

@@ -618,7 +618,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         try
         {
             var handle = new WindowInteropHelper(this).Handle;
-            _clipboardService.Initialize(handle);
+            await _clipboardService.InitializeAsync(handle);
         }
         catch { }
     }

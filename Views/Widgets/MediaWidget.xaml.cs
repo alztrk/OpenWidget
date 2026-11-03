@@ -1,10 +1,8 @@
 using System;
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using OpenWidget.Services;
 
@@ -31,7 +29,8 @@ public partial class MediaWidget : UserControl
             Interval = TimeSpan.FromSeconds(1)
         };
         _volumeSyncTimer.Tick += (s, e) => UpdateMediaVolumeUI();
-        _volumeSyncTimer.Start();
+        IsVisibleChanged += MediaWidget_IsVisibleChanged;
+        Unloaded += (s, e) => _volumeSyncTimer.Stop();
     }
 
     public void AttachService(MediaSessionService service)
@@ -112,9 +111,13 @@ public partial class MediaWidget : UserControl
         if (!info.HasMedia)
         {
             Visibility = Visibility.Collapsed;
+            ImgThumbnail.Source = null;
+            ImgThumbnail.Visibility = Visibility.Collapsed;
+            _volumeSyncTimer.Stop();
             return;
         }
 
+        bool wasVisible = IsVisible;
         Visibility = Visibility.Visible;
         TxtTitle.Text = info.Title;
         TxtArtist.Text = info.Artist;
@@ -127,20 +130,11 @@ public partial class MediaWidget : UserControl
         }
 
         // Thumbnail
-        if (info.ThumbnailBytes != null && info.ThumbnailBytes.Length > 0)
+        if (info.Thumbnail != null)
         {
             try
             {
-                var bmp = new BitmapImage();
-                using var ms = new MemoryStream(info.ThumbnailBytes);
-                bmp.BeginInit();
-                bmp.DecodePixelWidth = 96;
-                bmp.CacheOption = BitmapCacheOption.OnLoad;
-                bmp.StreamSource = ms;
-                bmp.EndInit();
-                bmp.Freeze();
-
-                ImgThumbnail.Source = bmp;
+                ImgThumbnail.Source = info.Thumbnail;
                 ImgThumbnail.Visibility = Visibility.Visible;
                 PathFallbackMusic.Visibility = Visibility.Collapsed;
             }
@@ -180,13 +174,42 @@ public partial class MediaWidget : UserControl
         }
 
         // Initialize Real Master Volume Control
-        UpdateMediaVolumeUI();
+        UpdateVolumeSyncTimer();
+        if (wasVisible)
+        {
+            UpdateMediaVolumeUI();
+        }
         OnSessionsUpdated();
+    }
+
+    private void MediaWidget_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        UpdateVolumeSyncTimer();
+        if (IsVisible)
+        {
+            UpdateMediaVolumeUI();
+        }
+    }
+
+    private void UpdateVolumeSyncTimer()
+    {
+        if (IsVisible && _service?.CurrentTrack.HasMedia == true)
+        {
+            if (!_volumeSyncTimer.IsEnabled)
+            {
+                _volumeSyncTimer.Start();
+            }
+        }
+        else
+        {
+            _volumeSyncTimer.Stop();
+        }
     }
 
     private void UpdateMediaVolumeUI()
     {
         if (_isUserAdjustingVolume || (DateTime.UtcNow - _lastUserVolumeAdjustTime < TimeSpan.FromMilliseconds(1500))) return;
+        if (!IsVisible || _service?.CurrentTrack.HasMedia != true) return;
 
         try
         {

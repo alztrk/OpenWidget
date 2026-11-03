@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 using System.Timers;
 using Windows.Media.Control;
 
@@ -17,15 +18,13 @@ public record MediaTrackInfo(
     string Artist,
     bool IsPlaying,
     string SourceApp,
-    byte[]? ThumbnailBytes = null,
+    BitmapSource? Thumbnail = null,
     TimeSpan Position = default,
     TimeSpan Duration = default
 );
 
 public class MediaSessionService : IDisposable
 {
-    private const ulong MaxThumbnailBytes = 4UL * 1024 * 1024;
-
     private static readonly HttpClient _httpClient = new()
     {
         Timeout = TimeSpan.FromSeconds(5)
@@ -264,19 +263,21 @@ public class MediaSessionService : IDisposable
                 else if (source.Contains("Edge", StringComparison.OrdinalIgnoreCase)) source = "Edge";
                 else if (source.Contains("Firefox", StringComparison.OrdinalIgnoreCase) || source.Contains("LibreWolf", StringComparison.OrdinalIgnoreCase) || source.StartsWith("83C1C0F3FA8524B1", StringComparison.OrdinalIgnoreCase)) source = "LibreWolf";
 
-                byte[]? thumbBytes = null;
+                BitmapSource? thumbnail = null;
                 if (props.Thumbnail != null)
                 {
                     try
                     {
                         using var streamRef = await props.Thumbnail.OpenReadAsync();
-                        if (streamRef.Size <= MaxThumbnailBytes)
-                        {
-                            using var stream = streamRef.AsStreamForRead();
-                            using var ms = new MemoryStream((int)streamRef.Size);
-                            await stream.CopyToAsync(ms);
-                            thumbBytes = ms.ToArray();
-                        }
+                        using var stream = streamRef.AsStreamForRead();
+                        var bitmap = new BitmapImage();
+                        bitmap.BeginInit();
+                        bitmap.DecodePixelWidth = 512;
+                        bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                        bitmap.StreamSource = stream;
+                        bitmap.EndInit();
+                        bitmap.Freeze();
+                        thumbnail = bitmap;
                     }
                     catch { }
                 }
@@ -341,7 +342,7 @@ public class MediaSessionService : IDisposable
                     Artist: string.IsNullOrWhiteSpace(props.Artist) ? source : props.Artist,
                     IsPlaying: isPlaying,
                     SourceApp: source,
-                    ThumbnailBytes: thumbBytes,
+                    Thumbnail: thumbnail,
                     Position: currentPos,
                     Duration: _trackDuration
                 );

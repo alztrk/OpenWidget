@@ -201,7 +201,8 @@
                VerticalOffset="-6"
                AllowsTransparency="True"
                StaysOpen="True"
-               PopupAnimation="Fade">
+               PopupAnimation="Fade"
+               Closed="PopupVolumeMixer_Closed">
             <Border Width="310"
                     MaxHeight="390"
                     Background="#F5090D16"

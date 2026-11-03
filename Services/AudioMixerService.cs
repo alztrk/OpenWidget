@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 
 namespace OpenWidget.Services;
 
-public class AudioSessionModel : INotifyPropertyChanged
+public class AudioSessionModel : INotifyPropertyChanged, IDisposable
 {
     public event PropertyChangedEventHandler? PropertyChanged;
     protected void OnPropertyChanged([CallerMemberName] string? name = null)
@@ -107,13 +107,19 @@ public class AudioSessionModel : INotifyPropertyChanged
 
     internal ISimpleAudioVolume? SimpleVolume { get; set; }
 
+    public void Dispose()
+    {
+        AudioMixerService.ReleaseCom(SimpleVolume);
+        SimpleVolume = null;
+    }
+
     public void ToggleMute()
     {
         IsMuted = !IsMuted;
     }
 }
 
-public class MasterVolumeModel : INotifyPropertyChanged
+public class MasterVolumeModel : INotifyPropertyChanged, IDisposable
 {
     public event PropertyChangedEventHandler? PropertyChanged;
     protected void OnPropertyChanged([CallerMemberName] string? name = null)
@@ -186,6 +192,12 @@ public class MasterVolumeModel : INotifyPropertyChanged
 
     internal IAudioEndpointVolume? EndpointVolume { get; set; }
 
+    public void Dispose()
+    {
+        AudioMixerService.ReleaseCom(EndpointVolume);
+        EndpointVolume = null;
+    }
+
     public void ToggleMute()
     {
         IsMuted = !IsMuted;
@@ -211,6 +223,9 @@ public static class AudioMixerService
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool DestroyIcon(IntPtr hIcon);
+
+    [DllImport("ole32.dll")]
+    private static extern int PropVariantClear(ref PropVariant propVariant);
 
     private const uint SHGFI_ICON = 0x000000100;
     private const uint SHGFI_SMALLICON = 0x000000001;
@@ -252,7 +267,7 @@ public static class AudioMixerService
     private static readonly Guid IID_IPropertyStore = new("886d8eeb-8cf2-4446-8d02-cdba1dbdcf99");
     private static readonly PropertyKey PKEY_Device_FriendlyName = new(new Guid("a45c254e-df1c-4efd-8020-67d146a850e0"), 14);
 
-    private static void SafeReleaseCom(object? obj)
+    internal static void ReleaseCom(object? obj)
     {
         if (obj != null && Marshal.IsComObject(obj))
         {
@@ -260,12 +275,16 @@ public static class AudioMixerService
         }
     }
 
+    private static void SafeReleaseCom(object? obj) => ReleaseCom(obj);
+
     public static (MasterVolumeModel Master, List<AudioSessionModel> Sessions) GetAudioState()
     {
         var master = new MasterVolumeModel();
         var sessions = new List<AudioSessionModel>();
         IMMDeviceEnumerator? enumerator = null;
         IMMDevice? device = null;
+        IAudioSessionManager2? sessionManager = null;
+        IAudioSessionEnumerator? sessionEnumerator = null;
 
         try
         {
@@ -280,17 +299,32 @@ public static class AudioMixerService
             {
                 if (device.OpenPropertyStore(0, out var storePtr) == 0 && storePtr != IntPtr.Zero)
                 {
-                    var store = (IPropertyStore)Marshal.GetObjectForIUnknown(storePtr);
-                    var key = PKEY_Device_FriendlyName;
-                    if (store.GetValue(ref key, out var pv) == 0 && pv.pwszVal != IntPtr.Zero)
+                    IPropertyStore? store = null;
+                    try
                     {
-                        var name = Marshal.PtrToStringUni(pv.pwszVal);
-                        if (!string.IsNullOrWhiteSpace(name))
+                        store = (IPropertyStore)Marshal.GetObjectForIUnknown(storePtr);
+                        var key = PKEY_Device_FriendlyName;
+                        if (store.GetValue(ref key, out var pv) == 0)
                         {
-                            master.DeviceName = name;
+                            try
+                            {
+                                var name = pv.pwszVal != IntPtr.Zero ? Marshal.PtrToStringUni(pv.pwszVal) : null;
+                                if (!string.IsNullOrWhiteSpace(name))
+                                {
+                                    master.DeviceName = name;
+                                }
+                            }
+                            finally
+                            {
+                                PropVariantClear(ref pv);
+                            }
                         }
                     }
-                    Marshal.Release(storePtr);
+                    finally
+                    {
+                        SafeReleaseCom(store);
+                        Marshal.Release(storePtr);
+                    }
                 }
             }
             catch { }
@@ -299,17 +333,26 @@ public static class AudioMixerService
             try
             {
                 var iidEndpoint = IID_IAudioEndpointVolume;
-                if (device.Activate(ref iidEndpoint, 1 /* CLSCTX_INPROC_SERVER */, IntPtr.Zero, out var epObj) == 0 && epObj is IAudioEndpointVolume endpointVol)
+                object? epObj = null;
+                try
                 {
-                    if (endpointVol.GetMasterVolumeLevelScalar(out var scalar) == 0)
+                    if (device.Activate(ref iidEndpoint, 1 /* CLSCTX_INPROC_SERVER */, IntPtr.Zero, out epObj) == 0 && epObj is IAudioEndpointVolume endpointVol)
                     {
-                        master.Volume = (float)Math.Round(scalar * 100);
+                        if (endpointVol.GetMasterVolumeLevelScalar(out var scalar) == 0)
+                        {
+                            master.Volume = (float)Math.Round(scalar * 100);
+                        }
+                        if (endpointVol.GetMute(out var isMuted) == 0)
+                        {
+                            master.IsMuted = isMuted;
+                        }
+                        master.EndpointVolume = endpointVol;
+                        epObj = null;
                     }
-                    if (endpointVol.GetMute(out var isMuted) == 0)
-                    {
-                        master.IsMuted = isMuted;
-                    }
-                    master.EndpointVolume = endpointVol;
+                }
+                finally
+                {
+                    SafeReleaseCom(epObj);
                 }
             }
             catch { }
@@ -318,19 +361,29 @@ public static class AudioMixerService
             try
             {
                 var iidMgr = IID_IAudioSessionManager2;
-                if (device.Activate(ref iidMgr, 1, IntPtr.Zero, out var mgrObj) == 0 && mgrObj is IAudioSessionManager2 sessionMgr)
+                object? managerObject = null;
+                try
                 {
-                    if (sessionMgr.GetSessionEnumerator(out var sessionEnum) == 0 && sessionEnum != null)
+                    if (device.Activate(ref iidMgr, 1, IntPtr.Zero, out managerObject) == 0 && managerObject is IAudioSessionManager2 sessionMgr)
                     {
-                        sessionEnum.GetCount(out var count);
-                        var seenPids = new HashSet<int>();
-
-                        for (int i = 0; i < count; i++)
+                        sessionManager = sessionMgr;
+                        managerObject = null;
+                        if (sessionMgr.GetSessionEnumerator(out sessionEnumerator) == 0 && sessionEnumerator != null)
                         {
-                            if (sessionEnum.GetSession(i, out var sessObj) == 0 && sessObj is IAudioSessionControl sessionCtrl)
+                            sessionEnumerator.GetCount(out var count);
+                            var seenPids = new HashSet<int>();
+
+                            for (int i = 0; i < count; i++)
                             {
+                                object? sessionObject = null;
+                                bool transferred = false;
                                 try
                                 {
+                                    if (sessionEnumerator.GetSession(i, out sessionObject) != 0 || sessionObject is not IAudioSessionControl sessionCtrl)
+                                    {
+                                        continue;
+                                    }
+
                                     sessionCtrl.GetState(out var state);
                                     if (state == AudioSessionState.AudioSessionStateExpired) continue;
 
@@ -352,7 +405,7 @@ public static class AudioMixerService
 
                                             try
                                             {
-                                                var proc = Process.GetProcessById(procId);
+                                                using var proc = Process.GetProcessById(procId);
                                                 exePath = proc.MainModule?.FileName ?? "";
                                                 name = !string.IsNullOrWhiteSpace(proc.MainWindowTitle)
                                                     ? proc.MainWindowTitle
@@ -401,12 +454,28 @@ public static class AudioMixerService
                                         }
 
                                         sessions.Add(item);
+                                        transferred = item.SimpleVolume != null;
+                                        if (transferred)
+                                        {
+                                            sessionObject = null;
+                                        }
                                     }
                                 }
                                 catch { }
+                                finally
+                                {
+                                    if (!transferred)
+                                    {
+                                        SafeReleaseCom(sessionObject);
+                                    }
+                                }
                             }
                         }
                     }
+                }
+                finally
+                {
+                    SafeReleaseCom(managerObject);
                 }
             }
             catch { }
@@ -414,6 +483,8 @@ public static class AudioMixerService
         catch { }
         finally
         {
+            SafeReleaseCom(sessionEnumerator);
+            SafeReleaseCom(sessionManager);
             SafeReleaseCom(device);
             SafeReleaseCom(enumerator);
         }
@@ -548,8 +619,16 @@ public static class AudioMixerService
 
             for (int i = 0; i < count; i++)
             {
-                if (sessionEnum.GetSession(i, out var sessObj) == 0 && sessObj is ISimpleAudioVolume sav && sessObj is IAudioSessionControl2 ctl2)
+                object? sessionObject = null;
+                try
                 {
+                    if (sessionEnum.GetSession(i, out sessionObject) != 0 ||
+                        sessionObject is not ISimpleAudioVolume sav ||
+                        sessionObject is not IAudioSessionControl2 ctl2)
+                    {
+                        continue;
+                    }
+
                     ctl2.GetState(out var state);
                     if (state == AudioSessionState.AudioSessionStateExpired) continue;
 
@@ -570,9 +649,21 @@ public static class AudioMixerService
                     {
                         if (state == AudioSessionState.AudioSessionStateActive)
                         {
-                            return sav;
+                            if (bestCandidate != null && !ReferenceEquals(bestCandidate, sav))
+                            {
+                                SafeReleaseCom(bestCandidate);
+                            }
+
+                            bestCandidate = sav;
+                            sessionObject = null;
+                            break;
                         }
-                        bestCandidate ??= sav;
+
+                        if (bestCandidate == null)
+                        {
+                            bestCandidate = sav;
+                            sessionObject = null;
+                        }
                     }
                     else if (state == AudioSessionState.AudioSessionStateActive)
                     {
@@ -580,19 +671,31 @@ public static class AudioMixerService
                         {
                             if (procName.Contains(known))
                             {
-                                bestCandidate ??= sav;
+                                if (bestCandidate == null)
+                                {
+                                    bestCandidate = sav;
+                                    sessionObject = null;
+                                }
+
                                 break;
                             }
                         }
                     }
                 }
+                finally
+                {
+                    SafeReleaseCom(sessionObject);
+                }
             }
 
-            return bestCandidate;
+            var candidate = bestCandidate;
+            bestCandidate = null;
+            return candidate;
         }
         catch { }
         finally
         {
+            SafeReleaseCom(bestCandidate);
             SafeReleaseCom(sessionEnum);
             SafeReleaseCom(mgr);
             SafeReleaseCom(device);
@@ -604,9 +707,10 @@ public static class AudioMixerService
 
     public static (float Volume, bool IsMuted) GetMediaVolume(string sourceApp)
     {
+        ISimpleAudioVolume? sav = null;
         try
         {
-            var sav = FindMediaAudioSession(sourceApp);
+            sav = FindMediaAudioSession(sourceApp);
             if (sav != null)
             {
                 sav.GetMasterVolume(out float vol);
@@ -615,15 +719,20 @@ public static class AudioMixerService
             }
         }
         catch { }
+        finally
+        {
+            SafeReleaseCom(sav);
+        }
 
         return GetMasterVolume();
     }
 
     public static void SetMediaVolume(string sourceApp, float volume)
     {
+        ISimpleAudioVolume? sav = null;
         try
         {
-            var sav = FindMediaAudioSession(sourceApp);
+            sav = FindMediaAudioSession(sourceApp);
             if (sav != null)
             {
                 var guid = Guid.Empty;
@@ -631,13 +740,18 @@ public static class AudioMixerService
             }
         }
         catch { }
+        finally
+        {
+            SafeReleaseCom(sav);
+        }
     }
 
     public static bool ToggleMediaMute(string sourceApp)
     {
+        ISimpleAudioVolume? sav = null;
         try
         {
-            var sav = FindMediaAudioSession(sourceApp);
+            sav = FindMediaAudioSession(sourceApp);
             if (sav != null)
             {
                 sav.GetMute(out bool isMuted);
@@ -648,6 +762,10 @@ public static class AudioMixerService
             }
         }
         catch { }
+        finally
+        {
+            SafeReleaseCom(sav);
+        }
 
         return ToggleMasterMute();
     }

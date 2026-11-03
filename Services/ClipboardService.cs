@@ -16,6 +16,7 @@ public class ClipboardService
 {
     public const int WM_CLIPBOARDUPDATE = 0x031D;
     private const int MaxHistoryItems = 15;
+    private static readonly JsonSerializerOptions HistoryJsonOptions = new() { WriteIndented = true };
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -37,9 +38,12 @@ public class ClipboardService
         _cachePath = Path.Combine(appData, "OpenWidget", "clipboard-history.json");
     }
 
-    public void Initialize(IntPtr hwnd)
+    public async Task InitializeAsync(IntPtr hwnd)
     {
         _hwnd = hwnd;
+
+        await LoadHistoryAsync();
+
         if (_hwnd != IntPtr.Zero)
         {
             try
@@ -49,10 +53,7 @@ public class ClipboardService
             catch { }
         }
 
-        // 1. Load persistent clipboard items from disk
-        LoadHistory();
-
-        // 2. Capture whatever is currently on the clipboard upon launch
+        // Capture whatever is currently on the clipboard upon launch.
         ReadCurrentClipboardInitial();
     }
 
@@ -257,29 +258,61 @@ public class ClipboardService
                 Directory.CreateDirectory(dir);
             }
 
-            var list = new List<ClipboardItem>(Items);
-            var json = JsonSerializer.Serialize(list, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(_cachePath, json);
+            var tempPath = _cachePath + ".tmp";
+            try
+            {
+                using (var stream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    JsonSerializer.Serialize(stream, Items, HistoryJsonOptions);
+                }
+
+                File.Move(tempPath, _cachePath, overwrite: true);
+            }
+            finally
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
         }
         catch { }
     }
 
-    private void LoadHistory()
+    private async Task LoadHistoryAsync()
     {
         try
         {
             if (File.Exists(_cachePath))
             {
-                var json = File.ReadAllText(_cachePath);
-                var list = JsonSerializer.Deserialize<List<ClipboardItem>>(json);
-                if (list != null)
+                await using var stream = new FileStream(
+                    _cachePath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read,
+                    bufferSize: 4096,
+                    useAsync: true);
+
+                var items = new List<ClipboardItem>(MaxHistoryItems);
+                var recordsRead = 0;
+                await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<ClipboardItem>(stream))
                 {
-                    Items.Clear();
-                    var itemCount = Math.Min(list.Count, MaxHistoryItems);
-                    for (var index = 0; index < itemCount; index++)
+                    recordsRead++;
+                    if (item != null)
                     {
-                        Items.Add(list[index]);
+                        items.Add(item);
                     }
+
+                    if (recordsRead == MaxHistoryItems)
+                    {
+                        break;
+                    }
+                }
+
+                Items.Clear();
+                foreach (var item in items)
+                {
+                    Items.Add(item);
                 }
             }
         }
