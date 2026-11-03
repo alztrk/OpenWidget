@@ -58,6 +58,7 @@
     "widget": {
       "type": "object",
       "properties": {
+        "AppIndicatorMode": { "type": "string", "enum": ["taskbar", "notification-area", "hidden"], "default": "taskbar" },
         "Opacity": { "type": "number", "minimum": 0.1, "maximum": 1 },
         "CustomLeft": { "type": ["number", "null"] },
         "CustomTop": { "type": ["number", "null"] },

@@ -94,8 +94,9 @@ OpenWidget, Windows 10 ve Windows 11 için geliştirilmiş, masaüstünde doğru
 
 1. [Releases sayfasından](https://github.com/alztrk/OpenWidget/releases) en son `OpenWidget.exe` dosyasını indirin.
 2. Dosyayı kontrolünüzdeki bir klasöre kaydedip çalıştırın. Kurulum gerekmez; uygulama taşınabilir olarak çalışır.
-4. Widget görünmüyorsa sistem tepsisinde ayrı bir simge aramayın; pencere masaüstünde sağ üstte açılır. Varsayılan global kısayol `Ctrl + Shift + W` ile görünürlüğü açıp kapatabilirsiniz.
+4. Widget masaüstünün sağ üstünde açılır. Varsayılan global kısayol `Ctrl + Shift + W` ile görünürlüğü açıp kapatabilirsiniz.
 5. Widget'a sağ tıklayarak kartları, konumu, tema ayarlarını, otomatik başlatmayı ve masaüstü davranışını değiştirebilirsiniz.
+6. **Ayarlar > Sistem & Performans > Uygulama simgesinin konumu** bölümünden simgenin görev çubuğunda, bildirim alanında veya hiç görünmemesini seçebilirsiniz. Gizli modda `Ctrl + Shift + W` kısayolu kullanılabilir.
 
 Windows SmartScreen uyarısı yayıncı sertifikası bulunmadığı için gösterilebilir. Dosyayı yalnızca bu depodaki resmi [Releases](https://github.com/alztrk/OpenWidget/releases) sayfasından indirdiğinizden emin olun.
 

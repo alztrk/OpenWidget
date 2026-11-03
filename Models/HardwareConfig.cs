@@ -32,6 +32,14 @@ public class AccessoriesConfig
 
 public class WidgetConfig
 {
+    private string _appIndicatorMode = AppIndicatorModes.Taskbar;
+
+    public string AppIndicatorMode
+    {
+        get => _appIndicatorMode;
+        set => _appIndicatorMode = AppIndicatorModes.Normalize(value);
+    }
+
     public double Opacity { get; set; } = 1.0;
     public double OffsetX { get; set; } = 28;
     public double OffsetY { get; set; } = 28;
@@ -60,6 +68,21 @@ public class WidgetConfig
         "gram-altin",
         "btc",
         "eth"
+    };
+}
+
+public static class AppIndicatorModes
+{
+    public const string Taskbar = "taskbar";
+    public const string NotificationArea = "notification-area";
+    public const string Hidden = "hidden";
+
+    public static string Normalize(string? mode) => mode?.Trim().ToLowerInvariant() switch
+    {
+        Taskbar => Taskbar,
+        NotificationArea => NotificationArea,
+        Hidden => Hidden,
+        _ => Taskbar
     };
 }
 

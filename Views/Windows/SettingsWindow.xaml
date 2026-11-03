@@ -836,6 +836,23 @@
             <StackPanel x:Name="PanelSystem" Visibility="Collapsed" Margin="0,0,0,18">
                 <Border Style="{StaticResource ComponentCard}" Padding="18,10">
                     <StackPanel>
+                        <Grid Margin="0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="170" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center" Margin="0,0,28,0">
+                                <TextBlock x:Name="LblAppIndicatorMode" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock x:Name="LblAppIndicatorModeHelp" TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,3,0,0" />
+                            </StackPanel>
+                            <ComboBox x:Name="CmbAppIndicatorMode" Grid.Column="1" Style="{StaticResource ComponentComboBox}" VerticalAlignment="Center" PreviewMouseLeftButtonDown="ComponentComboBox_PreviewMouseLeftButtonDown">
+                                <ComboBoxItem Tag="taskbar" IsSelected="True" />
+                                <ComboBoxItem Tag="notification-area" />
+                                <ComboBoxItem Tag="hidden" />
+                            </ComboBox>
+                        </Grid>
+                        <Separator Background="{StaticResource MasterHudBorderBrush}" Margin="0,4" />
+
                         <CheckBox x:Name="ChkLockPosition" Style="{StaticResource ComponentToggle}">
                             <StackPanel>
                                 <TextBlock Text="Widget Konumunu Kilitle" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />

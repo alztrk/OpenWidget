@@ -40,6 +40,7 @@ OpenWidget is a standalone desktop system and information widget for Windows 10 
 2. Save it in a folder you control and run it. Installation is not required.
 4. The widget appears in the upper-right area of the desktop. Use `Ctrl + Shift + W` to toggle its visibility.
 5. Right-click the widget to configure modules, position, theme, auto-start, and desktop behavior.
+6. Under **Settings > System & Performance > App indicator location**, choose whether OpenWidget appears in the taskbar, the notification area, or neither. In hidden mode, `Ctrl + Shift + W` remains available.
 
 Windows SmartScreen may show a warning because the executable is not signed with a publisher certificate. Only download releases from the official [Releases](https://github.com/alztrk/OpenWidget/releases) page.
 

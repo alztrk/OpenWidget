@@ -109,9 +109,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private DispatcherTimer? _financeTimer;
     private DispatcherTimer? _desktopStateTimer;
     private DispatcherTimer? _contextMenuTimer;
+    private TrayIconService? _trayIconService;
+    private Windows.SettingsWindow? _settingsWindow;
 
     private bool _isGamingThrottled = false;
     private int _gamingThrottleCounter = 0;
+    private bool? _toggleHotKeyRegistered;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -212,6 +215,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         Dispatcher.Invoke(() =>
         {
             UpdateContextMenuTexts();
+            UpdateTrayMenuTexts();
             RefreshTelemetry();
             _ = RefreshFinanceLiveAsync();
         });
@@ -230,7 +234,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         SetWindowLongPtr(handle, GWL_EXSTYLE, (IntPtr)exStyle);
 
         // Register Global Hotkey (Ctrl + Shift + W)
-        RegisterHotKey(handle, HOTKEY_ID_TOGGLE, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, VK_W);
+        _toggleHotKeyRegistered = RegisterHotKey(handle, HOTKEY_ID_TOGGLE, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, VK_W);
+        if (_toggleHotKeyRegistered == false && _config.Widget.AppIndicatorMode == AppIndicatorModes.Hidden)
+        {
+            ApplyAppIndicatorMode();
+        }
 
         // Attach Win32 Hook to prevent window from crossing screen boundaries
         var source = HwndSource.FromHwnd(handle);
@@ -248,6 +256,18 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             WindowState = System.Windows.WindowState.Minimized;
         }
+    }
+
+    private void ShowWidget()
+    {
+        WindowState = System.Windows.WindowState.Normal;
+        if (!IsVisible)
+        {
+            Show();
+        }
+
+        Visibility = Visibility.Visible;
+        PositionWidget();
     }
 
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -342,6 +362,86 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         SyncMenuCheckboxes();
 
         NotifyAllWidgetVisibilities();
+        ApplyAppIndicatorMode();
+    }
+
+    private void ApplyAppIndicatorMode()
+    {
+        var mode = AppIndicatorModes.Normalize(_config.Widget.AppIndicatorMode);
+        if (mode == AppIndicatorModes.Hidden && _toggleHotKeyRegistered == false)
+        {
+            mode = AppIndicatorModes.Taskbar;
+            _config.Widget.AppIndicatorMode = mode;
+            if (_settingsWindow != null)
+            {
+                _settingsWindow.ShowInTaskbar = true;
+            }
+            SaveConfig();
+            MessageBox.Show(
+                LocalizationService.Get("HiddenIndicatorHotkeyUnavailable"),
+                "OpenWidget",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+
+        _config.Widget.AppIndicatorMode = mode;
+
+        if (mode == AppIndicatorModes.NotificationArea)
+        {
+            EnsureTrayIcon();
+        }
+
+        ShowInTaskbar = mode == AppIndicatorModes.Taskbar;
+
+        if (mode != AppIndicatorModes.NotificationArea)
+        {
+            _trayIconService?.Dispose();
+            _trayIconService = null;
+        }
+    }
+
+    private void EnsureTrayIcon()
+    {
+        if (_trayIconService != null)
+        {
+            return;
+        }
+
+        var iconResource = System.Windows.Application.GetResourceStream(
+            new Uri("pack://application:,,,/Resources/Branding/openwidget.ico", UriKind.Absolute));
+        if (iconResource == null)
+        {
+            throw new InvalidOperationException("The embedded OpenWidget tray icon resource is missing.");
+        }
+
+        _trayIconService = new TrayIconService(
+            iconResource.Stream,
+            isWidgetVisible: () => IsVisible && WindowState != WindowState.Minimized,
+            showWidget: () => InvokeOnUiThread(ShowWidget),
+            toggleWidget: () => InvokeOnUiThread(ToggleWidgetVisibility),
+            openSettings: () => InvokeOnUiThread(OpenSettings),
+            exit: () => InvokeOnUiThread(Close));
+        UpdateTrayMenuTexts();
+    }
+
+    private void UpdateTrayMenuTexts()
+    {
+        _trayIconService?.UpdateLabels(
+            LocalizationService.Get("TrayShowWidget"),
+            LocalizationService.Get("TrayHideWidget"),
+            LocalizationService.Get("MenuSettings"),
+            LocalizationService.Get("MenuExit"));
+    }
+
+    private void InvokeOnUiThread(Action action)
+    {
+        if (Dispatcher.CheckAccess())
+        {
+            action();
+            return;
+        }
+
+        Dispatcher.BeginInvoke(action);
     }
 
     public void SaveConfig()
@@ -991,7 +1091,32 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void MenuSettings_Click(object sender, RoutedEventArgs e)
     {
+        OpenSettings();
+    }
+
+    private void OpenSettings()
+    {
+        if (_settingsWindow is { IsVisible: true })
+        {
+            _settingsWindow.Activate();
+            return;
+        }
+
+        if (WindowState == System.Windows.WindowState.Minimized)
+        {
+            ShowWidget();
+        }
+
         var settingsWin = new Windows.SettingsWindow(_config, Specs, OnSettingsSaved);
+        _settingsWindow = settingsWin;
+        settingsWin.ShowInTaskbar = _config.Widget.AppIndicatorMode == AppIndicatorModes.Taskbar;
+        settingsWin.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(_settingsWindow, settingsWin))
+            {
+                _settingsWindow = null;
+            }
+        };
         settingsWin.Owner = this;
         settingsWin.ShowDialog();
     }
@@ -999,12 +1124,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void OnSettingsSaved(HardwareConfig updated)
     {
         _config = updated;
+        LocalizationService.CurrentLanguage = _config.Widget.Language;
         SaveConfig();
+        ApplyAppIndicatorMode();
 
         Opacity = _config.Widget.Opacity;
         Topmost = _config.Widget.AlwaysOnTop;
         ThemeService.ApplyAccent(_config.Widget.AccentTheme);
-        LocalizationService.CurrentLanguage = _config.Widget.Language;
         _weatherService?.UpdateCity(_config.Widget.City);
         _financeService?.SetVisibleKeys(_config.Widget.FinanceVisibleKeys);
         _financeService?.SetCurrency(_config.Widget.Currency);
@@ -1084,7 +1210,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         var handle = new WindowInteropHelper(this).Handle;
         if (handle != IntPtr.Zero)
         {
-            try { UnregisterHotKey(handle, HOTKEY_ID_TOGGLE); } catch { }
+            if (_toggleHotKeyRegistered == true)
+            {
+                try { UnregisterHotKey(handle, HOTKEY_ID_TOGGLE); } catch { }
+            }
         }
         Microsoft.Win32.SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
         _telemetryTimer?.Stop();
@@ -1093,6 +1222,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         _telemetryService?.Dispose();
         _mediaService?.Dispose();
         try { _clipboardService.Cleanup(handle); } catch { }
+        _trayIconService?.Dispose();
+        _trayIconService = null;
+        LocalizationService.LanguageChanged -= OnLanguageChanged;
         base.OnClosed(e);
     }
 }

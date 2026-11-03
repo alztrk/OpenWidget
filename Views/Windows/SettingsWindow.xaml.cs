@@ -95,6 +95,14 @@ public partial class SettingsWindow : Window
         ChkModularCards.IsChecked = _config.Widget.UseModularCards;
         ChkClipboardHeight.IsChecked = _config.Widget.LimitClipboardHeight;
         ChkClipboardExpanded.IsChecked = _config.Widget.IsClipboardHistoryExpanded;
+        foreach (ComboBoxItem item in CmbAppIndicatorMode.Items)
+        {
+            if (string.Equals(item.Tag?.ToString(), _config.Widget.AppIndicatorMode, StringComparison.OrdinalIgnoreCase))
+            {
+                CmbAppIndicatorMode.SelectedItem = item;
+                break;
+            }
+        }
         SelectCurrency(_config.Widget.Currency);
         LoadFinanceItems();
         ChkHardwareCore.IsChecked = _config.HardwareVisibility.CoreSystem;
@@ -237,6 +245,18 @@ public partial class SettingsWindow : Window
         LblCityHelp.Text = LocalizationService.Get("CityHelp");
         LblOpacity.Text = LocalizationService.Get("OpacityLabel");
         LblAccent.Text = LocalizationService.Get("AccentThemeLabel");
+        LblAppIndicatorMode.Text = LocalizationService.Get("AppIndicatorModeLabel");
+        LblAppIndicatorModeHelp.Text = LocalizationService.Get("AppIndicatorModeHelp");
+        foreach (ComboBoxItem item in CmbAppIndicatorMode.Items)
+        {
+            item.Content = item.Tag?.ToString() switch
+            {
+                AppIndicatorModes.Taskbar => LocalizationService.Get("AppIndicatorTaskbar"),
+                AppIndicatorModes.NotificationArea => LocalizationService.Get("AppIndicatorNotificationArea"),
+                AppIndicatorModes.Hidden => LocalizationService.Get("AppIndicatorHidden"),
+                _ => string.Empty
+            };
+        }
         if (LblFinanceItems != null)
         {
             LblFinanceItems.Text = LocalizationService.Get("FinanceItemsLabel");
@@ -402,6 +422,7 @@ public partial class SettingsWindow : Window
         ChkQuickActions.IsChecked = true;
         ChkLockPosition.IsChecked = false;
         ChkPinToDesktop.IsChecked = false;
+        CmbAppIndicatorMode.SelectedIndex = 0;
         ChkAutoStart.IsChecked = true;
         ChkAlwaysOnTop.IsChecked = false;
         ChkGameMode.IsChecked = true;
@@ -522,6 +543,9 @@ public partial class SettingsWindow : Window
         // 7. Options
         _config.Widget.IsLocked = ChkLockPosition.IsChecked == true;
         _config.Widget.PinToDesktop = ChkPinToDesktop.IsChecked == true;
+        _config.Widget.AppIndicatorMode = AppIndicatorModes.Normalize(
+            (CmbAppIndicatorMode.SelectedItem as ComboBoxItem)?.Tag?.ToString());
+        ShowInTaskbar = _config.Widget.AppIndicatorMode == AppIndicatorModes.Taskbar;
         _config.Widget.AlwaysOnTop = ChkPinToDesktop.IsChecked == true ? false : (ChkAlwaysOnTop.IsChecked == true);
         _config.Widget.AutoGameMode = ChkGameMode.IsChecked == true;
         _config.Widget.UseModularCards = ChkModularCards.IsChecked == true;
