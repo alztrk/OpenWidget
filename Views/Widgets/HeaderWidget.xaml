@@ -8,9 +8,14 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
     </UserControl.Resources>
 
-    <DockPanel>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
         <!-- Time and Date on Left -->
-        <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
             <TextBlock x:Name="TxtClock"
                        Text="00:00"
                        FontSize="12"
@@ -26,11 +31,12 @@
                        Text=""
                        FontSize="11"
                        Foreground="{StaticResource TextSecondaryBrush}"
-                       VerticalAlignment="Center" />
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis" />
         </StackPanel>
 
         <!-- Status Badges & Uptime on Right -->
-        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
             <!-- Game Mode Idle Badge -->
             <Border Background="{StaticResource HeaderGameModeBackgroundBrush}"
                     BorderBrush="{StaticResource HeaderGameModeBorderBrush}"
@@ -47,18 +53,17 @@
                            VerticalAlignment="Center" />
             </Border>
 
-            <TextBlock Text="{Binding Telemetry.UptimeText}"
-                       FontSize="11"
-                       Foreground="{StaticResource TextSecondaryBrush}"
-                       VerticalAlignment="Center"
-                       HorizontalAlignment="Right" />
-
             <TextBlock x:Name="TxtUptimePrefix"
                        Text=""
                        FontSize="11"
                        Foreground="{StaticResource TextSecondaryBrush}"
                        VerticalAlignment="Center"
-                       Margin="4,0,0,0" />
+                       Margin="0,0,4,0" />
+
+            <TextBlock Text="{Binding Telemetry.UptimeText}"
+                       FontSize="11"
+                       Foreground="{StaticResource TextSecondaryBrush}"
+                       VerticalAlignment="Center" />
         </StackPanel>
-    </DockPanel>
+    </Grid>
 </UserControl>
