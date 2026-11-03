@@ -4,6 +4,7 @@
         xmlns:converters="clr-namespace:OpenWidget.Converters"
         xmlns:widgets="clr-namespace:OpenWidget.Widgets"
         Title="OpenWidget"
+        Icon="/Resources/Branding/openwidget.ico"
         Width="360"
         SizeToContent="Height"
         WindowStyle="None"
