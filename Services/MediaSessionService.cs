@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -25,12 +25,23 @@ public record MediaTrackInfo(
 
 public class MediaSessionService : IDisposable
 {
+    private const int MaxCachedDurations = 128;
+
     private static readonly HttpClient _httpClient = new()
     {
         Timeout = TimeSpan.FromSeconds(5)
     };
-    private static readonly ConcurrentDictionary<string, TimeSpan> _durationCache = new();
+    private static readonly Regex DurationPattern = new(
+        "\"simpleText\":\"(\\d+:\\d+(?::\\d+)?)\"",
+        RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
+    private readonly Dictionary<string, TimeSpan> _durationCache = new(StringComparer.Ordinal);
+    private readonly Queue<string> _durationCacheOrder = new();
+    private readonly object _durationCacheLock = new();
     private CancellationTokenSource? _durationCts;
+    private int _refreshInProgress;
+    private int _refreshPending;
+    private int _thumbnailRefreshPending;
 
     private GlobalSystemMediaTransportControlsSessionManager? _manager;
     private GlobalSystemMediaTransportControlsSession? _currentSession;
@@ -171,7 +182,7 @@ public class MediaSessionService : IDisposable
             _currentSession.MediaPropertiesChanged += OnMediaPropertiesChanged;
             _currentSession.PlaybackInfoChanged += OnPlaybackInfoChanged;
             _currentSession.TimelinePropertiesChanged += OnTimelinePropertiesChanged;
-            _ = RefreshMediaInfoAsync();
+            _ = RefreshMediaInfoAsync(refreshThumbnail: true);
         }
         else
         {
@@ -187,7 +198,7 @@ public class MediaSessionService : IDisposable
 
     private void OnMediaPropertiesChanged(GlobalSystemMediaTransportControlsSession sender, MediaPropertiesChangedEventArgs args)
     {
-        _ = RefreshMediaInfoAsync();
+        _ = RefreshMediaInfoAsync(refreshThumbnail: true);
     }
 
     private void OnPlaybackInfoChanged(GlobalSystemMediaTransportControlsSession sender, PlaybackInfoChangedEventArgs args)
@@ -233,14 +244,55 @@ public class MediaSessionService : IDisposable
         PositionChanged?.Invoke(pos, _trackDuration);
     }
 
-    public async Task RefreshMediaInfoAsync()
+    public async Task RefreshMediaInfoAsync(bool refreshThumbnail = false)
+    {
+        if (Interlocked.CompareExchange(ref _refreshInProgress, 1, 0) != 0)
+        {
+            if (refreshThumbnail)
+            {
+                Interlocked.Exchange(ref _thumbnailRefreshPending, 1);
+            }
+
+            Interlocked.Exchange(ref _refreshPending, 1);
+            return;
+        }
+
+        try
+        {
+            var refreshCurrentThumbnail = refreshThumbnail || Interlocked.Exchange(ref _thumbnailRefreshPending, 0) == 1;
+            while (true)
+            {
+                await RefreshMediaInfoCoreAsync(refreshCurrentThumbnail);
+                refreshCurrentThumbnail = false;
+                if (Interlocked.Exchange(ref _refreshPending, 0) == 0)
+                {
+                    break;
+                }
+
+                refreshCurrentThumbnail = Interlocked.Exchange(ref _thumbnailRefreshPending, 0) == 1;
+            }
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _refreshInProgress, 0);
+            if (Interlocked.Exchange(ref _refreshPending, 0) == 1)
+            {
+                var refreshPendingThumbnail = Interlocked.Exchange(ref _thumbnailRefreshPending, 0) == 1;
+                _ = RefreshMediaInfoAsync(refreshPendingThumbnail);
+            }
+        }
+    }
+
+    private async Task RefreshMediaInfoCoreAsync(bool refreshThumbnail)
     {
         try
         {
-            if (_currentSession == null)
+            var session = _currentSession;
+            if (session == null)
             {
-                _currentSession = _manager?.GetCurrentSession();
-                if (_currentSession == null)
+                session = _manager?.GetCurrentSession();
+                _currentSession = session;
+                if (session == null)
                 {
                     _progressTimer.Stop();
                     _trackStopwatch.Stop();
@@ -251,20 +303,24 @@ public class MediaSessionService : IDisposable
                 }
             }
 
-            var props = await _currentSession.TryGetMediaPropertiesAsync();
-            var playback = _currentSession.GetPlaybackInfo();
+            var props = await session.TryGetMediaPropertiesAsync();
+            if (!ReferenceEquals(session, _currentSession)) return;
+
+            var playback = session.GetPlaybackInfo();
 
             if (props != null && !string.IsNullOrWhiteSpace(props.Title))
             {
                 bool isPlaying = playback?.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing;
-                string source = _currentSession.SourceAppUserModelId ?? "Medya";
+                string source = session.SourceAppUserModelId ?? "Medya";
                 if (source.Contains("Spotify", StringComparison.OrdinalIgnoreCase)) source = "Spotify";
                 else if (source.Contains("Chrome", StringComparison.OrdinalIgnoreCase)) source = "Chrome";
                 else if (source.Contains("Edge", StringComparison.OrdinalIgnoreCase)) source = "Edge";
                 else if (source.Contains("Firefox", StringComparison.OrdinalIgnoreCase) || source.Contains("LibreWolf", StringComparison.OrdinalIgnoreCase) || source.StartsWith("83C1C0F3FA8524B1", StringComparison.OrdinalIgnoreCase)) source = "LibreWolf";
 
-                BitmapSource? thumbnail = null;
-                if (props.Thumbnail != null)
+                string trackKey = $"{props.Title}|{props.Artist}";
+                bool trackChanged = trackKey != _activeTrackKey;
+                BitmapSource? thumbnail = !trackChanged && !refreshThumbnail ? _currentTrack.Thumbnail : null;
+                if ((trackChanged || refreshThumbnail) && props.Thumbnail != null)
                 {
                     try
                     {
@@ -282,10 +338,9 @@ public class MediaSessionService : IDisposable
                     catch { }
                 }
 
-                string trackKey = $"{props.Title}|{props.Artist}";
-                bool trackChanged = trackKey != _activeTrackKey;
+                if (!ReferenceEquals(session, _currentSession)) return;
 
-                var timeline = _currentSession.GetTimelineProperties();
+                var timeline = session.GetTimelineProperties();
                 if (timeline != null && timeline.EndTime > TimeSpan.Zero)
                 {
                     _trackDuration = timeline.EndTime;
@@ -300,7 +355,7 @@ public class MediaSessionService : IDisposable
                     _trackBasePosition = TimeSpan.Zero;
                     _trackStopwatch.Restart();
 
-                    if (_durationCache.TryGetValue(trackKey, out var cachedDur) && cachedDur > TimeSpan.Zero)
+                    if (TryGetCachedDuration(trackKey, out var cachedDur) && cachedDur > TimeSpan.Zero)
                     {
                         _trackDuration = cachedDur;
                     }
@@ -312,7 +367,7 @@ public class MediaSessionService : IDisposable
                 }
                 else if (_trackDuration <= TimeSpan.Zero)
                 {
-                    if (_durationCache.TryGetValue(trackKey, out var cachedDur) && cachedDur > TimeSpan.Zero)
+                    if (TryGetCachedDuration(trackKey, out var cachedDur) && cachedDur > TimeSpan.Zero)
                     {
                         _trackDuration = cachedDur;
                     }
@@ -426,6 +481,31 @@ public class MediaSessionService : IDisposable
         catch { }
     }
 
+    private bool TryGetCachedDuration(string trackKey, out TimeSpan duration)
+    {
+        lock (_durationCacheLock)
+        {
+            return _durationCache.TryGetValue(trackKey, out duration);
+        }
+    }
+
+    private void CacheDuration(string trackKey, TimeSpan duration)
+    {
+        lock (_durationCacheLock)
+        {
+            if (!_durationCache.ContainsKey(trackKey))
+            {
+                _durationCacheOrder.Enqueue(trackKey);
+            }
+
+            _durationCache[trackKey] = duration;
+            while (_durationCache.Count > MaxCachedDurations && _durationCacheOrder.TryDequeue(out var oldestKey))
+            {
+                _durationCache.Remove(oldestKey);
+            }
+        }
+    }
+
     private void ResolveWebMediaDurationAsync(string title, string artist, string trackKey)
     {
         try
@@ -442,7 +522,7 @@ public class MediaSessionService : IDisposable
                     var dur = await FetchDurationFromWebAsync(title, artist, token);
                     if (dur > TimeSpan.Zero)
                     {
-                        _durationCache[trackKey] = dur;
+                        CacheDuration(trackKey, dur);
                         if (_activeTrackKey == trackKey)
                         {
                             _trackDuration = dur;
@@ -470,14 +550,28 @@ public class MediaSessionService : IDisposable
             request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
             request.Headers.Add("Accept-Language", "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7");
 
-            var response = await _httpClient.SendAsync(request, ct);
+            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
             if (!response.IsSuccessStatusCode) return TimeSpan.Zero;
 
-            var html = await response.Content.ReadAsStringAsync(ct);
-            var m = Regex.Match(html, "\"simpleText\":\"(\\d+:\\d+(?::\\d+)?)\"");
-            if (m.Success)
+            using var reader = new StreamReader(await response.Content.ReadAsStreamAsync(ct));
+            var buffer = new char[16 * 1024];
+            var carry = string.Empty;
+            while (true)
             {
-                return ParseDuration(m.Groups[1].Value);
+                var charactersRead = await reader.ReadAsync(buffer.AsMemory(), ct);
+                if (charactersRead == 0)
+                {
+                    break;
+                }
+
+                var chunk = carry + new string(buffer, 0, charactersRead);
+                var match = DurationPattern.Match(chunk);
+                if (match.Success)
+                {
+                    return ParseDuration(match.Groups[1].Value);
+                }
+
+                carry = chunk.Length > 64 ? chunk[^64..] : chunk;
             }
         }
         catch { }

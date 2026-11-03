@@ -21,6 +21,18 @@ public class HardwareScanner
         _priceService = priceService;
     }
 
+    private static IEnumerable<ManagementObject> EnumerateManagementObjects(ManagementObjectSearcher searcher)
+    {
+        using var results = searcher.Get();
+        foreach (ManagementObject item in results)
+        {
+            using (item)
+            {
+                yield return item;
+            }
+        }
+    }
+
     public HardwareSpecs Scan()
     {
         var specs = new HardwareSpecs();
@@ -225,7 +237,7 @@ public class HardwareScanner
         try
         {
             using var searcher = new ManagementObjectSearcher("SELECT Name, NumberOfCores, NumberOfLogicalProcessors FROM Win32_Processor");
-            foreach (ManagementObject obj in searcher.Get())
+            foreach (ManagementObject obj in EnumerateManagementObjects(searcher))
             {
                 var rawName = obj["Name"]?.ToString()?.Trim() ?? "AMD Ryzen 7 5700X";
                 var cleanName = rawName
@@ -253,7 +265,7 @@ public class HardwareScanner
             string bestGpu = string.Empty;
             ulong maxRam = 0;
 
-            foreach (ManagementObject obj in searcher.Get())
+            foreach (ManagementObject obj in EnumerateManagementObjects(searcher))
             {
                 var name = obj["Name"]?.ToString()?.Trim() ?? "";
                 if (string.IsNullOrEmpty(name)) continue;
@@ -309,7 +321,7 @@ public class HardwareScanner
         try
         {
             using var searcher = new ManagementObjectSearcher("SELECT Manufacturer, Product FROM Win32_BaseBoard");
-            foreach (ManagementObject obj in searcher.Get())
+            foreach (ManagementObject obj in EnumerateManagementObjects(searcher))
             {
                 var mfg = obj["Manufacturer"]?.ToString()?.Trim() ?? "";
                 var prod = obj["Product"]?.ToString()?.Trim() ?? "";
@@ -335,7 +347,7 @@ public class HardwareScanner
             int stickCount = 0;
             uint speed = 0;
             using var searcher = new ManagementObjectSearcher("SELECT Capacity, Speed FROM Win32_PhysicalMemory");
-            foreach (ManagementObject obj in searcher.Get())
+            foreach (ManagementObject obj in EnumerateManagementObjects(searcher))
             {
                 if (obj["Capacity"] != null && ulong.TryParse(obj["Capacity"].ToString(), out var cap))
                 {
@@ -375,7 +387,7 @@ public class HardwareScanner
         try
         {
             using var searcher = new ManagementObjectSearcher("SELECT Model, Size, MediaType FROM Win32_DiskDrive");
-            foreach (ManagementObject obj in searcher.Get())
+            foreach (ManagementObject obj in EnumerateManagementObjects(searcher))
             {
                 var model = obj["Model"]?.ToString()?.Trim() ?? "Disk";
 
@@ -432,7 +444,7 @@ public class HardwareScanner
         try
         {
             using var searcher = new ManagementObjectSearcher(@"root\wmi", "SELECT UserFriendlyName FROM WmiMonitorID");
-            foreach (ManagementObject obj in searcher.Get())
+            foreach (ManagementObject obj in EnumerateManagementObjects(searcher))
             {
                 if (obj["UserFriendlyName"] is ushort[] nameBytes)
                 {
