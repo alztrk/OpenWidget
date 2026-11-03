@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="177 190 872 872" role="img" aria-labelledby="title description">
+  <title id="title">OpenWidget, dark theme mark</title>
+  <desc id="description">A rounded open frame with a separate cyan square on a dark navy background.</desc>
+  <rect x="177" y="190" width="872" height="872" fill="#090D16"/>
+  <g transform="translate(0 1254) scale(0.1 -0.1)">
+    <path fill="#CBD5E1" fill-rule="nonzero" d="M3692 8919 c-116 -9 -219 -32 -346 -76 -197 -69 -353 -167 -507 -322 -202 -203 -320 -427 -376 -712 -17 -89 -18 -199 -18 -2114 0 -1903 1 -2025 18 -2114 57 -294 179 -523 390 -727 172 -167 323 -260 542 -333 198 -65 73 -62 2365 -59 l2075 4 90 21 c266 64 476 176 658 352 208 200 344 444 404 724 17 76 18 189 18 1667 l0 1585 -420 0 -420 0 -2 -1525 -1 -1525 -26 -81 c-28 -88 -101 -208 -157 -260 -64 -60 -170 -124 -242 -146 l-72 -23 -1965 0 -1965 0 -82 32 c-188 72 -317 201 -380 379 l-28 79 0 1960 0 1960 28 83 c59 171 210 318 392 380 l80 27 1598 3 1597 2 0 380 0 380 -52 1 c-280 5 -3125 4 -3196 -2z"/>
+  </g>
+  <rect x="727" y="251" width="263" height="265" rx="50" fill="#38BDF8"/>
+</svg>
