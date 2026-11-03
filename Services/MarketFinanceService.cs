@@ -11,11 +11,11 @@ namespace OpenWidget.Services;
 
 public class MarketFinanceService
 {
-    private const decimal GramsPerTroyOunce = 31.1034768m;
     private readonly string _cacheFilePath;
     private FinanceSpecs _cachedSpecs = new();
     private string _currency = "TRY";
     private string? _rawMarketJson;
+    private List<string> _visibleKeys = FinanceInstrumentCatalog.DefaultVisibleKeys.ToList();
 
     private static readonly HttpClient HttpClient = new()
     {
@@ -40,10 +40,13 @@ public class MarketFinanceService
         _currency = SupportedCurrencies.Contains(currency, StringComparer.OrdinalIgnoreCase)
             ? currency.ToUpperInvariant()
             : "TRY";
-        if (!string.IsNullOrWhiteSpace(_rawMarketJson))
-        {
-            _cachedSpecs = ParseTruncgilJson(_rawMarketJson, _currency, new Dictionary<string, decimal>());
-        }
+        RebuildFromCache();
+    }
+
+    public void SetVisibleKeys(IEnumerable<string>? keys)
+    {
+        _visibleKeys = FinanceInstrumentCatalog.NormalizeVisibleKeys(keys);
+        ApplyVisibleKeys(_cachedSpecs);
     }
 
     private static readonly string[] SupportedCurrencies = ["TRY", "USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD"];
@@ -64,9 +67,7 @@ public class MarketFinanceService
             var specs = ParseTruncgilJson(json, _currency, exchangeRates);
             if (specs.Currencies.Count > 0 || specs.Gold.Count > 0)
             {
-                _cachedSpecs.Currencies = specs.Currencies;
-                _cachedSpecs.Gold = specs.Gold;
-                _cachedSpecs.LastUpdatedText = specs.LastUpdatedText;
+                MergeMarketSpecs(_cachedSpecs, specs);
                 File.WriteAllText(_cacheFilePath, json);
             }
         }
@@ -85,12 +86,8 @@ public class MarketFinanceService
         }
         catch { }
 
-        if (_cachedSpecs.Crypto.Count == 0)
-        {
-            _cachedSpecs.Crypto.Add(new FinanceItem("btc", "IconBitcoin", LocalizationService.Get("Bitcoin"), "$--", "%0,00", "Neutral"));
-            _cachedSpecs.Crypto.Add(new FinanceItem("eth", "IconEthereum", LocalizationService.Get("Ethereum"), "$--", "%0,00", "Neutral"));
-        }
-
+        EnsureCryptoPlaceholders(_cachedSpecs);
+        ApplyVisibleKeys(_cachedSpecs);
         return _cachedSpecs;
     }
 
@@ -111,11 +108,20 @@ public class MarketFinanceService
         {
             _cachedSpecs = CreateDefaultSpecs();
         }
-        else if (_cachedSpecs.Crypto.Count == 0)
+
+        EnsureCryptoPlaceholders(_cachedSpecs);
+        ApplyVisibleKeys(_cachedSpecs);
+    }
+
+    private void RebuildFromCache()
+    {
+        if (!string.IsNullOrWhiteSpace(_rawMarketJson))
         {
-            _cachedSpecs.Crypto.Add(new FinanceItem("btc", "IconBitcoin", LocalizationService.Get("Bitcoin"), "$--", "%0,00", "Neutral"));
-            _cachedSpecs.Crypto.Add(new FinanceItem("eth", "IconEthereum", LocalizationService.Get("Ethereum"), "$--", "%0,00", "Neutral"));
+            var parsed = ParseTruncgilJson(_rawMarketJson, _currency, new Dictionary<string, decimal>());
+            MergeMarketSpecs(_cachedSpecs, parsed);
         }
+
+        ApplyVisibleKeys(_cachedSpecs);
     }
 
     private async Task<Dictionary<string, decimal>> FetchExchangeRatesAsync()
@@ -161,22 +167,34 @@ public class MarketFinanceService
                 specs.LastUpdatedText = updateDate.GetString() ?? "Canlı Piyasa";
             }
 
-            // 1. USD
-            if (root.TryGetProperty("USD", out var usd))
+            foreach (var property in root.EnumerateObject())
             {
-                specs.Currencies.Add(CreateItem("usd", "IconDollar", LocalizationService.Get("Dollar"), usd, currency, rates));
-            }
+                if (property.NameEquals("Update_Date") || property.Value.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
 
-            // 2. EUR
-            if (root.TryGetProperty("EUR", out var eur))
-            {
-                specs.Currencies.Add(CreateItem("eur", "IconEuro", LocalizationService.Get("Euro"), eur, currency, rates));
-            }
+                var type = property.Value.TryGetProperty("Type", out var typeElement)
+                    ? typeElement.GetString()
+                    : FinanceInstrumentCatalog.GroupCurrency;
+                var key = property.Name;
+                var group = FinanceInstrumentCatalog.GetGroup(key, type);
+                var item = CreateItem(
+                    key,
+                    FinanceInstrumentCatalog.GetIconKey(key, type),
+                    FinanceInstrumentCatalog.GetLabel(key),
+                    property.Value,
+                    currency,
+                    rates);
 
-            // 3. Ons Altın (the provider exposes the source price per gram)
-            if (root.TryGetProperty("gram-altin", out var gram))
-            {
-                specs.Gold.Add(CreateOunceGoldItem(gram, currency, rates));
+                if (group == FinanceInstrumentCatalog.GroupGold)
+                {
+                    specs.Gold.Add(item);
+                }
+                else
+                {
+                    specs.Currencies.Add(item);
+                }
             }
         }
         catch { }
@@ -255,30 +273,10 @@ public class MarketFinanceService
         );
     }
 
-    private static FinanceItem CreateOunceGoldItem(JsonElement element, string currency, IReadOnlyDictionary<string, decimal> rates)
-    {
-        var selling = element.TryGetProperty("Selling", out var value) ? value.GetString() ?? "0" : "0";
-        var change = element.TryGetProperty("Change", out var changeValue)
-            ? changeValue.GetString() ?? "%0,00"
-            : "%0,00";
-        var direction = change.Contains("-") ? "Down"
-            : !change.Contains("0,00") && !change.Contains("0.00") ? "Up"
-            : "Neutral";
-        var formatted = $"-- {GetCurrencySymbol(currency)}";
-
-        if (TryParseMarketDecimal(selling, out var gramPrice))
-        {
-            var converted = gramPrice * GramsPerTroyOunce;
-            converted *= rates.TryGetValue(currency, out var rate) ? rate : 1m;
-            formatted = FormatCurrency(converted, currency);
-        }
-
-        return new FinanceItem("ounce_gold", "IconGoldBar", LocalizationService.Get("OunceGold"), formatted, change, direction);
-    }
-
     private static bool TryParseMarketDecimal(string value, out decimal result)
     {
-        var normalized = value.Trim();
+        var chars = value.Where(ch => char.IsDigit(ch) || ch is ',' or '.' or '-').ToArray();
+        var normalized = new string(chars);
         if (normalized.Contains(',') && normalized.Contains('.'))
         {
             normalized = normalized.LastIndexOf(',') > normalized.LastIndexOf('.')
@@ -297,12 +295,53 @@ public class MarketFinanceService
     {
         var specs = new FinanceSpecs { LastUpdatedText = LocalizationService.Get("Updating") };
         var symbol = GetCurrencySymbol("TRY");
-        specs.Currencies.Add(new FinanceItem("usd", "IconDollar", LocalizationService.Get("Dollar"), $"-- {symbol}", "%0,00", "Neutral"));
-        specs.Currencies.Add(new FinanceItem("eur", "IconEuro", LocalizationService.Get("Euro"), $"-- {symbol}", "%0,00", "Neutral"));
-        specs.Gold.Add(new FinanceItem("ounce_gold", "IconGoldBar", LocalizationService.Get("OunceGold"), $"-- {symbol}", "%0,00", "Neutral"));
-        specs.Crypto.Add(new FinanceItem("btc", "IconBitcoin", LocalizationService.Get("Bitcoin"), "$--", "%0,00", "Neutral"));
-        specs.Crypto.Add(new FinanceItem("eth", "IconEthereum", LocalizationService.Get("Ethereum"), "$--", "%0,00", "Neutral"));
+        specs.Currencies.Add(new FinanceItem("USD", "IconDollar", FinanceInstrumentCatalog.GetLabel("USD"), $"-- {symbol}", "%0,00", "Neutral"));
+        specs.Currencies.Add(new FinanceItem("EUR", "IconEuro", FinanceInstrumentCatalog.GetLabel("EUR"), $"-- {symbol}", "%0,00", "Neutral"));
+        specs.Gold.Add(new FinanceItem("gram-altin", "IconGoldBar", FinanceInstrumentCatalog.GetLabel("gram-altin"), $"-- {symbol}", "%0,00", "Neutral"));
+        EnsureCryptoPlaceholders(specs);
+        ApplyVisibleKeys(specs, FinanceInstrumentCatalog.DefaultVisibleKeys);
         return specs;
+    }
+
+    private static void MergeMarketSpecs(FinanceSpecs target, FinanceSpecs parsed)
+    {
+        var crypto = target.Crypto;
+        target.Currencies = parsed.Currencies;
+        target.Gold = parsed.Gold;
+        target.LastUpdatedText = parsed.LastUpdatedText;
+        target.Crypto = crypto;
+    }
+
+    private void ApplyVisibleKeys(FinanceSpecs specs) => ApplyVisibleKeys(specs, _visibleKeys);
+
+    private static void ApplyVisibleKeys(FinanceSpecs specs, IReadOnlyList<string> visibleKeys)
+    {
+        var lookup = new Dictionary<string, FinanceItem>(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in specs.Currencies.Concat(specs.Gold).Concat(specs.Crypto))
+        {
+            lookup[item.Key] = item;
+        }
+
+        specs.AllItems = lookup.Values.ToList();
+        specs.VisibleItems = visibleKeys
+            .Select(key => lookup.TryGetValue(key, out var item) ? item : null)
+            .Where(item => item != null)
+            .Cast<FinanceItem>()
+            .ToList();
+
+        if (specs.VisibleItems.Count == 0)
+        {
+            specs.VisibleItems = specs.AllItems.Take(5).ToList();
+        }
+    }
+
+    private static void EnsureCryptoPlaceholders(FinanceSpecs specs)
+    {
+        if (specs.Crypto.Count == 0)
+        {
+            specs.Crypto.Add(new FinanceItem("btc", "IconBitcoin", FinanceInstrumentCatalog.GetLabel("btc"), "$--", "%0,00", "Neutral"));
+            specs.Crypto.Add(new FinanceItem("eth", "IconEthereum", FinanceInstrumentCatalog.GetLabel("eth"), "$--", "%0,00", "Neutral"));
+        }
     }
 
     private static decimal GetConversionFromUsd(string currency, IReadOnlyDictionary<string, decimal> rates)

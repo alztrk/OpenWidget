@@ -88,12 +88,13 @@
                   VerticalAlignment="Center" />
         </Grid>
         <StackPanel x:Name="ContentPanel">
-            <ItemsControl ItemsSource="{Binding Finance.Currencies}"
-                          ItemTemplate="{StaticResource FinanceRowTemplate}" />
-            <ItemsControl ItemsSource="{Binding Finance.Gold}"
-                          ItemTemplate="{StaticResource FinanceRowTemplate}" />
-            <ItemsControl ItemsSource="{Binding Finance.Crypto}"
-                          ItemTemplate="{StaticResource FinanceRowTemplate}" />
+            <ScrollViewer MaxHeight="130"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Focusable="False">
+                <ItemsControl ItemsSource="{Binding Finance.VisibleItems}"
+                              ItemTemplate="{StaticResource FinanceRowTemplate}" />
+            </ScrollViewer>
         </StackPanel>
     </StackPanel>
 </UserControl>

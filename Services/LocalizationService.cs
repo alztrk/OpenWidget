@@ -146,6 +146,8 @@ public static class LocalizationService
         ["OunceGold"] = ("Ons Altın", "Gold Ounce"),
         ["Bitcoin"] = ("Bitcoin (BTC)", "Bitcoin (BTC)"),
         ["Ethereum"] = ("Ethereum (ETH)", "Ethereum (ETH)"),
+        ["FinanceItemsLabel"] = ("Piyasa kalemleri", "Market instruments"),
+        ["FinanceItemsHelp"] = ("API'deki tüm kurlar eklenebilir. Kartta 5 satır görünür, fazlası kaydırılır.", "Any rate from the API can be added. The card shows 5 rows and scrolls for the rest."),
 
         // Weather Conditions
         ["WeatherTitle"] = ("Hava Durumu", "Weather"),

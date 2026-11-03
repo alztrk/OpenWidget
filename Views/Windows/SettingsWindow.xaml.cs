@@ -19,6 +19,7 @@ public partial class SettingsWindow : Window
     private readonly HardwareSpecs _hardwareSpecs;
     private string _selectedCity = "auto";
     private bool _isClosing;
+    private List<FinanceInstrumentOption> _financeOptions = new();
 
     public SettingsWindow(HardwareConfig config, HardwareSpecs hardwareSpecs, Action<HardwareConfig> onSave)
     {
@@ -95,6 +96,7 @@ public partial class SettingsWindow : Window
         ChkClipboardHeight.IsChecked = _config.Widget.LimitClipboardHeight;
         ChkClipboardExpanded.IsChecked = _config.Widget.IsClipboardHistoryExpanded;
         SelectCurrency(_config.Widget.Currency);
+        LoadFinanceItems();
         ChkHardwareCore.IsChecked = _config.HardwareVisibility.CoreSystem;
         ChkHardwareStorage.IsChecked = _config.HardwareVisibility.Storage;
         ChkHardwarePeripherals.IsChecked = _config.HardwareVisibility.Peripherals;
@@ -235,6 +237,15 @@ public partial class SettingsWindow : Window
         LblCityHelp.Text = LocalizationService.Get("CityHelp");
         LblOpacity.Text = LocalizationService.Get("OpacityLabel");
         LblAccent.Text = LocalizationService.Get("AccentThemeLabel");
+        if (LblFinanceItems != null)
+        {
+            LblFinanceItems.Text = LocalizationService.Get("FinanceItemsLabel");
+        }
+        if (LblFinanceItemsHelp != null)
+        {
+            LblFinanceItemsHelp.Text = LocalizationService.Get("FinanceItemsHelp");
+        }
+        RefreshFinanceItemLabels();
 
         BtnReset.Content = LocalizationService.Get("ResetDefaultsBtn");
         BtnCancel.Content = LocalizationService.Get("Cancel");
@@ -402,6 +413,8 @@ public partial class SettingsWindow : Window
         ChkHardwarePeripherals.IsChecked = true;
         ChkHardwareCooling.IsChecked = true;
         ChkHardwareAccessories.IsChecked = true;
+        _config.Widget.FinanceVisibleKeys = FinanceInstrumentCatalog.DefaultVisibleKeys.ToList();
+        LoadFinanceItems();
         _config.ManualHardware.Clear();
         _config.HiddenHardware.Clear();
         RefreshHardwareLists();
@@ -515,6 +528,8 @@ public partial class SettingsWindow : Window
         _config.Widget.LimitClipboardHeight = ChkClipboardHeight.IsChecked == true;
         _config.Widget.IsClipboardHistoryExpanded = ChkClipboardExpanded.IsChecked == true;
         _config.Widget.Currency = (CmbCurrency.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "TRY";
+        _config.Widget.FinanceVisibleKeys = FinanceInstrumentCatalog.NormalizeVisibleKeys(
+            _financeOptions.Where(option => option.IsSelected).Select(option => option.Key));
         _config.HardwareVisibility.CoreSystem = ChkHardwareCore.IsChecked == true;
         _config.HardwareVisibility.Storage = ChkHardwareStorage.IsChecked == true;
         _config.HardwareVisibility.Peripherals = ChkHardwarePeripherals.IsChecked == true;
@@ -545,6 +560,47 @@ public partial class SettingsWindow : Window
         }
 
         CmbCurrency.SelectedIndex = 0;
+    }
+
+    private void LoadFinanceItems()
+    {
+        var selected = FinanceInstrumentCatalog.NormalizeVisibleKeys(_config.Widget.FinanceVisibleKeys)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        _financeOptions = FinanceInstrumentCatalog.Known
+            .Select(definition => new FinanceInstrumentOption
+            {
+                Key = definition.Key,
+                Label = FinanceInstrumentCatalog.GetLabel(definition.Key),
+                IsSelected = selected.Contains(definition.Key)
+            })
+            .ToList();
+
+        if (ListFinanceItems != null)
+        {
+            ListFinanceItems.ItemsSource = _financeOptions;
+        }
+    }
+
+    private void RefreshFinanceItemLabels()
+    {
+        foreach (var option in _financeOptions)
+        {
+            option.Label = FinanceInstrumentCatalog.GetLabel(option.Key);
+        }
+
+        if (ListFinanceItems != null)
+        {
+            ListFinanceItems.ItemsSource = null;
+            ListFinanceItems.ItemsSource = _financeOptions;
+        }
+    }
+
+    private sealed class FinanceInstrumentOption
+    {
+        public string Key { get; init; } = string.Empty;
+        public string Label { get; set; } = string.Empty;
+        public bool IsSelected { get; set; }
     }
 
     private async void BtnCheckUpdate_Click(object sender, RoutedEventArgs e)

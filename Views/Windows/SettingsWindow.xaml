@@ -333,6 +333,35 @@
                     </Grid>
                 </Border>
 
+                <Border Style="{StaticResource ComponentCard}" Margin="0,0,0,10">
+                    <StackPanel>
+                        <TextBlock x:Name="LblFinanceItems"
+                                   Text="Piyasa kalemleri"
+                                   FontSize="13"
+                                   FontWeight="Medium"
+                                   Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock x:Name="LblFinanceItemsHelp"
+                                   Text="API'deki tüm kurlar eklenebilir. Kartta 5 satır görünür, fazlası kaydırılır."
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,3,0,8" />
+                        <ScrollViewer MaxHeight="180"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl x:Name="ListFinanceItems">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <CheckBox Content="{Binding Label}"
+                                                  IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                  Style="{StaticResource ComponentToggle}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </StackPanel>
+                </Border>
+
                 <!-- Hava Durumu Şehri (Tüm Dünya İlleri Dropdown ile Search ve Kategori/Thread Yapısı) -->
                 <Border Style="{StaticResource ComponentCard}" Margin="0,0,0,10">
                     <Grid>

@@ -301,6 +301,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         _priceService = new PriceService(_config, _configPath);
         _telemetryService = new SystemTelemetryService();
         _financeService = new MarketFinanceService(_financeCachePath);
+        _financeService.SetVisibleKeys(_config.Widget.FinanceVisibleKeys);
         _financeService.SetCurrency(_config.Widget.Currency);
         _weatherService = new WeatherService(_weatherCachePath, _config.Widget.City);
         _weatherService.WeatherUpdated += (details) =>
@@ -1001,6 +1002,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         ThemeService.ApplyAccent(_config.Widget.AccentTheme);
         LocalizationService.CurrentLanguage = _config.Widget.Language;
         _weatherService?.UpdateCity(_config.Widget.City);
+        _financeService?.SetVisibleKeys(_config.Widget.FinanceVisibleKeys);
         _financeService?.SetCurrency(_config.Widget.Currency);
 
         ApplyLockState();

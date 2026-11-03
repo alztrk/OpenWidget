@@ -73,7 +73,11 @@
         "Language": { "type": "string", "enum": ["tr", "en", "de", "fr", "es", "it", "pt", "ja", "ru"] },
         "City": { "type": "string" },
         "AccentTheme": { "type": "string" },
-        "Currency": { "type": "string", "enum": ["TRY", "USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD"] }
+        "Currency": { "type": "string", "enum": ["TRY", "USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD"] },
+        "FinanceVisibleKeys": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
       }
     },
     "widgets": {

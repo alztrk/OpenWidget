@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using OpenWidget.Models;
 using Xunit;
 
@@ -27,6 +28,7 @@ public class HardwareConfigTests
         Assert.True(config.Widgets.ShowWeather);
         Assert.True(config.Widgets.ShowClipboard);
         Assert.True(config.Widgets.ShowTelemetry);
+        Assert.Equal(new[] { "USD", "EUR", "gram-altin", "btc", "eth" }, config.Widget.FinanceVisibleKeys.ToArray());
     }
 
     [Fact]
@@ -71,6 +73,7 @@ public class HardwareConfigTests
             original.Widget.AccentTheme = "Emerald";
             original.Widget.Opacity = 0.85;
             original.Widget.IsLocked = true;
+            original.Widget.FinanceVisibleKeys = ["GBP", "ons", "btc"];
             original.Widgets.ShowFinance = false;
 
             original.Save(tempFile);
@@ -84,6 +87,7 @@ public class HardwareConfigTests
             Assert.Equal("Emerald", loaded.Widget.AccentTheme);
             Assert.Equal(0.85, loaded.Widget.Opacity);
             Assert.True(loaded.Widget.IsLocked);
+            Assert.Equal(new[] { "GBP", "ons", "btc" }, loaded.Widget.FinanceVisibleKeys.ToArray());
             Assert.False(loaded.Widgets.ShowFinance);
         }
         finally

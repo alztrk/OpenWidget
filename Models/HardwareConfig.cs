@@ -53,6 +53,14 @@ public class WidgetConfig
     public string City { get; set; } = "auto";
     public string AccentTheme { get; set; } = "Sky";
     public string Currency { get; set; } = "TRY";
+    public List<string> FinanceVisibleKeys { get; set; } = new()
+    {
+        "USD",
+        "EUR",
+        "gram-altin",
+        "btc",
+        "eth"
+    };
 }
 
 public class WidgetSelectionConfig
@@ -154,6 +162,13 @@ public class HardwareConfig
                     // Sync legacy flags if present
                     if (!config.TelemetryWidget.Enabled) config.Widgets.ShowTelemetry = false;
                     if (!config.FinanceWidget.Enabled) config.Widgets.ShowFinance = false;
+                    if (config.Widget.FinanceVisibleKeys == null || config.Widget.FinanceVisibleKeys.Count == 0)
+                    {
+                        config.Widget.FinanceVisibleKeys = new List<string>
+                        {
+                            "USD", "EUR", "gram-altin", "btc", "eth"
+                        };
+                    }
                     return config;
                 }
             }
