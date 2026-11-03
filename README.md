@@ -8,8 +8,8 @@ OpenWidget is a standalone desktop system and information widget for Windows 10 
 
 ## Features
 
-- **Desktop integration:** Runs as a borderless desktop widget without a taskbar button or focus stealing.
-- **Global hotkey:** Press `Ctrl + Shift + W` to show or hide the widget.
+- **Desktop integration:** Runs as a borderless desktop widget without stealing focus. Its taskbar button remains available while minimized; the window also appears in the Alt+Tab list.
+- **Global hotkey:** Press `Ctrl + Shift + W` to minimize or restore the widget.
 - **Multi-monitor and DPI support:** Detects the active monitor and keeps the widget within the work area.
 - **Single-instance protection:** Prevents multiple copies from running at the same time.
 - **Responsive layout:** Adjusts its maximum height to the available display area and enables scrolling when needed.

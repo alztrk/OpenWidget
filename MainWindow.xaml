@@ -10,7 +10,7 @@
         AllowsTransparency="True"
         Background="Transparent"
         ResizeMode="NoResize"
-        ShowInTaskbar="False"
+        ShowInTaskbar="True"
         ShowActivated="False"
         Topmost="False"
         FontFamily="Roboto, Segoe UI Variable Text, Segoe UI, sans-serif"

@@ -21,8 +21,8 @@ OpenWidget, Windows 10 ve Windows 11 için geliştirilmiş, masaüstünde doğru
 
 ## Genel Özellikler
 
-* **Masaüstü Entegrasyonu:** Diğer pencerelerin üzerine çıkmadan arka planda masaüstü düzeyinde çalışır (`Topmost = false`, `WS_EX_TOOLWINDOW`). Görev çubuğunda simge oluşturmaz ve odak çalmaz (`WS_EX_NOACTIVATE`).
-* **Global Kısayol Tuşu (`Ctrl + Shift + W`):** Herhangi bir tam ekran uygulama veya oyun çalışırken widget'ı tek tuşla ekranda gizler ya da tekrar görünür kılar.
+* **Masaüstü Entegrasyonu:** Odak çalmadan masaüstü widget'ı olarak çalışır. Küçültüldüğünde görev çubuğu düğmesi görünmeye devam eder; pencere `Alt+Tab` listesinde de yer alır.
+* **Global Kısayol Tuşu (`Ctrl + Shift + W`):** Widget'ı küçültür veya geri yükler. Küçültüldüğünde görev çubuğu düğmesi uygulamanın çalıştığını gösterir.
 * **Çoklu Monitör ve Dinamik DPI Uyumluluğu:** Çoklu ekran kurulumlarında pencerenin hangi monitörde olduğunu Win32 `MonitorFromPoint` ile algılar, `WM_DPICHANGED` mesajlarını yakalayarak çözünürlük veya ölçek değiştiğinde ekrandan taşmayı önler.
 * **Tek Kopya (Single Instance) Koruması:** Sistem genelinde adlandırılmış `Mutex` koruması sayesinde uygulamanın kazara birden fazla kez açılması ve kaynak çakışmaları engellenir.
 * **Dinamik Çözünürlük ve Taşma Koruması:** Ekran çalışma alanı yüksekliğine göre otomatik azami boyut hesaplar. Çok sayıda kart açık olduğunda modern dikey kaydırma çubuğu devreye girer.

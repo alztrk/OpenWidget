@@ -19,7 +19,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 {
     private const int GWL_EXSTYLE = -20;
     private const int GWL_HWNDPARENT = -8;
-    private const int WS_EX_TOOLWINDOW = 0x00000080;
     private const int WS_EX_NOACTIVATE = 0x08000000;
     private const int WM_NCLBUTTONDOWN = 0xA1;
     private const int HT_CAPTION = 0x2;
@@ -225,9 +224,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         var handle = new WindowInteropHelper(this).Handle;
         if (handle == IntPtr.Zero) return;
 
-        // Apply ToolWindow (hide from Alt+Tab) and NoActivate (no focus stealing)
+        // Keep the widget from stealing focus while WPF exposes its taskbar entry.
         var exStyle = (long)GetWindowLongPtr(handle, GWL_EXSTYLE);
-        exStyle |= WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
+        exStyle |= WS_EX_NOACTIVATE;
         SetWindowLongPtr(handle, GWL_EXSTYLE, (IntPtr)exStyle);
 
         // Register Global Hotkey (Ctrl + Shift + W)
@@ -240,14 +239,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void ToggleWidgetVisibility()
     {
-        if (Visibility == Visibility.Visible)
+        if (WindowState == System.Windows.WindowState.Minimized)
         {
-            Visibility = Visibility.Hidden;
+            WindowState = System.Windows.WindowState.Normal;
+            PositionWidget();
         }
         else
         {
-            Visibility = Visibility.Visible;
-            PositionWidget();
+            WindowState = System.Windows.WindowState.Minimized;
         }
     }
 
@@ -531,6 +530,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void UpdateDesktopVisibility()
     {
+        if (WindowState == System.Windows.WindowState.Minimized)
+        {
+            return;
+        }
+
         if (_config.Widget.AlwaysOnTop)
         {
             Topmost = true;
