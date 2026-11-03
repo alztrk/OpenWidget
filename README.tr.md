@@ -1,5 +1,9 @@
 # OpenWidget
 
+<p align="center">
+  <img src="Resources/Branding/openwidget-mark-light.svg" alt="OpenWidget logosu" width="112">
+</p>
+
 OpenWidget, Windows 10 ve Windows 11 için geliştirilmiş, masaüstünde doğrudan çalışan, modern akrilik arayüze sahip bağımsız bir sistem ve bilgi widget'ıdır. Sistem telemetrisi, hava durumu, kalıcı pano geçmişi, çoklu oturumlu medya denetimi, finans verileri ve donanım envanterini tek bir panelde bir araya getirir.
 
 [English README](README.md) · [Sürümler](https://github.com/alztrk/OpenWidget/releases)
@@ -21,8 +25,8 @@ OpenWidget, Windows 10 ve Windows 11 için geliştirilmiş, masaüstünde doğru
 
 ## Genel Özellikler
 
-* **Masaüstü Entegrasyonu:** Odak çalmadan masaüstü widget'ı olarak çalışır. Küçültüldüğünde görev çubuğu düğmesi görünmeye devam eder; pencere `Alt+Tab` listesinde de yer alır.
-* **Global Kısayol Tuşu (`Ctrl + Shift + W`):** Widget'ı küçültür veya geri yükler. Küçültüldüğünde görev çubuğu düğmesi uygulamanın çalıştığını gösterir.
+* **Masaüstü Entegrasyonu:** Odak çalmadan masaüstü widget'ı olarak çalışır. Uygulama göstergesini görev çubuğunda, bildirim alanında veya gizli kullanabilirsiniz.
+* **Global Kısayol Tuşu (`Ctrl + Shift + W`):** Widget'ı küçültür veya geri yükler; simge gizliyken de kullanılabilir.
 * **Çoklu Monitör ve Dinamik DPI Uyumluluğu:** Çoklu ekran kurulumlarında pencerenin hangi monitörde olduğunu Win32 `MonitorFromPoint` ile algılar, `WM_DPICHANGED` mesajlarını yakalayarak çözünürlük veya ölçek değiştiğinde ekrandan taşmayı önler.
 * **Tek Kopya (Single Instance) Koruması:** Sistem genelinde adlandırılmış `Mutex` koruması sayesinde uygulamanın kazara birden fazla kez açılması ve kaynak çakışmaları engellenir.
 * **Dinamik Çözünürlük ve Taşma Koruması:** Ekran çalışma alanı yüksekliğine göre otomatik azami boyut hesaplar. Çok sayıda kart açık olduğunda modern dikey kaydırma çubuğu devreye girer.

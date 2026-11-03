@@ -1,5 +1,9 @@
 # OpenWidget
 
+<p align="center">
+  <img src="Resources/Branding/openwidget-mark-light.svg" alt="OpenWidget logo" width="112">
+</p>
+
 OpenWidget is a standalone desktop system and information widget for Windows 10 and Windows 11. It combines system telemetry, weather, clipboard history, media controls, financial data, and hardware inventory in a modern acrylic interface.
 
 [Türkçe README](README.tr.md) · [Releases](https://github.com/alztrk/OpenWidget/releases)
@@ -8,8 +12,8 @@ OpenWidget is a standalone desktop system and information widget for Windows 10 
 
 ## Features
 
-- **Desktop integration:** Runs as a borderless desktop widget without stealing focus. Its taskbar button remains available while minimized; the window also appears in the Alt+Tab list.
-- **Global hotkey:** Press `Ctrl + Shift + W` to minimize or restore the widget.
+- **Desktop integration:** Runs as a borderless desktop widget without stealing focus. Choose a taskbar button, a notification-area icon, or no app indicator in Settings.
+- **Global hotkey:** Press `Ctrl + Shift + W` to minimize or restore the widget, including when its app indicator is hidden.
 - **Multi-monitor and DPI support:** Detects the active monitor and keeps the widget within the work area.
 - **Single-instance protection:** Prevents multiple copies from running at the same time.
 - **Responsive layout:** Adjusts its maximum height to the available display area and enables scrolling when needed.
