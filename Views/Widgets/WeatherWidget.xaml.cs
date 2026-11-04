@@ -9,7 +9,7 @@ public partial class WeatherWidget : UserControl
     public WeatherWidget()
     {
         InitializeComponent();
-        LocalizationService.LanguageChanged += OnLanguageChanged;
+        Loaded += (s, e) => LocalizationService.LanguageChanged += OnLanguageChanged;
         Unloaded += (s, e) => LocalizationService.LanguageChanged -= OnLanguageChanged;
     }
 

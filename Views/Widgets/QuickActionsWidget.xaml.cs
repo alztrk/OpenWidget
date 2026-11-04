@@ -10,6 +10,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Controls.Primitives;
 using System.Windows.Threading;
+using OpenWidget.Models;
 using OpenWidget.Services;
 
 namespace OpenWidget.Widgets;
@@ -19,6 +20,7 @@ public partial class QuickActionsWidget : UserControl
     private const int WmActivateApp = 0x001C;
     private readonly DispatcherTimer _saveNotesTimer;
     private bool _isLoadingNotes = false;
+    private int _notesLoadGeneration;
     private Window? _hostWindow;
     private HwndSource? _hwndSource;
     private MasterVolumeModel? _masterVolumeModel;
@@ -27,7 +29,7 @@ public partial class QuickActionsWidget : UserControl
     public QuickActionsWidget()
     {
         InitializeComponent();
-        LocalizationService.LanguageChanged += OnLanguageChanged;
+        Loaded += (s, e) => LocalizationService.LanguageChanged += OnLanguageChanged;
 
         _saveNotesTimer = new DispatcherTimer
         {
@@ -38,9 +40,16 @@ public partial class QuickActionsWidget : UserControl
         Unloaded += (s, e) =>
         {
             LocalizationService.LanguageChanged -= OnLanguageChanged;
+            _notesLoadGeneration++;
+            bool hasPendingSave = _saveNotesTimer.IsEnabled;
             _saveNotesTimer.Stop();
             DetachOutsideClickHandlers();
             PopupVolumeMixer.IsOpen = false;
+            PopupScratchpad.IsOpen = false;
+            if (hasPendingSave)
+            {
+                _ = ScratchpadService.SaveAsync(TxtScratchpad.Text);
+            }
             DisposeAudioMixerState();
         };
     }
@@ -54,18 +63,47 @@ public partial class QuickActionsWidget : UserControl
 
     private async Task LoadNotesAsync()
     {
+        int generation = ++_notesLoadGeneration;
+        var slot = Tag as WidgetSlot;
         try
         {
             _isLoadingNotes = true;
-            var text = await ScratchpadService.LoadAsync();
+            var cachedText = slot?.ScratchpadText;
+            var diskText = cachedText ?? await ScratchpadService.LoadAsync();
+            bool editedWhileLoading = cachedText == null && slot?.ScratchpadText != null;
+            var text = slot?.ScratchpadText ?? diskText;
+            if (slot?.ScratchpadText is { } changedText)
+            {
+                text = changedText;
+            }
+            if (!IsLoaded || generation != _notesLoadGeneration)
+            {
+                return;
+            }
+
+            if (slot != null)
+            {
+                slot.ScratchpadText = text;
+            }
             TxtScratchpad.Text = text;
             TxtNotesPlaceholder.Visibility = string.IsNullOrEmpty(text) ? Visibility.Visible : Visibility.Collapsed;
             TxtCharCount.Text = $"{text.Length} karakter";
+            if (editedWhileLoading)
+            {
+                _saveNotesTimer.Stop();
+                _saveNotesTimer.Start();
+            }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Scratchpad load error: {ex.Message}");
+        }
         finally
         {
-            _isLoadingNotes = false;
+            if (generation == _notesLoadGeneration)
+            {
+                _isLoadingNotes = false;
+            }
         }
     }
 
@@ -211,6 +249,11 @@ public partial class QuickActionsWidget : UserControl
 
     private void TxtScratchpad_TextChanged(object sender, TextChangedEventArgs e)
     {
+        if (Tag is WidgetSlot slot)
+        {
+            slot.ScratchpadText = TxtScratchpad.Text;
+        }
+
         if (TxtNotesPlaceholder != null)
         {
             TxtNotesPlaceholder.Visibility = string.IsNullOrEmpty(TxtScratchpad.Text) ? Visibility.Visible : Visibility.Collapsed;

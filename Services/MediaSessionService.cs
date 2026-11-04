@@ -42,6 +42,7 @@ public class MediaSessionService : IDisposable
     private int _refreshInProgress;
     private int _refreshPending;
     private int _thumbnailRefreshPending;
+    private int _widgetActive;
 
     private GlobalSystemMediaTransportControlsSessionManager? _manager;
     private GlobalSystemMediaTransportControlsSession? _currentSession;
@@ -64,6 +65,32 @@ public class MediaSessionService : IDisposable
     public MediaTrackInfo CurrentTrack => _currentTrack;
     public int SessionCount => _allSessions?.Count ?? 0;
     public int CurrentSessionIndex => _sessionIndex + 1;
+
+    public void SetWidgetActive(bool isActive)
+    {
+        int value = isActive ? 1 : 0;
+        if (Interlocked.Exchange(ref _widgetActive, value) == value)
+        {
+            return;
+        }
+
+        if (isActive)
+        {
+            _ = RefreshMediaInfoAsync(refreshThumbnail: true);
+        }
+        else if (_currentTrack.Thumbnail != null)
+        {
+            _currentTrack = _currentTrack with { Thumbnail = null };
+            MediaChanged?.Invoke(_currentTrack);
+        }
+
+        if (!isActive)
+        {
+            _durationCts?.Cancel();
+            _durationCts?.Dispose();
+            _durationCts = null;
+        }
+    }
 
     public void SwitchToNextSession()
     {
@@ -319,8 +346,11 @@ public class MediaSessionService : IDisposable
 
                 string trackKey = $"{props.Title}|{props.Artist}";
                 bool trackChanged = trackKey != _activeTrackKey;
-                BitmapSource? thumbnail = !trackChanged && !refreshThumbnail ? _currentTrack.Thumbnail : null;
-                if ((trackChanged || refreshThumbnail) && props.Thumbnail != null)
+                bool widgetActive = Volatile.Read(ref _widgetActive) != 0;
+                BitmapSource? thumbnail = widgetActive && !trackChanged && !refreshThumbnail
+                    ? _currentTrack.Thumbnail
+                    : null;
+                if (widgetActive && (trackChanged || refreshThumbnail) && props.Thumbnail != null)
                 {
                     try
                     {
@@ -339,6 +369,10 @@ public class MediaSessionService : IDisposable
                 }
 
                 if (!ReferenceEquals(session, _currentSession)) return;
+                if (Volatile.Read(ref _widgetActive) == 0)
+                {
+                    thumbnail = null;
+                }
 
                 var timeline = session.GetTimelineProperties();
                 if (timeline != null && timeline.EndTime > TimeSpan.Zero)
@@ -362,7 +396,10 @@ public class MediaSessionService : IDisposable
                     else
                     {
                         _trackDuration = TimeSpan.Zero;
-                        ResolveWebMediaDurationAsync(props.Title, props.Artist, trackKey);
+                        if (widgetActive)
+                        {
+                            ResolveWebMediaDurationAsync(props.Title, props.Artist, trackKey);
+                        }
                     }
                 }
                 else if (_trackDuration <= TimeSpan.Zero)
@@ -373,7 +410,10 @@ public class MediaSessionService : IDisposable
                     }
                     else
                     {
-                        ResolveWebMediaDurationAsync(props.Title, props.Artist, trackKey);
+                        if (widgetActive)
+                        {
+                            ResolveWebMediaDurationAsync(props.Title, props.Artist, trackKey);
+                        }
                     }
                 }
 
@@ -508,6 +548,11 @@ public class MediaSessionService : IDisposable
 
     private void ResolveWebMediaDurationAsync(string title, string artist, string trackKey)
     {
+        if (Volatile.Read(ref _widgetActive) == 0)
+        {
+            return;
+        }
+
         try
         {
             _durationCts?.Cancel();
@@ -519,6 +564,11 @@ public class MediaSessionService : IDisposable
             {
                 try
                 {
+                    if (Volatile.Read(ref _widgetActive) == 0)
+                    {
+                        return;
+                    }
+
                     var dur = await FetchDurationFromWebAsync(title, artist, token);
                     if (dur > TimeSpan.Zero)
                     {

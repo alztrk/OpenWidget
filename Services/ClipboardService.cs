@@ -111,8 +111,8 @@ public class ClipboardService
                     var img = Clipboard.GetImage();
                     if (img != null)
                     {
-                        var base64 = EncodeThumbnail(img);
-                        AddOrPromoteItem("image://" + Guid.NewGuid().ToString("N"), "Image", $"Görsel ({img.PixelWidth}x{img.PixelHeight})", base64);
+                        var imageData = EncodeThumbnail(img);
+                        AddOrPromoteItemWithImageData("image://" + Guid.NewGuid().ToString("N"), "Image", $"Görsel ({img.PixelWidth}x{img.PixelHeight})", imageData);
                         break;
                     }
                 }
@@ -145,6 +145,18 @@ public class ClipboardService
     }
 
     public void AddOrPromoteItem(string content, string itemType = "Text", string? customPreview = null, string? imageBase64 = null)
+    {
+        byte[]? imageData = null;
+        if (!string.IsNullOrEmpty(imageBase64))
+        {
+            var image = new ClipboardItem { ImageBase64 = imageBase64 };
+            imageData = image.ImageData;
+        }
+
+        AddOrPromoteItemWithImageData(content, itemType, customPreview, imageData);
+    }
+
+    private void AddOrPromoteItemWithImageData(string content, string itemType, string? customPreview, byte[]? imageData)
     {
         Application.Current?.Dispatcher?.Invoke(() =>
         {
@@ -181,7 +193,7 @@ public class ClipboardService
                     FullText = content,
                     PreviewText = preview,
                     ItemType = itemType,
-                    ImageBase64 = imageBase64,
+                    ImageData = imageData,
                     Timestamp = DateTime.Now
                 };
 
@@ -207,10 +219,15 @@ public class ClipboardService
         {
             _isSelfCopy = true;
 
-            if (item.ItemType == "Image" && !string.IsNullOrEmpty(item.ImageBase64))
+            if (item.ItemType == "Image")
             {
-                var bytes = Convert.FromBase64String(item.ImageBase64);
-                using var ms = new MemoryStream(bytes);
+                if (item.ImageData is not { Length: > 0 } imageData)
+                {
+                    _isSelfCopy = false;
+                    return;
+                }
+
+                using var ms = new MemoryStream(imageData);
                 var bmp = new BitmapImage();
                 bmp.BeginInit();
                 bmp.StreamSource = ms;
@@ -319,7 +336,7 @@ public class ClipboardService
         catch { }
     }
 
-    private static string? EncodeThumbnail(BitmapSource bmp)
+    private static byte[]? EncodeThumbnail(BitmapSource bmp)
     {
         try
         {
@@ -333,7 +350,7 @@ public class ClipboardService
 
             using var ms = new MemoryStream();
             encoder.Save(ms);
-            return Convert.ToBase64String(ms.ToArray());
+            return ms.ToArray();
         }
         catch
         {

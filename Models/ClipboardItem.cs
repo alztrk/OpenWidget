@@ -12,7 +12,39 @@ public class ClipboardItem : INotifyPropertyChanged
     public string FullText { get; set; } = string.Empty;
     public string PreviewText { get; set; } = string.Empty;
     public string ItemType { get; set; } = "Text"; // "Text", "Image", "File"
-    public string? ImageBase64 { get; set; }
+    private string? _invalidImageBase64;
+
+    [JsonPropertyName("ImageBase64")]
+    [JsonConverter(typeof(Base64ByteArrayJsonConverter))]
+    public byte[]? ImageData { get; set; }
+
+    [JsonIgnore]
+    public string? ImageBase64
+    {
+        get => ImageData != null ? Convert.ToBase64String(ImageData) : _invalidImageBase64;
+        set
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                ImageData = null;
+                _invalidImageBase64 = null;
+                return;
+            }
+
+            var bytes = new byte[(value.Length / 4 * 3) + 2];
+            if (Convert.TryFromBase64String(value, bytes, out var bytesWritten))
+            {
+                Array.Resize(ref bytes, bytesWritten);
+                ImageData = bytes;
+                _invalidImageBase64 = null;
+            }
+            else
+            {
+                ImageData = null;
+                _invalidImageBase64 = value;
+            }
+        }
+    }
     public DateTime Timestamp { get; set; } = DateTime.Now;
     public string FormattedTime => Timestamp.ToString("HH:mm");
 
@@ -25,7 +57,8 @@ public class ClipboardItem : INotifyPropertyChanged
     };
 
     [JsonIgnore]
-    public bool IsImage => ItemType == "Image" && !string.IsNullOrEmpty(ImageBase64);
+    public bool IsImage => ItemType == "Image"
+        && ((ImageData?.Length ?? 0) > 0 || !string.IsNullOrEmpty(_invalidImageBase64));
 
     [JsonIgnore]
     public bool IsJustCopied

@@ -70,6 +70,36 @@ public static class AnimationHelper
         }
     }
 
+    public static void SetAccordionState(FrameworkElement content, FrameworkElement? arrow, bool isExpanded)
+    {
+        if (content.LayoutTransform is not ScaleTransform scale)
+        {
+            scale = new ScaleTransform(1, 1);
+            content.LayoutTransform = scale;
+        }
+
+        scale.BeginAnimation(ScaleTransform.ScaleYProperty, null);
+        scale.ScaleY = isExpanded ? 1 : 0;
+        content.BeginAnimation(UIElement.OpacityProperty, null);
+        content.Opacity = isExpanded ? 1 : 0;
+        content.Visibility = isExpanded ? Visibility.Visible : Visibility.Collapsed;
+
+        if (arrow == null)
+        {
+            return;
+        }
+
+        if (arrow.RenderTransform is not RotateTransform rotate)
+        {
+            arrow.RenderTransformOrigin = new Point(0.5, 0.5);
+            rotate = new RotateTransform();
+            arrow.RenderTransform = rotate;
+        }
+
+        rotate.BeginAnimation(RotateTransform.AngleProperty, null);
+        rotate.Angle = isExpanded ? 0 : -90;
+    }
+
     public static void AnimateWindowEntrance(Window window, FrameworkElement container, double targetOpacity = 1.0)
     {
         if (container.RenderTransform is not TranslateTransform translate)

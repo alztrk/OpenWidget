@@ -17,6 +17,7 @@ public partial class MediaWidget : UserControl
     private bool _isUserAdjustingVolume = false;
     private DateTime _lastUserVolumeAdjustTime = DateTime.MinValue;
     private readonly DispatcherTimer _volumeSyncTimer;
+    private MainWindow? _mainWindow;
 
     public MediaWidget()
     {
@@ -30,17 +31,72 @@ public partial class MediaWidget : UserControl
         };
         _volumeSyncTimer.Tick += (s, e) => UpdateMediaVolumeUI();
         IsVisibleChanged += MediaWidget_IsVisibleChanged;
-        Unloaded += (s, e) => _volumeSyncTimer.Stop();
     }
 
-    public void AttachService(MediaSessionService service)
+    private void UserControl_Loaded(object sender, RoutedEventArgs e)
     {
+        _mainWindow = Window.GetWindow(this) as MainWindow;
+        if (_mainWindow != null)
+        {
+            _mainWindow.MediaServiceChanged += MainWindow_MediaServiceChanged;
+            AttachService(_mainWindow.MediaService);
+            _ = _mainWindow.EnsureMediaServiceInitializedAsync();
+        }
+    }
+
+    private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+    {
+        if (_mainWindow != null)
+        {
+            _mainWindow.MediaServiceChanged -= MainWindow_MediaServiceChanged;
+            _mainWindow = null;
+        }
+
+        DetachService();
+        _volumeSyncTimer.Stop();
+    }
+
+    private void MainWindow_MediaServiceChanged(MediaSessionService? service)
+    {
+        AttachService(service);
+    }
+
+    private void AttachService(MediaSessionService? service)
+    {
+        if (ReferenceEquals(_service, service))
+        {
+            return;
+        }
+
+        DetachService();
+        if (service == null)
+        {
+            return;
+        }
+
         _service = service;
-        _service.MediaChanged += OnMediaChanged;
-        _service.PositionChanged += OnPositionChanged;
-        _service.SessionsUpdated += OnSessionsUpdated;
-        UpdateTrackInfo(_service.CurrentTrack);
+        service.MediaChanged += OnMediaChanged;
+        service.PositionChanged += OnPositionChanged;
+        service.SessionsUpdated += OnSessionsUpdated;
+        service.SetWidgetActive(true);
+        UpdateTrackInfo(service.CurrentTrack);
         OnSessionsUpdated();
+    }
+
+    private void DetachService()
+    {
+        if (_service == null)
+        {
+            return;
+        }
+
+        _service.MediaChanged -= OnMediaChanged;
+        _service.PositionChanged -= OnPositionChanged;
+        _service.SessionsUpdated -= OnSessionsUpdated;
+        _service.SetWidgetActive(false);
+        _service = null;
+        ImgThumbnail.Source = null;
+        ImgThumbnail.Visibility = Visibility.Collapsed;
     }
 
     private void OnSessionsUpdated()

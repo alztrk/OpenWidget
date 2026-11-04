@@ -1,8 +1,10 @@
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -89,6 +91,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private static extern bool ShowWindow(IntPtr hWnd, int command);
 
     private HardwareConfig _config = new();
+    private readonly Dictionary<WidgetKind, WidgetSlot> _widgetSlots = Enum.GetValues<WidgetKind>()
+        .ToDictionary(kind => kind, kind => new WidgetSlot(kind));
     private readonly IConfigStore _configStore = new JsonConfigStore();
     private HardwareSpecs _specs = new();
     private TelemetrySpecs _telemetry = new();
@@ -104,6 +108,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private WeatherService? _weatherService;
     private MediaSessionService? _mediaService;
     private readonly ClipboardService _clipboardService = new();
+    private readonly SemaphoreSlim _hardwareRefreshLock = new(1, 1);
+    private readonly SemaphoreSlim _mediaInitializationLock = new(1, 1);
+    private bool _hasHardwareScanCompleted;
+    private bool _isClosed;
 
     private DispatcherTimer? _telemetryTimer;
     private DispatcherTimer? _financeTimer;
@@ -111,14 +119,19 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private DispatcherTimer? _contextMenuTimer;
     private TrayIconService? _trayIconService;
     private Windows.SettingsWindow? _settingsWindow;
+    private ScrollViewer? _mainScrollViewer;
 
     private bool _isGamingThrottled = false;
     private int _gamingThrottleCounter = 0;
     private bool? _toggleHotKeyRegistered;
+    private bool _isOpeningSettings;
 
     public event PropertyChangedEventHandler? PropertyChanged;
+    internal event Action<MediaSessionService?>? MediaServiceChanged;
 
+    public ObservableCollection<WidgetSlot> WidgetSlots { get; } = new();
     public ClipboardService Clipboard => _clipboardService;
+    internal MediaSessionService? MediaService => _mediaService;
     public System.Collections.ObjectModel.ObservableCollection<ClipboardItem> ClipboardItems => _clipboardService.Items;
     public WeatherDetailsModel Weather => _weatherService?.GetDetails() ?? new WeatherDetailsModel();
     public string CompactWeatherText => _weatherService != null && !string.IsNullOrWhiteSpace(_weatherService.GetDetails().City)
@@ -243,6 +256,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         // Attach Win32 Hook to prevent window from crossing screen boundaries
         var source = HwndSource.FromHwnd(handle);
         source?.AddHook(WndProc);
+
+        PositionWidget();
     }
 
     private void ToggleWidgetVisibility()
@@ -362,7 +377,51 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         SyncMenuCheckboxes();
 
         NotifyAllWidgetVisibilities();
+        SyncWidgetSlots();
         ApplyAppIndicatorMode();
+    }
+
+    private void SyncWidgetSlots()
+    {
+        bool isFullView = !_config.Widget.IsCompact;
+        SetWidgetSlot(WidgetKind.Weather, isFullView && _config.Widgets.ShowWeather);
+        SetWidgetSlot(WidgetKind.Telemetry, isFullView && _config.Widgets.ShowTelemetry);
+        SetWidgetSlot(WidgetKind.Finance, isFullView && _config.Widgets.ShowFinance);
+        SetWidgetSlot(WidgetKind.Media, isFullView && _config.Widgets.ShowMedia);
+        SetWidgetSlot(WidgetKind.Clipboard, isFullView && _config.Widgets.ShowClipboard);
+        SetWidgetSlot(WidgetKind.Hardware, isFullView && _config.Widgets.ShowHardware);
+        SetWidgetSlot(WidgetKind.QuickActions, isFullView && _config.Widgets.ShowQuickActions);
+
+        if (!isFullView || !_config.Widgets.ShowMedia)
+        {
+            ReleaseMediaService();
+        }
+    }
+
+    private void SetWidgetSlot(WidgetKind kind, bool isVisible)
+    {
+        var slot = _widgetSlots[kind];
+        var existingIndex = WidgetSlots.IndexOf(slot);
+        if (!isVisible)
+        {
+            if (existingIndex >= 0)
+            {
+                WidgetSlots.RemoveAt(existingIndex);
+            }
+            return;
+        }
+
+        if (existingIndex >= 0)
+        {
+            return;
+        }
+
+        var insertIndex = 0;
+        while (insertIndex < WidgetSlots.Count && (int)WidgetSlots[insertIndex].Kind < (int)kind)
+        {
+            insertIndex++;
+        }
+        WidgetSlots.Insert(insertIndex, slot);
     }
 
     private void ApplyAppIndicatorMode()
@@ -566,6 +625,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
+        ResolveMainScrollViewer();
         Visibility = Visibility.Visible;
         PositionWidget();
         ApplyLockState();
@@ -602,19 +662,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         _financeTimer.Start();
         _ = RefreshFinanceLiveAsync();
 
-        // 3. Hardware Specs
-        await RefreshHardwareSpecsAsync();
-
-        // 4. Media Controller Service
-        try
-        {
-            _mediaService = new MediaSessionService();
-            await _mediaService.InitializeAsync();
-            MediaControlWidget.AttachService(_mediaService);
-        }
-        catch { }
-
-        // 5. Windows Clipboard Service
+        // Windows Clipboard Service
         try
         {
             var handle = new WindowInteropHelper(this).Handle;
@@ -695,6 +743,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     public void PositionWidget()
     {
+        ResolveMainScrollViewer();
         Width = 360;
 
         Rect workArea = (_config.Widget.CustomLeft.HasValue && _config.Widget.CustomTop.HasValue)
@@ -706,10 +755,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         double maxAllowedHeight = Math.Max(380, workArea.Height - (topMargin * 2));
         MaxHeight = maxAllowedHeight;
 
-        if (MainScrollViewer != null)
+        if (_mainScrollViewer != null)
         {
             // Reserve space for MasterBorder vertical padding (24px) + pinned HeaderWidget (~38px)
-            MainScrollViewer.MaxHeight = Math.Max(200, maxAllowedHeight - 65);
+            _mainScrollViewer.MaxHeight = Math.Max(200, maxAllowedHeight - 65);
         }
 
         double h = ActualHeight > 0 ? ActualHeight : 450;
@@ -733,6 +782,17 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
+    private void ResolveMainScrollViewer()
+    {
+        if (_mainScrollViewer != null || WidgetItemsControl == null)
+        {
+            return;
+        }
+
+        WidgetItemsControl.ApplyTemplate();
+        _mainScrollViewer = WidgetItemsControl.Template?.FindName("MainScrollViewer", WidgetItemsControl) as ScrollViewer;
+    }
+
     private void Window_ContentRendered(object? sender, EventArgs e)
     {
         PositionWidget();
@@ -754,9 +814,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             }
         }
 
-        if (MainScrollViewer != null && MainScrollViewer.ComputedVerticalScrollBarVisibility == Visibility.Visible)
+        if (_mainScrollViewer != null && _mainScrollViewer.ComputedVerticalScrollBarVisibility == Visibility.Visible)
         {
-            MainScrollViewer.ScrollToVerticalOffset(MainScrollViewer.VerticalOffset - (e.Delta * 0.4));
+            _mainScrollViewer.ScrollToVerticalOffset(_mainScrollViewer.VerticalOffset - (e.Delta * 0.4));
             e.Handled = true;
         }
     }
@@ -793,6 +853,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             _config.Widget.IsCompact = !_config.Widget.IsCompact;
             SaveConfig();
+            SyncWidgetSlots();
             SyncMenuCheckboxes();
             NotifyCompactState();
 
@@ -911,7 +972,30 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
-    private async Task RefreshHardwareSpecsAsync()
+    internal Task EnsureHardwareSpecsLoadedAsync()
+    {
+        return RefreshHardwareSpecsAsync(force: false);
+    }
+
+    private async Task RefreshHardwareSpecsAsync(bool force = true)
+    {
+        await _hardwareRefreshLock.WaitAsync();
+        try
+        {
+            if (_hasHardwareScanCompleted && !force)
+            {
+                return;
+            }
+
+            _hasHardwareScanCompleted = await ScanHardwareSpecsAsync();
+        }
+        finally
+        {
+            _hardwareRefreshLock.Release();
+        }
+    }
+
+    private async Task<bool> ScanHardwareSpecsAsync()
     {
         try
         {
@@ -929,11 +1013,61 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             var scanner = new HardwareScanner(_config, _priceService);
             var result = await Task.Run(() => scanner.Scan());
             Specs = result;
+            return true;
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Hardware scan error: {ex.Message}");
+            return false;
         }
+    }
+
+    internal async Task EnsureMediaServiceInitializedAsync()
+    {
+        if (_mediaService != null || _isClosed)
+        {
+            return;
+        }
+
+        await _mediaInitializationLock.WaitAsync();
+        try
+        {
+            if (_mediaService != null || _isClosed || !_config.Widgets.ShowMedia || _config.Widget.IsCompact)
+            {
+                return;
+            }
+
+            var service = new MediaSessionService();
+            await service.InitializeAsync();
+            if (_isClosed || !_config.Widgets.ShowMedia || _config.Widget.IsCompact)
+            {
+                service.Dispose();
+                return;
+            }
+
+            _mediaService = service;
+            MediaServiceChanged?.Invoke(service);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Media service initialization error: {ex.Message}");
+        }
+        finally
+        {
+            _mediaInitializationLock.Release();
+        }
+    }
+
+    private void ReleaseMediaService()
+    {
+        if (_mediaService == null)
+        {
+            return;
+        }
+
+        MediaServiceChanged?.Invoke(null);
+        _mediaService.Dispose();
+        _mediaService = null;
     }
 
     // Interactive Widget Visibility Toggles
@@ -977,6 +1111,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         _config.Widgets.ShowHardware = !_config.Widgets.ShowHardware;
         SaveAndNotifyLayout(nameof(IsHardwareVisible), MenuHardware, _config.Widgets.ShowHardware);
+        if (_config.Widgets.ShowHardware)
+        {
+            _ = EnsureHardwareSpecsLoadedAsync();
+        }
     }
 
     private void MenuQuickActions_Click(object sender, RoutedEventArgs e)
@@ -1014,6 +1152,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void SaveAndNotifyLayout(string propertyName, MenuItem? menuItem, bool isChecked)
     {
         SaveConfig();
+        SyncWidgetSlots();
         if (menuItem != null) menuItem.IsChecked = isChecked;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
@@ -1094,7 +1233,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         OpenSettings();
     }
 
-    private void OpenSettings()
+    private async void OpenSettings()
     {
         if (_settingsWindow is { IsVisible: true })
         {
@@ -1102,23 +1241,46 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             return;
         }
 
-        if (WindowState == System.Windows.WindowState.Minimized)
+        if (_isOpeningSettings)
         {
-            ShowWidget();
+            return;
         }
 
-        var settingsWin = new Windows.SettingsWindow(_config, Specs, OnSettingsSaved);
-        _settingsWindow = settingsWin;
-        settingsWin.ShowInTaskbar = _config.Widget.AppIndicatorMode == AppIndicatorModes.Taskbar;
-        settingsWin.Closed += (_, _) =>
+        _isOpeningSettings = true;
+        try
         {
-            if (ReferenceEquals(_settingsWindow, settingsWin))
+            if (WindowState == System.Windows.WindowState.Minimized)
             {
-                _settingsWindow = null;
+                ShowWidget();
             }
-        };
-        settingsWin.Owner = this;
-        settingsWin.ShowDialog();
+
+            if (!_hasHardwareScanCompleted)
+            {
+                await RefreshHardwareSpecsAsync(force: false);
+            }
+
+            if (_isClosed)
+            {
+                return;
+            }
+
+            var settingsWin = new Windows.SettingsWindow(_config, Specs, OnSettingsSaved);
+            _settingsWindow = settingsWin;
+            settingsWin.ShowInTaskbar = _config.Widget.AppIndicatorMode == AppIndicatorModes.Taskbar;
+            settingsWin.Closed += (_, _) =>
+            {
+                if (ReferenceEquals(_settingsWindow, settingsWin))
+                {
+                    _settingsWindow = null;
+                }
+            };
+            settingsWin.Owner = this;
+            settingsWin.ShowDialog();
+        }
+        finally
+        {
+            _isOpeningSettings = false;
+        }
     }
 
     private void OnSettingsSaved(HardwareConfig updated)
@@ -1138,6 +1300,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         ApplyLockState();
         ApplyDesktopPinning();
         NotifyCompactState();
+        SyncWidgetSlots();
 
         UpdateContextMenuTexts();
         SyncMenuCheckboxes();
@@ -1155,7 +1318,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         RefreshTelemetry();
         _ = RefreshFinanceLiveAsync();
-        _ = RefreshHardwareSpecsAsync();
+        if (_config.Widgets.ShowHardware)
+        {
+            _ = RefreshHardwareSpecsAsync(force: true);
+        }
     }
 
     private async void MenuRefresh_Click(object sender, RoutedEventArgs e)
@@ -1164,7 +1330,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         RefreshTelemetry();
         _ = RefreshFinanceLiveAsync();
         _priceService = new PriceService(_config, _configPath);
-        await RefreshHardwareSpecsAsync();
+        await RefreshHardwareSpecsAsync(force: true);
     }
 
     private void MenuEditPrices_Click(object sender, RoutedEventArgs e)
@@ -1207,6 +1373,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     protected override void OnClosed(EventArgs e)
     {
+        _isClosed = true;
         var handle = new WindowInteropHelper(this).Handle;
         if (handle != IntPtr.Zero)
         {
@@ -1220,7 +1387,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         _financeTimer?.Stop();
         _contextMenuTimer?.Stop();
         _telemetryService?.Dispose();
+        MediaServiceChanged?.Invoke(null);
         _mediaService?.Dispose();
+        _mediaService = null;
         try { _clipboardService.Cleanup(handle); } catch { }
         _trayIconService?.Dispose();
         _trayIconService = null;

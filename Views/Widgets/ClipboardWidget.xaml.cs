@@ -15,28 +15,39 @@ public partial class ClipboardWidget : UserControl
     public ClipboardWidget()
     {
         InitializeComponent();
-        LocalizationService.LanguageChanged += OnLanguageChanged;
+        Loaded += (s, e) => LocalizationService.LanguageChanged += OnLanguageChanged;
         DataContextChanged += ClipboardWidget_DataContextChanged;
         Unloaded += (s, e) =>
         {
             LocalizationService.LanguageChanged -= OnLanguageChanged;
-            if (_clipboardService != null)
-            {
-                _clipboardService.Items.CollectionChanged -= Items_CollectionChanged;
-            }
+            DetachClipboardService();
         };
     }
 
     private void ClipboardWidget_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
-        if (DataContext is MainWindow mainWin)
+        if (IsLoaded)
         {
-            _clipboardService = mainWin.Clipboard;
-            if (_clipboardService != null)
-            {
-                _clipboardService.Items.CollectionChanged += Items_CollectionChanged;
-                UpdateListState();
-            }
+            AttachClipboardService();
+        }
+    }
+
+    private void AttachClipboardService()
+    {
+        DetachClipboardService();
+        _clipboardService = DataContext is MainWindow mainWindow ? mainWindow.Clipboard : null;
+        if (_clipboardService != null)
+        {
+            _clipboardService.Items.CollectionChanged += Items_CollectionChanged;
+        }
+        UpdateListState();
+    }
+
+    private void DetachClipboardService()
+    {
+        if (_clipboardService != null)
+        {
+            _clipboardService.Items.CollectionChanged -= Items_CollectionChanged;
         }
     }
 
@@ -47,15 +58,7 @@ public partial class ClipboardWidget : UserControl
 
     private void UserControl_Loaded(object sender, RoutedEventArgs e)
     {
-        if (_clipboardService == null && Application.Current.MainWindow is MainWindow mainWin)
-        {
-            _clipboardService = mainWin.Clipboard;
-            if (_clipboardService != null)
-            {
-                _clipboardService.Items.CollectionChanged -= Items_CollectionChanged;
-                _clipboardService.Items.CollectionChanged += Items_CollectionChanged;
-            }
-        }
+        AttachClipboardService();
         UpdateTexts();
         UpdateListState();
     }
