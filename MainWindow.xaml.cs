@@ -806,10 +806,19 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             var parent = dep;
             while (parent != null && parent != MasterBorder)
             {
-                if (parent is System.Windows.Controls.Primitives.RangeBase || parent is System.Windows.Controls.ComboBox)
+                if (parent is System.Windows.Controls.Primitives.RangeBase ||
+                    parent is System.Windows.Controls.ComboBox)
                 {
                     return;
                 }
+
+                if (parent is ScrollViewer childScrollViewer &&
+                    childScrollViewer != _mainScrollViewer &&
+                    (childScrollViewer.ComputedVerticalScrollBarVisibility == Visibility.Visible || childScrollViewer.ScrollableHeight > 0))
+                {
+                    return;
+                }
+
                 parent = VisualTreeHelper.GetParent(parent);
             }
         }

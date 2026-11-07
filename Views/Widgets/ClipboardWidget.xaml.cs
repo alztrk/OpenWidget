@@ -83,6 +83,7 @@ public partial class ClipboardWidget : UserControl
     {
         int count = _clipboardService?.Items.Count ?? 0;
         TxtEmptyState.Visibility = count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        ClipboardScrollViewer.Visibility = count > 0 ? Visibility.Visible : Visibility.Collapsed;
         ListClipboard.Visibility = count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
         string unit = count == 1

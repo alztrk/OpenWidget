@@ -58,4 +58,74 @@ public class ClipboardModelTests
         Assert.True(fired);
         Assert.True(item.IsJustCopied);
     }
+
+    [Fact]
+    public void ClipboardWidget_ContainsScrollViewerWithExpectedProperties()
+    {
+        RunInSta(() =>
+        {
+            var widget = new Widgets.ClipboardWidget();
+            var scrollViewer = widget.FindName("ClipboardScrollViewer") as System.Windows.Controls.ScrollViewer;
+
+            Assert.NotNull(scrollViewer);
+            Assert.Equal(System.Windows.Controls.ScrollBarVisibility.Auto, scrollViewer.VerticalScrollBarVisibility);
+            Assert.Equal(System.Windows.Controls.ScrollBarVisibility.Disabled, scrollViewer.HorizontalScrollBarVisibility);
+        });
+    }
+
+    [Fact]
+    public void ClipboardWidget_LayoutAndCardStructure_ValidatesSuccessfully()
+    {
+        RunInSta(() =>
+        {
+            var widget = new Widgets.ClipboardWidget();
+            var grid = widget.Content as System.Windows.Controls.Grid;
+
+            Assert.NotNull(grid);
+            Assert.Equal(2, grid.RowDefinitions.Count);
+            Assert.True(grid.RowDefinitions[0].Height.IsAuto);
+            Assert.True(grid.RowDefinitions[1].Height.IsStar);
+
+            var scrollViewer = widget.FindName("ClipboardScrollViewer") as System.Windows.Controls.ScrollViewer;
+            Assert.NotNull(scrollViewer);
+            Assert.False(scrollViewer.Focusable);
+        });
+    }
+
+    private static void RunInSta(Action action)
+    {
+        Exception? exception = null;
+        var thread = new System.Threading.Thread(() =>
+        {
+            try
+            {
+                EnsureApplicationResources();
+                action();
+            }
+            catch (Exception ex) { exception = ex; }
+        });
+        thread.SetApartmentState(System.Threading.ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+        if (exception != null)
+        {
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(exception).Throw();
+        }
+    }
+
+    private static void EnsureApplicationResources()
+    {
+        if (System.Windows.Application.Current == null)
+        {
+            var app = new System.Windows.Application();
+            app.Resources.MergedDictionaries.Add(new System.Windows.ResourceDictionary
+            {
+                Source = new Uri("pack://application:,,,/OpenWidget;component/Resources/Styles/Theme.xaml", UriKind.Absolute)
+            });
+            app.Resources.MergedDictionaries.Add(new System.Windows.ResourceDictionary
+            {
+                Source = new Uri("pack://application:,,,/OpenWidget;component/Resources/Styles/Components.xaml", UriKind.Absolute)
+            });
+        }
+    }
 }
