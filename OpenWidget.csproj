@@ -9,6 +9,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>OpenWidget</AssemblyName>
     <RootNamespace>OpenWidget</RootNamespace>
+    <Version>1.5.0</Version>
     <ApplicationIcon>Resources\Branding\openwidget.ico</ApplicationIcon>
   </PropertyGroup>
 

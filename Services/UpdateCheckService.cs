@@ -17,7 +17,7 @@ public record UpdateCheckResult(
 
 public static class UpdateCheckService
 {
-    public const string CurrentVersion = "1.4.5";
+    public const string CurrentVersion = "1.5.0";
     private const string GitHubReleasesApi = "https://api.github.com/repos/alztrk/OpenWidget/releases/latest";
     public const string ProjectUrl = "https://github.com/alztrk/OpenWidget";
 
