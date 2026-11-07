@@ -82,7 +82,7 @@
                 </Button>
                 <TextBlock x:Name="TxtSessionSource"
                            Text="Kaynak"
-                           FontSize="10"
+                           FontSize="{DynamicResource FontSizeBadge}"
                            FontWeight="Medium"
                            Foreground="{StaticResource AccentBrush}"
                            HorizontalAlignment="Center"
@@ -124,13 +124,13 @@
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
                     <TextBlock x:Name="TxtTitle"
                                Text="Medya Oynatılıyor"
-                               FontSize="13.5"
+                               FontSize="{DynamicResource FontSizeTitle}"
                                FontWeight="SemiBold"
                                Foreground="{StaticResource TextPrimaryBrush}"
                                TextTrimming="CharacterEllipsis" />
                     <TextBlock x:Name="TxtArtist"
                                Text="Bilinmeyen Sanatçı"
-                               FontSize="11.5"
+                               FontSize="{DynamicResource FontSizeBodyMedium}"
                                Foreground="{StaticResource TextSecondaryBrush}"
                                TextTrimming="CharacterEllipsis"
                                Margin="0,2.5,0,0" />
@@ -209,7 +209,7 @@
                 <DockPanel Grid.Row="1" Margin="1,2.5,1,0">
                     <TextBlock x:Name="TxtCurrentTime"
                                Text="00:00"
-                               FontSize="11"
+                               FontSize="{DynamicResource FontSizeBody}"
                                FontWeight="Medium"
                                FontFamily="Roboto, Consolas, Segoe UI"
                                Foreground="{StaticResource TextSecondaryBrush}"
@@ -218,7 +218,7 @@
                                DockPanel.Dock="Right"
                                HorizontalAlignment="Right"
                                Text="00:00"
-                               FontSize="11"
+                               FontSize="{DynamicResource FontSizeBody}"
                                FontWeight="Medium"
                                FontFamily="Roboto, Consolas, Segoe UI"
                                Foreground="{StaticResource TextSecondaryBrush}"
@@ -265,7 +265,7 @@
                 <TextBlock x:Name="TxtMediaVolumePercent"
                            Grid.Column="2"
                            Text="--%"
-                           FontSize="11.5"
+                           FontSize="{DynamicResource FontSizeBodyMedium}"
                            FontWeight="SemiBold"
                            Foreground="{StaticResource TextSecondaryBrush}"
                            VerticalAlignment="Center"

@@ -55,6 +55,9 @@ public partial class SettingsWindow : Window
         _selectedCity = string.IsNullOrWhiteSpace(_config.Widget.City) ? "auto" : _config.Widget.City;
         UpdateCityDisplay();
 
+        // Text Scale
+        SelectTextScale(_config.Widget.TextScale);
+
         // Opacity
         var op = _config.Widget.Opacity > 0.1 ? _config.Widget.Opacity * 100 : 100;
         SliderOpacity.Value = Math.Clamp(op, 30, 100);
@@ -217,6 +220,29 @@ public partial class SettingsWindow : Window
         }
     }
 
+    private void SelectTextScale(double scale)
+    {
+        if (CmbTextScale == null) return;
+        ComboBoxItem? bestMatch = null;
+        double minDiff = double.MaxValue;
+        foreach (ComboBoxItem item in CmbTextScale.Items)
+        {
+            if (double.TryParse(item.Tag?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var tagVal))
+            {
+                var diff = Math.Abs(tagVal - scale);
+                if (diff < minDiff)
+                {
+                    minDiff = diff;
+                    bestMatch = item;
+                }
+            }
+        }
+        if (bestMatch != null)
+        {
+            CmbTextScale.SelectedItem = bestMatch;
+        }
+    }
+
     private void ApplyLocalization()
     {
         TxtTitle.Text = LocalizationService.Get("SettingsTitle");
@@ -241,6 +267,22 @@ public partial class SettingsWindow : Window
             UpdateCheckService.CurrentVersion);
 
         LblLanguage.Text = LocalizationService.Get("LanguageLabel");
+        if (LblTextScale != null) LblTextScale.Text = LocalizationService.Get("TextScaleLabel");
+        if (LblTextScaleHelp != null) LblTextScaleHelp.Text = LocalizationService.Get("TextScaleHelp");
+        if (CmbTextScale != null)
+        {
+            foreach (ComboBoxItem item in CmbTextScale.Items)
+            {
+                item.Content = item.Tag?.ToString() switch
+                {
+                    "0.85" => LocalizationService.Get("TextScaleSmall"),
+                    "1.0" or "1" => LocalizationService.Get("TextScaleNormal"),
+                    "1.15" => LocalizationService.Get("TextScaleLarge"),
+                    "1.3" => LocalizationService.Get("TextScaleXLarge"),
+                    _ => item.Content
+                };
+            }
+        }
         LblCity.Text = LocalizationService.Get("CityLabel");
         LblCityHelp.Text = LocalizationService.Get("CityHelp");
         LblOpacity.Text = LocalizationService.Get("OpacityLabel");
@@ -406,6 +448,7 @@ public partial class SettingsWindow : Window
     private void BtnReset_Click(object sender, RoutedEventArgs e)
     {
         CmbLanguage.SelectedIndex = 0; // TR
+        SelectTextScale(ThemeService.DefaultTextScale);
         _selectedCity = "auto";
         UpdateCityDisplay();
         SliderOpacity.Value = 100;
@@ -552,6 +595,11 @@ public partial class SettingsWindow : Window
         _config.Widget.LimitClipboardHeight = ChkClipboardHeight.IsChecked == true;
         _config.Widget.IsClipboardHistoryExpanded = ChkClipboardExpanded.IsChecked == true;
         _config.Widget.Currency = (CmbCurrency.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "TRY";
+        if (CmbTextScale.SelectedItem is ComboBoxItem scaleItem &&
+            double.TryParse(scaleItem.Tag?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var scaleVal))
+        {
+            _config.Widget.TextScale = Math.Clamp(scaleVal, ThemeService.MinTextScale, ThemeService.MaxTextScale);
+        }
         _config.Widget.FinanceVisibleKeys = FinanceInstrumentCatalog.NormalizeVisibleKeys(
             _financeOptions.Where(option => option.IsSelected).Select(option => option.Key));
         _config.HardwareVisibility.CoreSystem = ChkHardwareCore.IsChecked == true;

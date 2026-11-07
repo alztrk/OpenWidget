@@ -1,5 +1,17 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- Dynamic Font Size Tokens (Scale Factor 1.0) -->
+    <sys:Double x:Key="FontSizeMicro">9.0</sys:Double>
+    <sys:Double x:Key="FontSizeMicroPlus">9.5</sys:Double>
+    <sys:Double x:Key="FontSizeBadge">10.0</sys:Double>
+    <sys:Double x:Key="FontSizeSecondary">10.5</sys:Double>
+    <sys:Double x:Key="FontSizeBody">11.0</sys:Double>
+    <sys:Double x:Key="FontSizeBodyMedium">11.5</sys:Double>
+    <sys:Double x:Key="FontSizeHeader">12.0</sys:Double>
+    <sys:Double x:Key="FontSizeTitle">13.5</sys:Double>
+    <sys:Double x:Key="FontSizeClock">21.0</sys:Double>
 
     <!-- Modern 2026 Minimal Acrylic Dark Glass Theme -->
     <Color x:Key="MasterHudBgColor">#78080C14</Color>

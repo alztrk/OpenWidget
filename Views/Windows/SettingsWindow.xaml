@@ -310,6 +310,26 @@
                     </Grid>
                 </Border>
 
+                <!-- Yazı Boyutu -->
+                <Border Style="{StaticResource ComponentCard}" Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="170" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center" Margin="0,0,28,0">
+                            <TextBlock x:Name="LblTextScale" Text="Yazı Boyutu" FontSize="13" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" />
+                            <TextBlock x:Name="LblTextScaleHelp" Text="Widget üzerindeki metinlerin ve sayıların boyutu" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,3,0,0" />
+                        </StackPanel>
+                        <ComboBox x:Name="CmbTextScale" Grid.Column="1" Style="{StaticResource ComponentComboBox}" VerticalAlignment="Center" PreviewMouseLeftButtonDown="ComponentComboBox_PreviewMouseLeftButtonDown">
+                            <ComboBoxItem Content="Küçük (%85)" Tag="0.85" />
+                            <ComboBoxItem Content="Standart (%100)" Tag="1.0" IsSelected="True" />
+                            <ComboBoxItem Content="Büyük (%115)" Tag="1.15" />
+                            <ComboBoxItem Content="Çok Büyük (%130)" Tag="1.3" />
+                        </ComboBox>
+                    </Grid>
+                </Border>
+
                 <!-- Piyasa Para Birimi -->
                 <Border Style="{StaticResource ComponentCard}" Margin="0,0,0,10">
                     <Grid>

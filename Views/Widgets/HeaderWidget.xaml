@@ -18,18 +18,18 @@
         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
             <TextBlock x:Name="TxtClock"
                        Text="00:00"
-                       FontSize="12"
+                       FontSize="{DynamicResource FontSizeHeader}"
                        FontWeight="SemiBold"
                        Foreground="{StaticResource TextPrimaryBrush}"
                        VerticalAlignment="Center" />
             <TextBlock Text="•"
-                       FontSize="10"
+                       FontSize="{DynamicResource FontSizeBadge}"
                        Foreground="{StaticResource TextMutedBrush}"
                        Margin="5,0"
                        VerticalAlignment="Center" />
             <TextBlock x:Name="TxtDate"
                        Text=""
-                       FontSize="11"
+                       FontSize="{DynamicResource FontSizeBody}"
                        Foreground="{StaticResource TextSecondaryBrush}"
                        VerticalAlignment="Center"
                        TextTrimming="CharacterEllipsis" />
@@ -47,7 +47,7 @@
                     Visibility="{Binding Telemetry.IsGamingMode, Converter={StaticResource BoolToVis}}">
                 <TextBlock x:Name="TxtGameMode"
                            Text=""
-                           FontSize="10"
+                           FontSize="{DynamicResource FontSizeBadge}"
                            FontWeight="SemiBold"
                            Foreground="{StaticResource AccentGreenBrush}"
                            VerticalAlignment="Center" />
@@ -55,13 +55,13 @@
 
             <TextBlock x:Name="TxtUptimePrefix"
                        Text=""
-                       FontSize="11"
+                       FontSize="{DynamicResource FontSizeBody}"
                        Foreground="{StaticResource TextSecondaryBrush}"
                        VerticalAlignment="Center"
                        Margin="0,0,4,0" />
 
             <TextBlock Text="{Binding Telemetry.UptimeText}"
-                       FontSize="11"
+                       FontSize="{DynamicResource FontSizeBody}"
                        Foreground="{StaticResource TextSecondaryBrush}"
                        VerticalAlignment="Center" />
         </StackPanel>

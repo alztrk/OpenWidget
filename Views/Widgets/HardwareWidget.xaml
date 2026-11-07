@@ -38,7 +38,7 @@
                     <!-- Component Name -->
                     <TextBlock Grid.Column="1"
                                Text="{Binding Value}"
-                               FontSize="11.5"
+                               FontSize="{DynamicResource FontSizeBodyMedium}"
                                FontWeight="Normal"
                                Foreground="{StaticResource TextPrimaryBrush}"
                                VerticalAlignment="Center"
@@ -55,7 +55,7 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
                 <TextBlock x:Name="TxtHardwareTitle"
                            Text="Donanım"
-                           FontSize="11"
+                           FontSize="{DynamicResource FontSizeBody}"
                            FontWeight="SemiBold"
                            Foreground="{StaticResource TextSecondaryBrush}"
                            VerticalAlignment="Center" />

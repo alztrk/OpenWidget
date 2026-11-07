@@ -27,7 +27,7 @@
                       VerticalAlignment="Center" />
                 <TextBlock x:Name="TxtTitle"
                            Text="Pano Geçmişi"
-                           FontSize="11"
+                           FontSize="{DynamicResource FontSizeBody}"
                            FontWeight="SemiBold"
                            Foreground="{StaticResource TextSecondaryBrush}"
                            VerticalAlignment="Center" />
@@ -53,7 +53,7 @@
                 <Border Background="#12FFFFFF" CornerRadius="4" Padding="5,1">
                     <TextBlock x:Name="TxtItemCount"
                                Text="{Binding ClipboardItems.Count, StringFormat='{}{0} öğe'}"
-                               FontSize="10"
+                               FontSize="{DynamicResource FontSizeBadge}"
                                FontWeight="Medium"
                                Foreground="{StaticResource TextSecondaryBrush}" />
                 </Border>
@@ -72,7 +72,7 @@
                 <!-- Empty State -->
                 <TextBlock x:Name="TxtEmptyState"
                            Text="Kopyalanan metinler burada listelenecek"
-                           FontSize="10.5"
+                           FontSize="{DynamicResource FontSizeSecondary}"
                            Foreground="{StaticResource TextMutedBrush}"
                            HorizontalAlignment="Center"
                            Margin="0,6"
@@ -122,7 +122,7 @@
                                         <!-- Content Preview -->
                                         <TextBlock Grid.Column="1"
                                                    Text="{Binding PreviewText}"
-                                                   FontSize="11"
+                                                   FontSize="{DynamicResource FontSizeBody}"
                                                    FontWeight="Normal"
                                                    Foreground="{StaticResource TextPrimaryBrush}"
                                                    VerticalAlignment="Center"
@@ -132,7 +132,7 @@
                                         <Grid Grid.Column="2" VerticalAlignment="Center" Margin="6,0,0,0">
                                             <!-- Timestamp -->
                                             <TextBlock Text="{Binding FormattedTime}"
-                                                       FontSize="10"
+                                                       FontSize="{DynamicResource FontSizeBadge}"
                                                        Foreground="{StaticResource TextMutedBrush}"
                                                        VerticalAlignment="Center">
                                                 <TextBlock.Style>
@@ -165,7 +165,7 @@
                                                       Margin="0,0,3,0"
                                                       VerticalAlignment="Center" />
                                                 <TextBlock Text="Kopyalandı"
-                                                           FontSize="10"
+                                                           FontSize="{DynamicResource FontSizeBadge}"
                                                            FontWeight="SemiBold"
                                                            Foreground="{StaticResource AccentGreenBrush}"
                                                            VerticalAlignment="Center" />

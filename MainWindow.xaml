@@ -252,7 +252,7 @@
             <DockPanel x:Name="CompactHudPanel" Visibility="{Binding IsCompactViewVisible, Converter={StaticResource BoolToVis}}" Height="24">
                 <!-- Weather on Left -->
                 <TextBlock Text="{Binding Finance.WeatherText}"
-                           FontSize="11"
+                           FontSize="{DynamicResource FontSizeBody}"
                            Foreground="{StaticResource TextSecondaryBrush}"
                            VerticalAlignment="Center"
                            DockPanel.Dock="Left"
@@ -274,13 +274,13 @@
                 <!-- Mini Telemetry Badges (CPU • GPU • RAM) -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0">
                     <Border Background="{StaticResource TelemetryCpuBadgeBrush}" CornerRadius="4" Padding="5,1.5" Margin="2,0">
-                        <TextBlock Text="{Binding CompactCpuText}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" />
+                        <TextBlock Text="{Binding CompactCpuText}" FontSize="{DynamicResource FontSizeBadge}" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" />
                     </Border>
                     <Border Background="{StaticResource TelemetryGpuBadgeBrush}" CornerRadius="4" Padding="5,1.5" Margin="2,0">
-                        <TextBlock Text="{Binding CompactGpuText}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource AccentGreenBrush}" />
+                        <TextBlock Text="{Binding CompactGpuText}" FontSize="{DynamicResource FontSizeBadge}" FontWeight="SemiBold" Foreground="{StaticResource AccentGreenBrush}" />
                     </Border>
                     <Border Background="{StaticResource TelemetryRamBadgeBrush}" CornerRadius="4" Padding="5,1.5" Margin="2,0">
-                        <TextBlock Text="{Binding CompactRamText}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource AccentAmberBrush}" />
+                        <TextBlock Text="{Binding CompactRamText}" FontSize="{DynamicResource FontSizeBadge}" FontWeight="SemiBold" Foreground="{StaticResource AccentAmberBrush}" />
                     </Border>
                 </StackPanel>
             </DockPanel>

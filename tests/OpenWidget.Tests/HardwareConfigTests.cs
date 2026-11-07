@@ -24,6 +24,7 @@ public class HardwareConfigTests
         Assert.Equal("tr", config.Widget.Language);
         Assert.Equal("auto", config.Widget.City);
         Assert.Equal("Sky", config.Widget.AccentTheme);
+        Assert.Equal(1.0, config.Widget.TextScale);
         Assert.True(config.Widgets.ShowHeader);
         Assert.True(config.Widgets.ShowWeather);
         Assert.True(config.Widgets.ShowClipboard);
@@ -72,6 +73,7 @@ public class HardwareConfigTests
             original.Widget.City = "London";
             original.Widget.AccentTheme = "Emerald";
             original.Widget.Opacity = 0.85;
+            original.Widget.TextScale = 1.15;
             original.Widget.IsLocked = true;
             original.Widget.FinanceVisibleKeys = ["GBP", "ons", "btc"];
             original.Widgets.ShowFinance = false;
@@ -86,9 +88,32 @@ public class HardwareConfigTests
             Assert.Equal("London", loaded.Widget.City);
             Assert.Equal("Emerald", loaded.Widget.AccentTheme);
             Assert.Equal(0.85, loaded.Widget.Opacity);
+            Assert.Equal(1.15, loaded.Widget.TextScale);
             Assert.True(loaded.Widget.IsLocked);
             Assert.Equal(new[] { "GBP", "ons", "btc" }, loaded.Widget.FinanceVisibleKeys.ToArray());
             Assert.False(loaded.Widgets.ShowFinance);
+        }
+        finally
+        {
+            if (File.Exists(tempFile)) File.Delete(tempFile);
+        }
+    }
+
+    [Theory]
+    [InlineData(0.5, 0.8)]
+    [InlineData(2.5, 1.5)]
+    [InlineData(-1.0, 1.0)]
+    public void Load_ClampsTextScale_WhenOutOfRange(double inputScale, double expectedScale)
+    {
+        var tempFile = Path.Combine(Path.GetTempPath(), $"openwidget_scale_{Guid.NewGuid():N}.json");
+        try
+        {
+            File.WriteAllText(tempFile, $"{{\"Widget\": {{\"TextScale\": {inputScale.ToString(System.Globalization.CultureInfo.InvariantCulture)}}}}}");
+
+            var config = HardwareConfig.Load(tempFile);
+
+            Assert.NotNull(config);
+            Assert.Equal(expectedScale, config.Widget.TextScale);
         }
         finally
         {

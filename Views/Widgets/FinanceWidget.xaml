@@ -30,7 +30,7 @@
                     <!-- Label -->
                     <TextBlock Grid.Column="1"
                                Text="{Binding Label}"
-                               FontSize="11.5"
+                               FontSize="{DynamicResource FontSizeBodyMedium}"
                                FontWeight="Normal"
                                Foreground="{StaticResource TextPrimaryBrush}"
                                VerticalAlignment="Center"
@@ -40,7 +40,7 @@
                     <!-- Price & Change -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
                         <TextBlock Text="{Binding ValueFormatted}"
-                                   FontSize="11.5"
+                                   FontSize="{DynamicResource FontSizeBodyMedium}"
                                    FontWeight="Medium"
                                    Foreground="{StaticResource PriceBrush}"
                                    VerticalAlignment="Center"
@@ -48,7 +48,7 @@
                         <TextBlock Text="{Binding ChangeFormatted}"
                                    Width="44"
                                    TextAlignment="Right"
-                                   FontSize="10.5"
+                                   FontSize="{DynamicResource FontSizeSecondary}"
                                    FontWeight="Medium"
                                    VerticalAlignment="Center">
                             <TextBlock.Style>
@@ -75,7 +75,7 @@
         <Grid Cursor="Hand" Background="Transparent" MouseLeftButtonDown="Header_MouseLeftButtonDown" Margin="4,0,4,6">
             <TextBlock x:Name="TxtTitle"
                        Text="Piyasa &amp; Kripto"
-                       FontSize="11"
+                       FontSize="{DynamicResource FontSizeBody}"
                        FontWeight="SemiBold"
                        Foreground="{StaticResource TextSecondaryBrush}"
                        VerticalAlignment="Center" />

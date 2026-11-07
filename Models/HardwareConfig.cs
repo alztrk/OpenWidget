@@ -60,6 +60,7 @@ public class WidgetConfig
     public string Language { get; set; } = "tr";
     public string City { get; set; } = "auto";
     public string AccentTheme { get; set; } = "Sky";
+    public double TextScale { get; set; } = 1.0;
     public string Currency { get; set; } = "TRY";
     public List<string> FinanceVisibleKeys { get; set; } = new()
     {
@@ -191,6 +192,10 @@ public class HardwareConfig
                         {
                             "USD", "EUR", "gram-altin", "btc", "eth"
                         };
+                    }
+                    if (config.Widget.TextScale < 0.8 || config.Widget.TextScale > 1.5)
+                    {
+                        config.Widget.TextScale = config.Widget.TextScale <= 0 ? 1.0 : Math.Clamp(config.Widget.TextScale, 0.8, 1.5);
                     }
                     return config;
                 }

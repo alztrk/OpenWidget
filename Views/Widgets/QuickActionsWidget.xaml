@@ -142,7 +142,7 @@
                     <Path Data="{StaticResource GeoTaskmgr}"
                           Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
                           Stretch="Uniform" Width="12.5" Height="12.5" VerticalAlignment="Center" Margin="0,0,6,0" />
-                    <TextBlock x:Name="TxtTaskMgr" Text="Görev Yöneticisi" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+                    <TextBlock x:Name="TxtTaskMgr" Text="Görev Yöneticisi" FontSize="{DynamicResource FontSizeBody}" FontWeight="Medium" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
 
@@ -158,7 +158,7 @@
                     <Path Data="{StaticResource GeoSpeaker}"
                           Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
                           Stretch="Uniform" Width="12.5" Height="12.5" VerticalAlignment="Center" Margin="0,0,6,0" />
-                    <TextBlock x:Name="TxtVolume" Text="Ses Karıştırıcı" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+                    <TextBlock x:Name="TxtVolume" Text="Ses Karıştırıcı" FontSize="{DynamicResource FontSizeBody}" FontWeight="Medium" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
 
@@ -174,7 +174,7 @@
                     <Path Data="{StaticResource GeoNotes}"
                           Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
                           Stretch="Uniform" Width="12.5" Height="12.5" VerticalAlignment="Center" Margin="0,0,6,0" />
-                    <TextBlock x:Name="TxtNotes" Text="Hızlı Notlar" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+                    <TextBlock x:Name="TxtNotes" Text="Hızlı Notlar" FontSize="{DynamicResource FontSizeBody}" FontWeight="Medium" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
 
@@ -189,7 +189,7 @@
                     <Path Data="{StaticResource GeoTerminal}"
                           Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
                           Stretch="Uniform" Width="12.5" Height="12.5" VerticalAlignment="Center" Margin="0,0,6,0" />
-                    <TextBlock x:Name="TxtTerminal" Text="Terminal" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" />
+                    <TextBlock x:Name="TxtTerminal" Text="Terminal" FontSize="{DynamicResource FontSizeBody}" FontWeight="Medium" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
         </Grid>
@@ -230,7 +230,7 @@
                                   Stretch="Uniform" Width="13" Height="13"
                                   VerticalAlignment="Center" Margin="0,0,6,0" />
                             <TextBlock Text="Ses Karıştırıcısı"
-                                       FontSize="12"
+                                       FontSize="{DynamicResource FontSizeHeader}"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource TextPrimaryBrush}"
                                        VerticalAlignment="Center" />
@@ -255,7 +255,7 @@
                                           Stretch="Uniform" Width="12" Height="12"
                                           VerticalAlignment="Center" Margin="0,0,6,0" />
                                     <TextBlock Text="{Binding DeviceName}"
-                                               FontSize="11.5"
+                                               FontSize="{DynamicResource FontSizeBodyMedium}"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource TextPrimaryBrush}"
                                                TextTrimming="CharacterEllipsis"
@@ -266,7 +266,7 @@
                                 <TextBlock Text="{Binding VolumePercentText}"
                                            DockPanel.Dock="Right"
                                            HorizontalAlignment="Right"
-                                           FontSize="11"
+                                           FontSize="{DynamicResource FontSizeBody}"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource AccentBrush}"
                                            VerticalAlignment="Center" />
@@ -299,7 +299,7 @@
                     <!-- Active Apps Title Row -->
                     <DockPanel Grid.Row="2" Margin="0,0,0,6">
                         <TextBlock Text="Uygulama Sesleri"
-                                   FontSize="11"
+                                   FontSize="{DynamicResource FontSizeBody}"
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource TextSecondaryBrush}"
                                    VerticalAlignment="Center" />
@@ -320,7 +320,7 @@
                     <Grid Grid.Row="3">
                         <TextBlock x:Name="TxtNoApps"
                                    Text="Aktif ses çalan uygulama bulunamadı"
-                                   FontSize="11"
+                                   FontSize="{DynamicResource FontSizeBody}"
                                    Foreground="{StaticResource TextMutedBrush}"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
@@ -357,7 +357,7 @@
                                                         </Grid>
 
                                                         <TextBlock Text="{Binding DisplayName}"
-                                                                   FontSize="11"
+                                                                   FontSize="{DynamicResource FontSizeBody}"
                                                                    FontWeight="Medium"
                                                                    Foreground="{StaticResource TextPrimaryBrush}"
                                                                    TextTrimming="CharacterEllipsis"
@@ -368,7 +368,7 @@
                                                     <TextBlock Text="{Binding VolumePercentText}"
                                                                DockPanel.Dock="Right"
                                                                HorizontalAlignment="Right"
-                                                               FontSize="10.5"
+                                                               FontSize="{DynamicResource FontSizeSecondary}"
                                                                FontWeight="SemiBold"
                                                                Foreground="{StaticResource TextSecondaryBrush}"
                                                                VerticalAlignment="Center" />
@@ -440,7 +440,7 @@
                                   Stretch="Uniform" Width="13" Height="13"
                                   VerticalAlignment="Center" Margin="0,0,6,0" />
                             <TextBlock Text="Hızlı Notlar"
-                                       FontSize="12"
+                                       FontSize="{DynamicResource FontSizeHeader}"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource TextPrimaryBrush}"
                                        VerticalAlignment="Center" />
@@ -453,7 +453,7 @@
                                 Style="{StaticResource MixerMiniBtnStyle}"
                                 ToolTip="Notları Temizle"
                                 Click="BtnClearNotes_Click">
-                            <TextBlock Text="Temizle" FontSize="10" VerticalAlignment="Center" />
+                            <TextBlock Text="Temizle" FontSize="{DynamicResource FontSizeBadge}" VerticalAlignment="Center" />
                         </Button>
                     </DockPanel>
 
@@ -470,7 +470,7 @@
                                          BorderThickness="0"
                                          Foreground="{StaticResource TextPrimaryBrush}"
                                          CaretBrush="{StaticResource AccentBrush}"
-                                         FontSize="11.5"
+                                         FontSize="{DynamicResource FontSizeBodyMedium}"
                                          FontFamily="Roboto, Segoe UI, Consolas"
                                          AcceptsReturn="True"
                                          TextWrapping="Wrap"
@@ -479,7 +479,7 @@
                                 <TextBlock x:Name="TxtNotesPlaceholder"
                                            Text="Masaüstü notlarınızı buraya yazın..."
                                            Foreground="{StaticResource TextMutedBrush}"
-                                           FontSize="11.5"
+                                           FontSize="{DynamicResource FontSizeBodyMedium}"
                                            IsHitTestVisible="False"
                                            Margin="2,1,0,0"
                                            VerticalAlignment="Top" />
@@ -491,14 +491,14 @@
                     <DockPanel Grid.Row="2" Margin="0,6,0,0">
                         <TextBlock x:Name="TxtSaveStatus"
                                    Text="Otomatik kaydedildi"
-                                   FontSize="10"
+                                   FontSize="{DynamicResource FontSizeBadge}"
                                    Foreground="{StaticResource TextMutedBrush}"
                                    VerticalAlignment="Center" />
                         <TextBlock x:Name="TxtCharCount"
                                    DockPanel.Dock="Right"
                                    HorizontalAlignment="Right"
                                    Text="0 karakter"
-                                   FontSize="10"
+                                   FontSize="{DynamicResource FontSizeBadge}"
                                    Foreground="{StaticResource TextMutedBrush}"
                                    VerticalAlignment="Center" />
                     </DockPanel>

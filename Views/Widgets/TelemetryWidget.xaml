@@ -45,13 +45,13 @@
                     <DockPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,10,0">
                         <TextBlock Text="{Binding SubText}"
                                    DockPanel.Dock="Right"
-                                   FontSize="11"
+                                   FontSize="{DynamicResource FontSizeBody}"
                                    Foreground="{StaticResource TextSecondaryBrush}"
                                    VerticalAlignment="Center"
                                    Margin="6,0,0,0"
                                    TextTrimming="CharacterEllipsis" />
                         <TextBlock Text="{Binding Label}"
-                                   FontSize="11.5"
+                                   FontSize="{DynamicResource FontSizeBodyMedium}"
                                    FontWeight="Medium"
                                    Foreground="{StaticResource TextPrimaryBrush}"
                                    VerticalAlignment="Center"
@@ -69,7 +69,7 @@
                                 Background="#18FFFFFF"
                                 Visibility="Collapsed">
                             <TextBlock Text="{Binding StatusBadge}"
-                                       FontSize="9"
+                                       FontSize="{DynamicResource FontSizeMicro}"
                                        FontWeight="SemiBold"
                                        Foreground="{Binding StatusBadgeBrush, Converter={StaticResource BrushConverter}}" />
                         </Border>
@@ -109,7 +109,7 @@
                         <TextBlock Text="{Binding MainText}"
                                    Width="46"
                                    TextAlignment="Right"
-                                   FontSize="11.5"
+                                   FontSize="{DynamicResource FontSizeBodyMedium}"
                                    FontWeight="SemiBold"
                                    Foreground="{Binding BarColorKey, Converter={StaticResource BrushConverter}}"
                                    VerticalAlignment="Center" />
@@ -132,7 +132,7 @@
         <Grid Cursor="Hand" Background="Transparent" MouseLeftButtonDown="Header_MouseLeftButtonDown" Margin="4,0,4,6">
             <TextBlock x:Name="TxtTelemetryTitle"
                        Text="Telemetri"
-                       FontSize="11"
+                       FontSize="{DynamicResource FontSizeBody}"
                        FontWeight="SemiBold"
                        Foreground="{StaticResource TextSecondaryBrush}"
                        VerticalAlignment="Center" />

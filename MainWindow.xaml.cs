@@ -366,6 +366,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         Topmost = _config.Widget.AlwaysOnTop;
 
         ThemeService.ApplyAccent(_config.Widget.AccentTheme);
+        ThemeService.ApplyTextScale(_config.Widget.TextScale);
         LocalizationService.CurrentLanguage = _config.Widget.Language;
         _weatherService?.UpdateCity(_config.Widget.City);
 
@@ -1302,6 +1303,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         Opacity = _config.Widget.Opacity;
         Topmost = _config.Widget.AlwaysOnTop;
         ThemeService.ApplyAccent(_config.Widget.AccentTheme);
+        ThemeService.ApplyTextScale(_config.Widget.TextScale);
         _weatherService?.UpdateCity(_config.Widget.City);
         _financeService?.SetVisibleKeys(_config.Widget.FinanceVisibleKeys);
         _financeService?.SetCurrency(_config.Widget.Currency);
