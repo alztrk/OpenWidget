@@ -220,10 +220,12 @@ public class MarketFinanceService
             }
 
             string formattedPrice = "$0";
+            decimal? unitPrice = null;
             if (decimal.TryParse(lastPriceStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var priceNum))
             {
                 var conversion = _currency == "TRY" ? 1m : GetConversionFromUsd(_currency, rates);
                 var convertedPrice = priceNum * conversion;
+                unitPrice = convertedPrice;
                 formattedPrice = FormatCurrency(convertedPrice, _currency);
             }
 
@@ -236,7 +238,8 @@ public class MarketFinanceService
                 Label: label,
                 ValueFormatted: formattedPrice,
                 ChangeFormatted: formattedChange,
-                ChangeDirection: direction
+                ChangeDirection: direction,
+                UnitPrice: unitPrice
             );
         }
         catch
@@ -257,9 +260,11 @@ public class MarketFinanceService
 
         // Format clean price
         string valFormatted = $"{selling} {GetCurrencySymbol(currency)}";
+        decimal? unitPrice = null;
         if (TryParseMarketDecimal(selling, out var num))
         {
             num *= rates.TryGetValue(currency, out var conversion) ? conversion : 1m;
+            unitPrice = num;
             valFormatted = FormatCurrency(num, currency);
         }
 
@@ -269,7 +274,8 @@ public class MarketFinanceService
             Label: label,
             ValueFormatted: valFormatted,
             ChangeFormatted: change,
-            ChangeDirection: direction
+            ChangeDirection: direction,
+            UnitPrice: unitPrice
         );
     }
 

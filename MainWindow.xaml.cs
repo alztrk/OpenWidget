@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -170,6 +171,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Finance)));
         }
     }
+
+    public string MarketCurrency => _config.Widget.Currency;
 
     public bool IsHeaderVisible => _config.Widgets.ShowHeader;
     public bool IsWeatherVisible => _config.Widgets.ShowWeather;
@@ -835,6 +838,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         if (_config.Widget.IsLocked) return;
 
+        if (IsInteractiveInputSource(e.OriginalSource as DependencyObject))
+        {
+            return;
+        }
+
         if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
         {
             var handle = new WindowInteropHelper(this).Handle;
@@ -845,6 +853,25 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 SaveCurrentPosition();
             }
         }
+    }
+
+    private static bool IsInteractiveInputSource(DependencyObject? source)
+    {
+        while (source != null)
+        {
+            if (source is TextBox
+                or PasswordBox
+                or ComboBox
+                or ComboBoxItem
+                or System.Windows.Controls.Primitives.TextBoxBase)
+            {
+                return true;
+            }
+
+            source = VisualTreeHelper.GetParent(source) ?? LogicalTreeHelper.GetParent(source);
+        }
+
+        return false;
     }
 
     private void BtnToggleCompact_Click(object sender, RoutedEventArgs e)
@@ -1197,7 +1224,52 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void Window_Deactivated(object? sender, EventArgs e)
     {
+        SetNoActivateStyle(enabled: true);
         CloseContextMenu();
+    }
+
+    public void BeginInteractiveInput()
+    {
+        SetNoActivateStyle(enabled: false);
+        Activate();
+    }
+
+    public void EndInteractiveInput()
+    {
+        // Defer so focus can move TextBox → ComboBox without restoring NOACTIVATE early.
+        Dispatcher.BeginInvoke(() =>
+        {
+            if (!IsActive || !IsInteractiveElementFocused())
+            {
+                SetNoActivateStyle(enabled: true);
+            }
+        }, DispatcherPriority.Input);
+    }
+
+    private void SetNoActivateStyle(bool enabled)
+    {
+        var handle = new WindowInteropHelper(this).Handle;
+        if (handle == IntPtr.Zero)
+        {
+            return;
+        }
+
+        var exStyle = (long)GetWindowLongPtr(handle, GWL_EXSTYLE);
+        if (enabled)
+        {
+            exStyle |= WS_EX_NOACTIVATE;
+        }
+        else
+        {
+            exStyle &= ~WS_EX_NOACTIVATE;
+        }
+
+        SetWindowLongPtr(handle, GWL_EXSTYLE, (IntPtr)exStyle);
+    }
+
+    private bool IsInteractiveElementFocused()
+    {
+        return IsInteractiveInputSource(Keyboard.FocusedElement as DependencyObject);
     }
 
     private void MainContextMenu_Opened(object? sender, RoutedEventArgs e)
@@ -1326,6 +1398,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsQuickActionsVisible)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Weather)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CompactWeatherText)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MarketCurrency)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Finance)));
 
         RefreshTelemetry();
         _ = RefreshFinanceLiveAsync();

@@ -74,6 +74,8 @@ public static class LocalizationService
         ["OpenTitle"] = ("OpenWidget", "OpenWidget"),
         ["Telemetry"] = ("Telemetri", "Telemetry"),
         ["Market"] = ("Piyasa & Kripto", "Market & Crypto"),
+        ["FinanceConvertLabel"] = ("Çevir", "Convert"),
+        ["FinanceConvertPlaceholder"] = ("Tutar", "Amount"),
         ["Hardware"] = ("Donanım", "Hardware"),
         ["QuickTools"] = ("Hızlı Araçlar", "Quick Tools"),
 

@@ -3,10 +3,132 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:converters="clr-namespace:OpenWidget.Converters"
              Margin="0,0,0,10"
-             Loaded="UserControl_Loaded">
+             Loaded="UserControl_Loaded"
+             DataContextChanged="UserControl_DataContextChanged">
 
     <UserControl.Resources>
         <converters:IconKeyToGeometryConverter x:Key="IconConverter" />
+
+        <Style x:Key="FinanceGlassAmountBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="18" />
+            <Setter Property="Width" Value="52" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Padding" Value="4,0" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="CaretBrush" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="Bd"
+                                Background="#18FFFFFF"
+                                BorderBrush="{StaticResource MasterHudBorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <ScrollViewer x:Name="PART_ContentHost" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#26FFFFFF" />
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#26FFFFFF" />
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="FinanceUnitComboStyle" TargetType="ComboBox" BasedOn="{StaticResource ModernComboBoxStyle}">
+            <Setter Property="Height" Value="18" />
+            <Setter Property="Width" Value="72" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton x:Name="ToggleButton"
+                                          Focusable="False"
+                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                          ClickMode="Press">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border x:Name="ToggleBd"
+                                                Background="#18FFFFFF"
+                                                BorderBrush="{StaticResource MasterHudBorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="3"
+                                                Padding="4,0,2,0">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0"
+                                                           Text="{Binding SelectedItem.Code, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                                           FontSize="10"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Left"
+                                                           TextTrimming="CharacterEllipsis" />
+                                                <Path Grid.Column="1"
+                                                      Data="M7 10l5 5 5-5z"
+                                                      Fill="{StaticResource TextMutedBrush}"
+                                                      Width="8" Height="6"
+                                                      Stretch="Uniform"
+                                                      VerticalAlignment="Center"
+                                                      Margin="2,0,0,0" />
+                                            </Grid>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="ToggleBd" Property="Background" Value="#26FFFFFF" />
+                                                <Setter TargetName="ToggleBd" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                                            </Trigger>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter TargetName="ToggleBd" Property="Background" Value="#26FFFFFF" />
+                                                <Setter TargetName="ToggleBd" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <Popup x:Name="PART_Popup"
+                                   AllowsTransparency="True"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   Placement="Bottom"
+                                   PopupAnimation="Fade"
+                                   Focusable="False"
+                                   VerticalOffset="2">
+                                <Border MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                        MaxHeight="160"
+                                        Background="#F0090D16"
+                                        BorderBrush="{StaticResource MasterHudBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        Padding="2">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <StackPanel IsItemsHost="True" />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="FinanceUnitComboItemStyle" TargetType="ComboBoxItem" BasedOn="{StaticResource ModernComboBoxItemStyle}">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Padding" Value="6,3" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+        </Style>
 
         <DataTemplate x:Key="FinanceRowTemplate">
             <Border Background="Transparent" CornerRadius="4" Padding="4,2.5" Margin="0,1">
@@ -17,7 +139,6 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- Icon -->
                     <Path Grid.Column="0"
                           Data="{Binding IconKey, Converter={StaticResource IconConverter}}"
                           Fill="{StaticResource TextMutedBrush}"
@@ -27,24 +148,42 @@
                           VerticalAlignment="Center"
                           HorizontalAlignment="Left" />
 
-                    <!-- Label -->
                     <TextBlock Grid.Column="1"
                                Text="{Binding Label}"
                                FontSize="{DynamicResource FontSizeBodyMedium}"
-                               FontWeight="Normal"
                                Foreground="{StaticResource TextPrimaryBrush}"
                                VerticalAlignment="Center"
                                TextTrimming="CharacterEllipsis"
-                               Margin="0,0,6,0" />
+                               Margin="0,0,6,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="FontWeight" Value="Normal" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsInverseRow}" Value="True">
+                                        <Setter Property="FontWeight" Value="Bold" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
 
-                    <!-- Price & Change -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-                        <TextBlock Text="{Binding ValueFormatted}"
+                        <TextBlock Text="{Binding DisplayPrice}"
                                    FontSize="{DynamicResource FontSizeBodyMedium}"
-                                   FontWeight="Medium"
                                    Foreground="{StaticResource PriceBrush}"
                                    VerticalAlignment="Center"
-                                   Margin="0,0,6,0" />
+                                   Margin="0,0,6,0">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontWeight" Value="Medium" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsInverseRow}" Value="True">
+                                            <Setter Property="FontWeight" Value="Bold" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
                         <TextBlock Text="{Binding ChangeFormatted}"
                                    Width="44"
                                    TextAlignment="Right"
@@ -72,27 +211,85 @@
     </UserControl.Resources>
 
     <StackPanel>
-        <Grid Cursor="Hand" Background="Transparent" MouseLeftButtonDown="Header_MouseLeftButtonDown" Margin="4,0,4,6">
-            <TextBlock x:Name="TxtTitle"
-                       Text="Piyasa &amp; Kripto"
-                       FontSize="{DynamicResource FontSizeBody}"
-                       FontWeight="SemiBold"
-                       Foreground="{StaticResource TextSecondaryBrush}"
-                       VerticalAlignment="Center" />
-            <Path x:Name="ArrowIcon"
-                  Data="{StaticResource GeoCollapse}"
-                  Fill="{StaticResource TextMutedBrush}"
-                  Stretch="Uniform"
-                  Width="8" Height="8"
-                  HorizontalAlignment="Right"
-                  VerticalAlignment="Center" />
+        <Grid Margin="4,0,4,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0"
+                    Background="Transparent"
+                    Cursor="Hand"
+                    MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <TextBlock x:Name="TxtTitle"
+                           Text="Piyasa &amp; Kripto"
+                           FontSize="{DynamicResource FontSizeBody}"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis" />
+            </Border>
+
+            <TextBlock x:Name="TxtConvertLabel"
+                       Grid.Column="1"
+                       Text="Çevir"
+                       FontSize="11"
+                       Foreground="{StaticResource TextMutedBrush}"
+                       VerticalAlignment="Center"
+                       Margin="4,0,4,0" />
+
+            <TextBox x:Name="TxtAmount"
+                     Grid.Column="2"
+                     Style="{StaticResource FinanceGlassAmountBoxStyle}"
+                     Margin="0,0,4,0"
+                     MaxLength="16"
+                     PreviewMouseLeftButtonDown="TxtAmount_PreviewMouseLeftButtonDown"
+                     GotKeyboardFocus="InteractiveInput_GotKeyboardFocus"
+                     LostKeyboardFocus="InteractiveInput_LostKeyboardFocus"
+                     PreviewTextInput="TxtAmount_PreviewTextInput"
+                     PreviewKeyDown="TxtAmount_PreviewKeyDown"
+                     TextChanged="TxtAmount_TextChanged" />
+
+            <ComboBox x:Name="CmbUnit"
+                      Grid.Column="3"
+                      Style="{StaticResource FinanceUnitComboStyle}"
+                      ItemContainerStyle="{StaticResource FinanceUnitComboItemStyle}"
+                      Margin="0,0,6,0"
+                      SelectedValuePath="Key"
+                      SelectionChanged="CmbUnit_SelectionChanged"
+                      DropDownOpened="CmbUnit_DropDownOpened"
+                      GotKeyboardFocus="InteractiveInput_GotKeyboardFocus"
+                      LostKeyboardFocus="InteractiveInput_LostKeyboardFocus"
+                      PreviewMouseLeftButtonDown="CmbUnit_PreviewMouseLeftButtonDown">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Code}" FontSize="11" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <Border Grid.Column="4"
+                    Background="Transparent"
+                    Cursor="Hand"
+                    VerticalAlignment="Center"
+                    MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <Path x:Name="ArrowIcon"
+                      Data="{StaticResource GeoCollapse}"
+                      Fill="{StaticResource TextMutedBrush}"
+                      Stretch="Uniform"
+                      Width="8"
+                      Height="8" />
+            </Border>
         </Grid>
         <StackPanel x:Name="ContentPanel">
             <ScrollViewer MaxHeight="130"
                           VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled"
                           Focusable="False">
-                <ItemsControl ItemsSource="{Binding Finance.VisibleItems}"
+                <ItemsControl x:Name="FinanceItems"
                               ItemTemplate="{StaticResource FinanceRowTemplate}" />
             </ScrollViewer>
         </StackPanel>

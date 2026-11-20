@@ -9,7 +9,8 @@ public record FinanceItem(
     string ValueFormatted,
     string ChangeFormatted,
     string ChangeDirection, // "Up", "Down", "Neutral"
-    string? SubText = null
+    string? SubText = null,
+    decimal? UnitPrice = null
 );
 
 public class FinanceSpecs
